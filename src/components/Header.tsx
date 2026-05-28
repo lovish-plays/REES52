@@ -204,7 +204,7 @@ export default function Header() {
 
                   {/* Notification List Dropdown Panel */}
                   {notifOpen && (
-                    <div className="absolute right-0 top-12 z-50 w-80 max-h-96 overflow-y-auto glassmorphism p-4 rounded-2xl border border-slate-200/80 shadow-2xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute right-0 top-12 z-50 w-80 max-h-96 overflow-y-auto glassmorphism notification-panel p-4 rounded-2xl border border-slate-200/80 shadow-2xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
                       <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">
                           Notifications ({notifications.length})

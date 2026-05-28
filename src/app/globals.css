@@ -318,3 +318,18 @@ body.header-hidden header {
   transform: translateY(-4px) !important;
 }
 
+/* Custom Red Opaque Notification Panel */
+.notification-panel {
+  background-color: #F7F4EB !important; /* Fully opaque theme background */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  outline: 2px solid #EF4444 !important; /* Theme Red Outline */
+  box-shadow: 0 20px 40px -15px rgba(239, 68, 68, 0.1) !important;
+}
+
+.notification-panel:hover {
+  outline-color: #DC2626 !important;
+  box-shadow: 0 20px 40px -15px rgba(239, 68, 68, 0.2) !important;
+  transform: none !important; /* Keep panel stationary on hover */
+}
+

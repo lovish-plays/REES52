@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   authors: [{ name: "REES52 Infinity Learning Team" }],
   creator: "REES52",
   publisher: "REES52",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -97,6 +97,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
+      <head>
+        {/* Explicit crossorigin so Vercel preview deployments pass session
+            cookies when fetching the PWA manifest — prevents 401 errors */}
+        <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
+      </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
           <CyberBackground />

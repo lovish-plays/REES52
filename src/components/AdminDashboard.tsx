@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 import {
   addCategory, deleteCategory,
   addProduct, deleteProduct,
@@ -10,7 +9,7 @@ import {
   addVideo, deleteVideo,
   addWebinar, deleteWebinar
 } from '@/app/actions/admin';
-import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink, UploadCloud, CheckCircle, X } from 'lucide-react';
+import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -89,54 +88,7 @@ export default function AdminDashboard({
   // Products
   const [prodName, setProdName] = useState('');
   const [prodUrl, setProdUrl] = useState('');
-  const [prodImg, setProdImg] = useState('');       // final public URL
   const [prodCat, setProdCat] = useState('');
-  const [uploadingImg, setUploadingImg] = useState(false);
-  const imgInputRef = useRef<HTMLInputElement>(null);
-
-  // Supabase Storage upload helper
-  const uploadProductImage = async (file: File) => {
-    try {
-      setUploadingImg(true);
-      setProdImg(''); // clear previous URL until upload finishes
-
-      // 1. Force a completely unique file name string
-      const fileExt = file.name.split('.').pop();
-      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-      // 2. FORCE the network call to upload the file binary data to Supabase
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(uniqueFileName, file, { upsert: false, contentType: file.type });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      if (!uploadData) {
-        throw new Error("No upload response data returned from Supabase Storage.");
-      }
-
-      // 3. Retrieve the actual public CDN absolute string URL from Supabase
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(uniqueFileName);
-
-      if (!urlData || !urlData.publicUrl) {
-        throw new Error("Failed to generate a valid public CDN URL from Supabase Storage.");
-      }
-
-      // 4. Update the state with the REAL network URL string, NOT a local blob
-      setProdImg(urlData.publicUrl);
-      showMsg('Image uploaded successfully!', 'success');
-
-    } catch (error: any) {
-      console.error("Critical Storage Error:", error);
-      showMsg(`Storage Error: ${error.message || error}`, 'error');
-    } finally {
-      setUploadingImg(false);
-    }
-  };
 
   // Ebooks
   const [ebkTitle, setEbkTitle] = useState('');
@@ -193,11 +145,7 @@ export default function AdminDashboard({
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploadingImg) {
-      showMsg('Please wait — image is still uploading…', 'error');
-      return;
-    }
-    if (!prodName || !prodUrl || !prodImg || !prodCat) {
+    if (!prodName || !prodUrl || !prodCat) {
       showMsg('Please fill in all product fields', 'error');
       return;
     }
@@ -205,7 +153,7 @@ export default function AdminDashboard({
     const res = await addProduct({
       name: prodName,
       external_purchase_url: prodUrl,
-      image_url: prodImg,
+      image_url: 'https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60',
       category_id: prodCat
     });
     setLoading(false);
@@ -213,9 +161,7 @@ export default function AdminDashboard({
       setProducts(prev => [...prev, res.product as Product]);
       setProdName('');
       setProdUrl('');
-      setProdImg('');
       setProdCat('');
-      if (imgInputRef.current) imgInputRef.current.value = '';
       showMsg('Product added successfully!', 'success');
       router.refresh();
     } else {
@@ -483,75 +429,6 @@ export default function AdminDashboard({
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
-                </div>
-                
-                {/* Image Upload */}
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Product Image</label>
-
-                  {/* Hidden file input */}
-                  <input
-                    ref={imgInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadProductImage(file);
-                    }}
-                  />
-
-                  {/* Dropzone / preview area */}
-                  <div
-                    onClick={() => !uploadingImg && imgInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl transition-all overflow-hidden cursor-pointer min-h-[9rem] flex flex-col items-center justify-center
-                      ${
-                        prodImg
-                          ? 'border-cyan-400 bg-transparent'
-                          : 'border-cyan-300 hover:border-cyan-500 bg-white/20 hover:bg-white/40'
-                      }`}
-                  >
-                    {uploadingImg ? (
-                      /* Loading state */
-                      <div className="flex flex-col items-center justify-center gap-2 p-6 h-36">
-                        <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[9px] text-cyan-300 uppercase font-bold">Uploading…</span>
-                      </div>
-                    ) : prodImg ? (
-                      /* Image preview */
-                      <>
-                        <img
-                          src={prodImg}
-                          alt="Preview"
-                          className="w-full h-36 object-cover"
-                        />
-                        {/* Ready badge */}
-                        <div className="absolute top-2 right-2 bg-cyan-600 text-white rounded-full px-2 py-0.5 flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" />
-                          <span className="text-[8px] font-bold uppercase">Uploaded</span>
-                        </div>
-                        {/* Change button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setProdImg('');
-                            if (imgInputRef.current) imgInputRef.current.value = '';
-                          }}
-                          className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </>
-                    ) : (
-                      /* Empty state */
-                      <div className="flex flex-col items-center justify-center gap-2 p-6 h-36">
-                        <UploadCloud className="w-8 h-8 text-slate-400" />
-                        <span className="text-[9px] text-slate-500 font-bold uppercase">Click to upload image</span>
-                        <span className="text-[8px] text-slate-400">JPG, PNG, WEBP — max 5 MB</span>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <button

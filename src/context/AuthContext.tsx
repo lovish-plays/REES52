@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const profileLoadingRef = React.useRef(false);
 
   useEffect(() => {
-    refreshUser();
+    setIsLoading(true);
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);

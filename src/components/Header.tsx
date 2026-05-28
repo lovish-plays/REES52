@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   BookOpen,
   GraduationCap,
@@ -42,6 +42,8 @@ const TAGLINES = [
 export default function Header() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
 
   const [authOpen, setAuthOpen] = useState(false);
   const [directoryOpen, setDirectoryOpen] = useState(false);
@@ -55,7 +57,7 @@ export default function Header() {
   const onLogout = async () => {
     await signOut();
     setDirectoryOpen(false);
-    router.push("/");
+    router.push("/login");
   };
 
   const overlayLinkClass =
@@ -86,9 +88,11 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             {!user ? (
-              <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)}>
-                Sign In
-              </Button>
+              !isLoginPage && (
+                <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)}>
+                  Sign In
+                </Button>
+              )
             ) : (
               <>
                 {/* Avatar dropdown (My Learning / My Stuff / Admin / Sign out) */}

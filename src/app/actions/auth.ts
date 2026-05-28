@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { getDB, saveDB, User, generateUUID } from '@/lib/db';
+import { createClient } from '@/lib/supabaseServer';
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
@@ -146,26 +147,45 @@ export async function logoutUser() {
 }
 
 export async function getCurrentUser() {
-  const cookieStore = await getCookieStore();
-  const sessionToken = cookieStore.get('session')?.value;
-
-  if (!sessionToken) {
-    return null;
-  }
-
   try {
-    const decoded = jwt.verify(sessionToken, JWT_SECRET) as { userId: string; email: string; role: string };
-    const db = getDB();
-    const user = db.users.find(u => u.id === decoded.userId);
+    // Use Supabase SSR client — reads session from HTTP-only cookies set by middleware
+    const supabase = await createClient();
 
-    if (!user) {
+    // getUser() validates the JWT with Supabase Auth server (never trusts client-side cache)
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       return null;
     }
 
-    const { password_hash: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    // Fetch role explicitly from public.profiles where id = auth.uid()
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, name, role, enrolled_videos, purchased_ebooks')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Profile fetch failed:', profileError.message);
+    }
+
+    const role = profile?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
+    const name =
+      profile?.name?.trim() ||
+      (user.user_metadata?.name as string | undefined) ||
+      user.email?.split('@')[0] ||
+      'User';
+
+    return {
+      id: user.id,
+      name,
+      email: user.email ?? '',
+      role: role as 'Admin' | 'Student',
+      enrolled_videos: profile?.enrolled_videos ?? [],
+      purchased_ebooks: profile?.purchased_ebooks ?? [],
+    };
   } catch (error) {
-    console.error('Session verify failed:', error);
+    console.error('getCurrentUser failed:', error);
     return null;
   }
 }

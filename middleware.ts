@@ -73,13 +73,12 @@ export async function middleware(request: NextRequest) {
   }
 
   const isLoginPage = pathname === "/login";
+  const isHomePage = pathname === "/";
 
-  if (!isAuthenticated && !isLoginPage) {
+  if (!isAuthenticated && !isLoginPage && !isHomePage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    if (pathname !== "/") {
-      redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);
-    }
+    redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);
     
     const redirectResponse = NextResponse.redirect(redirectUrl);
     // Copy updated cookies to the redirect response

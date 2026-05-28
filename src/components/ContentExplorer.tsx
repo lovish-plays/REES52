@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookOpen,
   Calendar,
@@ -63,6 +64,7 @@ function getYouTubeId(url?: string | null) {
 
 export default function ContentExplorer({ initialType = "all" }: { initialType?: Tab }) {
   const { user, enrollInVideo, purchaseEbook } = useAuth();
+  const router = useRouter();
 
   const [tab, setTab] = useState<Tab>(initialType);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -440,7 +442,13 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             return (
               <div
                 key={`${it.type}:${it.id}`}
-                onClick={() => setSelectedItem(it)}
+                onClick={() => {
+                  if (!user) {
+                    router.push("/login?redirect_to=" + encodeURIComponent("/"));
+                  } else {
+                    setSelectedItem(it);
+                  }
+                }}
                 className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm transition-all hover:border-cyan-500/30 hover:bg-white hover:shadow-md cursor-pointer text-slate-800"
               >
                 <div>

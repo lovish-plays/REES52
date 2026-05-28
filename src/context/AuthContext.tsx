@@ -118,21 +118,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let isSubscribed = true;
 
-    async function initAuth() {
-      // 1. Check if there is an active Supabase session
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      if (isSubscribed) {
-        setSession(initialSession);
-      }
+    // Listen to auth changes (including initial session load)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!isSubscribed) return;
+      setSession(newSession);
 
-      if (initialSession?.user) {
+      if (newSession?.user) {
+        if (profileLoadingRef.current) return;
+        setIsLoading(true);
         await loadProfile(
-          initialSession.user.id,
-          initialSession.user.email ?? "",
-          (initialSession.user.user_metadata?.name as string | undefined) ?? undefined
+          newSession.user.id,
+          newSession.user.email ?? "",
+          (newSession.user.user_metadata?.name as string | undefined) ?? undefined
         );
+        if (isSubscribed) {
+          setIsLoading(false);
+        }
       } else {
-        // 2. Fallback to check local session via getCurrentUser server action
+        // Fallback to check local session via getCurrentUser server action
+        if (isSubscribed) {
+          setIsLoading(true);
+        }
         try {
           const localUser = await getCurrentUser();
           if (localUser && isSubscribed) {
@@ -149,45 +155,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (e) {
           console.error("Local session fetch failed:", e);
-          if (isSubscribed) setUser(null);
-        }
-      }
-
-      if (isSubscribed) {
-        setIsLoading(false);
-      }
-    }
-
-    initAuth();
-
-    // Listen to subsequent auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!isSubscribed) return;
-      setSession(newSession);
-
-      if (newSession?.user) {
-        if (profileLoadingRef.current) return;
-        setIsLoading(true);
-        await loadProfile(
-          newSession.user.id,
-          newSession.user.email ?? "",
-          (newSession.user.user_metadata?.name as string | undefined) ?? undefined
-        );
-        setIsLoading(false);
-      } else {
-        // If Supabase session is cleared, double check if there's still a local session
-        const localUser = await getCurrentUser();
-        if (localUser) {
-          setUser({
-            id: localUser.id,
-            name: localUser.name,
-            email: localUser.email,
-            role: localUser.role,
-            enrolled_videos: localUser.enrolled_videos,
-            purchased_ebooks: localUser.purchased_ebooks,
-          });
-        } else {
-          setUser(null);
+          if (isSubscribed) {
+            setUser(null);
+          }
+        } finally {
+          if (isSubscribed) {
+            setIsLoading(false);
+          }
         }
       }
     });

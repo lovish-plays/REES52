@@ -103,27 +103,39 @@ export default function AdminDashboard({
     setProdImgPreview(localPreview);
     setProdImg(''); // clear previous URL until upload finishes
 
-    const ext = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { data, error } = await supabase.storage
-      .from('product-images')
-      .upload(fileName, file, { upsert: false, contentType: file.type });
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, { upsert: false, contentType: file.type });
 
-    if (error) {
-      showMsg(`Upload failed: ${error.message}`, 'error');
+      if (error) {
+        showMsg(`Upload failed: ${error.message}`, 'error');
+        setProdImgPreview('');
+        return;
+      }
+
+      if (!data) {
+        showMsg('Upload failed: No data returned from storage', 'error');
+        setProdImgPreview('');
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(data.path);
+
+      setProdImg(urlData.publicUrl);
+      showMsg('Image uploaded successfully!', 'success');
+    } catch (err: any) {
+      console.error("Supabase storage upload exception:", err);
+      showMsg(`Upload failed: ${err.message || err}`, 'error');
       setProdImgPreview('');
+    } finally {
       setUploadingImg(false);
-      return;
     }
-
-    const { data: urlData } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(data.path);
-
-    setProdImg(urlData.publicUrl);
-    setUploadingImg(false);
-    showMsg('Image uploaded successfully!', 'success');
   };
 
   // Ebooks

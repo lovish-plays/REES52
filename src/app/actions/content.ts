@@ -66,9 +66,9 @@ export async function getCategories() {
       .select('id,name,slug')
       .order('name', { ascending: true });
     
-    if (error || !data || data.length === 0) {
-      console.warn("Supabase getCategories empty or failed, falling back to JSON:", error?.message);
-      return getDB().categories;
+    if (error || !data) {
+      console.error("Supabase getCategories failed:", error?.message);
+      return [];
     }
     return data.map(c => ({
       id: toShortId(c.id),
@@ -77,7 +77,7 @@ export async function getCategories() {
     }));
   } catch (e) {
     console.error("getCategories error:", e);
-    return getDB().categories;
+    return [];
   }
 }
 
@@ -87,9 +87,9 @@ export async function getProducts() {
       .from('products')
       .select('id,name,external_url,image_url,category_id');
     
-    if (error || !data || data.length === 0) {
-      console.warn("Supabase getProducts empty or failed, falling back to JSON:", error?.message);
-      return getDB().products;
+    if (error || !data) {
+      console.error("Supabase getProducts failed:", error?.message);
+      return [];
     }
     return data.map(p => ({
       id: toShortId(p.id),
@@ -100,7 +100,7 @@ export async function getProducts() {
     }));
   } catch (e) {
     console.error("getProducts error:", e);
-    return getDB().products;
+    return [];
   }
 }
 
@@ -111,9 +111,9 @@ export async function getEbooks() {
       .select('id,title,pdf_url,category_id,product_id,created_at')
       .order('created_at', { ascending: false });
     
-    if (error || !data || data.length === 0) {
-      console.warn("Supabase getEbooks empty or failed, falling back to JSON:", error?.message);
-      return getDB().ebooks;
+    if (error || !data) {
+      console.error("Supabase getEbooks failed:", error?.message);
+      return [];
     }
     return data.map(e => ({
       id: toShortId(e.id),
@@ -125,7 +125,7 @@ export async function getEbooks() {
     }));
   } catch (e) {
     console.error("getEbooks error:", e);
-    return getDB().ebooks;
+    return [];
   }
 }
 
@@ -136,9 +136,9 @@ export async function getVideos() {
       .select('id,title,youtube_url,category_id,product_id,created_at')
       .order('created_at', { ascending: false });
     
-    if (error || !data || data.length === 0) {
-      console.warn("Supabase getVideos empty or failed, falling back to JSON:", error?.message);
-      return getDB().videos;
+    if (error || !data) {
+      console.error("Supabase getVideos failed:", error?.message);
+      return [];
     }
     return data.map(v => ({
       id: toShortId(v.id),
@@ -150,7 +150,7 @@ export async function getVideos() {
     }));
   } catch (e) {
     console.error("getVideos error:", e);
-    return getDB().videos;
+    return [];
   }
 }
 
@@ -161,9 +161,9 @@ export async function getWebinars() {
       .select('id,title,description,meeting_url,schedule_date,is_live')
       .order('schedule_date', { ascending: false });
     
-    if (error || !data || data.length === 0) {
-      console.warn("Supabase getWebinars empty or failed, falling back to JSON:", error?.message);
-      return getDB().webinars;
+    if (error || !data) {
+      console.error("Supabase getWebinars failed:", error?.message);
+      return [];
     }
     return data.map(w => ({
       id: toShortId(w.id),
@@ -175,7 +175,7 @@ export async function getWebinars() {
     }));
   } catch (e) {
     console.error("getWebinars error:", e);
-    return getDB().webinars;
+    return [];
   }
 }
 
@@ -189,7 +189,7 @@ export async function getCategoryById(id: string) {
       .maybeSingle();
     
     if (error || !data) {
-      return getDB().categories.find(c => c.id === id) || null;
+      return null;
     }
     return {
       id: toShortId(data.id),
@@ -197,7 +197,7 @@ export async function getCategoryById(id: string) {
       slug: data.slug
     };
   } catch (e) {
-    return getDB().categories.find(c => c.id === id) || null;
+    return null;
   }
 }
 
@@ -211,7 +211,7 @@ export async function getProductById(id: string) {
       .maybeSingle();
     
     if (error || !data) {
-      return getDB().products.find(p => p.id === id) || null;
+      return null;
     }
     return {
       id: toShortId(data.id),
@@ -221,7 +221,7 @@ export async function getProductById(id: string) {
       category_id: toShortId(data.category_id)
     };
   } catch (e) {
-    return getDB().products.find(p => p.id === id) || null;
+    return null;
   }
 }
 
@@ -235,7 +235,7 @@ export async function getEbookById(id: string) {
       .maybeSingle();
     
     if (error || !data) {
-      return getDB().ebooks.find(e => e.id === id) || null;
+      return null;
     }
     return {
       id: toShortId(data.id),
@@ -246,7 +246,7 @@ export async function getEbookById(id: string) {
       created_at: data.created_at
     };
   } catch (e) {
-    return getDB().ebooks.find(e => e.id === id) || null;
+    return null;
   }
 }
 
@@ -260,7 +260,7 @@ export async function getVideoById(id: string) {
       .maybeSingle();
     
     if (error || !data) {
-      return getDB().videos.find(v => v.id === id) || null;
+      return null;
     }
     return {
       id: toShortId(data.id),
@@ -271,7 +271,7 @@ export async function getVideoById(id: string) {
       created_at: data.created_at
     };
   } catch (e) {
-    return getDB().videos.find(v => v.id === id) || null;
+    return null;
   }
 }
 

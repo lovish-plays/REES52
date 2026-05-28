@@ -74,8 +74,9 @@ export async function middleware(request: NextRequest) {
 
   const isLoginPage = pathname === "/login";
   const isHomePage = pathname === "/";
+  const isInformationalPage = ["/about", "/contact", "/privacy", "/terms"].includes(pathname);
 
-  if (!isAuthenticated && !isLoginPage && !isHomePage) {
+  if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);

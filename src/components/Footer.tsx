@@ -183,8 +183,21 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 border-t border-slate-200/40 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-        <span>© {new Date().getFullYear()} REES52 (Robotics Embedded Education Services Private Limited). All rights reserved.</span>
-        <span>Premium STEM & Drone Education Solutions Since 2013</span>
+        <span>© 2013 REES52 (Robotics Embedded Education Services Private Limited). All rights reserved.</span>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center sm:justify-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+          <Link href="/about" className="hover:text-cyan-600 transition-colors">
+            About Us
+          </Link>
+          <Link href="/contact" className="hover:text-cyan-600 transition-colors">
+            Contact Us
+          </Link>
+          <Link href="/privacy" className="hover:text-cyan-600 transition-colors">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-cyan-600 transition-colors">
+            Terms & Conditions
+          </Link>
+        </div>
       </div>
     </footer>
   );

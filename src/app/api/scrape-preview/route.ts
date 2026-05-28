@@ -28,14 +28,31 @@ export async function GET(request: NextRequest) {
 
     // 1. CHOSEN TARGETING PATTERNS FOR REES52.COM
     if (url.includes('rees52.com')) {
-      // Pattern A: Grab from the primary main zoom product gallery photo element
-      productImageUrl = $('.product__media img').first().attr('src') || 
-                        $('.product-single__photo img').first().attr('src') ||
-                        $('img[class*="product"]').first().attr('src');
+      const mainImage = $('.product__media img').first().length ? $('.product__media img').first() :
+                        $('.product-single__photo img').first().length ? $('.product-single__photo img').first() :
+                        $('img[class*="product"]').first();
+
+      if (mainImage.length) {
+        const srcAttr = mainImage.attr('src');
+        const dataSrcAttr = mainImage.attr('data-src') || mainImage.attr('data-lazy');
+        const srcsetAttr = mainImage.attr('data-srcset') || mainImage.attr('srcset');
+
+        if (dataSrcAttr) {
+          productImageUrl = dataSrcAttr;
+        } else if (srcsetAttr) {
+          productImageUrl = srcsetAttr.split(',')[0].trim().split(' ')[0];
+        } else if (srcAttr && !srcAttr.startsWith('data:')) {
+          productImageUrl = srcAttr;
+        }
+      }
 
       // Pattern B: Fallback check against structural product template layouts 
       if (!productImageUrl) {
-        productImageUrl = $('.featured-image').attr('src') || $('.product-gallery__image img').attr('src');
+        const fallbackImage = $('.featured-image').first().length ? $('.featured-image').first() :
+                              $('.product-gallery__image img').first();
+        if (fallbackImage.length) {
+          productImageUrl = fallbackImage.attr('data-src') || fallbackImage.attr('src');
+        }
       }
 
       productTitle = $('.product-single__title').first().text() || $('.product__title').first().text() || $('h1').first().text() || "External Link Product";

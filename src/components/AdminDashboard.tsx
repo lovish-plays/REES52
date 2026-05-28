@@ -105,6 +105,8 @@ export default function AdminDashboard({
   const [prodName, setProdName] = useState('');
   const [prodUrl, setProdUrl] = useState('');
   const [prodCat, setProdCat] = useState('');
+  const [prodImageUrl, setProdImageUrl] = useState('');
+  const [scraping, setScraping] = useState(false);
 
   // Ebooks
   const [ebkTitle, setEbkTitle] = useState('');
@@ -159,6 +161,28 @@ export default function AdminDashboard({
     }
   };
 
+  const handleLinkExtraction = async (urlInputValue: string) => {
+    if (!urlInputValue) return;
+    setScraping(true);
+    try {
+      const response = await fetch(`/api/scrape-preview?url=${encodeURIComponent(urlInputValue)}`);
+      const data = await response.json();
+      if (data.success && data.thumbnail) {
+        setProdImageUrl(data.thumbnail);
+        if (!prodName && data.title) {
+          setProdName(data.title);
+        }
+        showMsg("Product metadata fetched successfully!", "success");
+      } else if (data.thumbnail) {
+        setProdImageUrl(data.thumbnail);
+      }
+    } catch (err) {
+      console.error("Failed to automatically pull target metadata link:", err);
+    } finally {
+      setScraping(false);
+    }
+  };
+
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prodName || !prodUrl || !prodCat) {
@@ -169,7 +193,7 @@ export default function AdminDashboard({
     const res = await addProduct({
       name: prodName,
       external_purchase_url: prodUrl,
-      image_url: '',
+      image_url: prodImageUrl || '',
       category_id: prodCat
     });
     setLoading(false);
@@ -178,6 +202,7 @@ export default function AdminDashboard({
       setProdName('');
       setProdUrl('');
       setProdCat('');
+      setProdImageUrl('');
       showMsg('Product added successfully!', 'success');
       router.refresh();
     } else {
@@ -468,15 +493,43 @@ export default function AdminDashboard({
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Infinity Purchase URL</label>
-                  <input
-                    type="url"
-                    value={prodUrl}
-                    onChange={(e) => setProdUrl(e.target.value)}
-                    placeholder="https://rees52.com/..."
-                    className="w-full px-3 py-2 glass-input rounded-xl text-slate-800 text-xs"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={prodUrl}
+                      onChange={(e) => setProdUrl(e.target.value)}
+                      onBlur={() => handleLinkExtraction(prodUrl)}
+                      placeholder="https://rees52.com/..."
+                      className="flex-1 px-3 py-2 glass-input rounded-xl text-slate-800 text-xs"
+                      required
+                    />
+                    <button
+                      type="button"
+                      disabled={scraping}
+                      onClick={() => handleLinkExtraction(prodUrl)}
+                      className="px-4 py-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-slate-900 border border-cyan-500/30 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      {scraping ? "Fetching..." : "Fetch Image"}
+                    </button>
+                  </div>
                 </div>
+
+                {prodImageUrl && (
+                  <div className="p-3 bg-white/40 border border-slate-200/50 rounded-2xl flex items-center gap-4 animate-fade-in-up">
+                    <div className="relative w-16 h-12 bg-slate-100 border border-slate-200/60 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={prodImageUrl}
+                        alt="Scraped preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Scraped Thumbnail Image</span>
+                      <p className="text-[10px] text-slate-800 truncate font-semibold mt-0.5">{prodImageUrl}</p>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Category Bind</label>
                   <select

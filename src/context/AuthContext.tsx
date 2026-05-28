@@ -8,7 +8,6 @@ import {
   registerUser,
   loginUser,
   logoutUser,
-  createLocalSessionForSupabaseUser,
   enrollInVideoAction,
   purchaseEbookAction
 } from "@/app/actions/auth";
@@ -64,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .maybeSingle<ProfileRow>();
 
     if (error) {
-      // If RLS blocks profile reads, still allow session-based UI.
       console.error("Supabase profile read failed:", error.message);
     }
 
@@ -78,32 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
       "Learner";
 
-    try {
-      const syncRes = await createLocalSessionForSupabaseUser(email, finalName, role);
-      if (syncRes.success && syncRes.user) {
-        const enrolled = Array.from(new Set([
-          ...(data?.enrolled_videos ?? []),
-          ...(syncRes.user.enrolled_videos ?? [])
-        ]));
-        const purchased = Array.from(new Set([
-          ...(data?.purchased_ebooks ?? []),
-          ...(syncRes.user.purchased_ebooks ?? [])
-        ]));
-        
-        setUser({
-          id: authUserId,
-          email,
-          name: finalName,
-          role,
-          enrolled_videos: enrolled,
-          purchased_ebooks: purchased,
-        });
-        return;
-      }
-    } catch (err) {
-      console.error("Failed to sync local user database/cookies:", err);
-    }
-
+    // Supabase is the single source of truth — no local DB sync needed.
     setUser({
       id: authUserId,
       email,

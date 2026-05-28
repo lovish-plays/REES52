@@ -5,7 +5,11 @@ function decodeJwtPayload(token: string) {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
-    const payload = parts[1];
+    let payload = parts[1];
+    const pad = 4 - (payload.length % 4);
+    if (pad < 4) {
+      payload += '='.repeat(pad);
+    }
     const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
     return JSON.parse(decoded);
   } catch (e) {

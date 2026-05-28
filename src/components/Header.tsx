@@ -197,7 +197,7 @@ export default function Header() {
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               <Link
-                href="/?type=ebooks"
+                href="/my-stuff"
                 onClick={() => setDirectoryOpen(false)}
                 className={overlayLinkClass}
               >
@@ -217,7 +217,7 @@ export default function Header() {
               </Link>
 
               <Link
-                href="/?type=videos"
+                href="/my-learning"
                 onClick={() => setDirectoryOpen(false)}
                 className={overlayLinkClass}
               >

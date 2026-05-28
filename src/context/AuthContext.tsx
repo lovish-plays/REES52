@@ -1,0 +1,433 @@
+'use client';
+
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import type { Session } from "@supabase/supabase-js";
+
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  createLocalSessionForSupabaseUser,
+  enrollInVideoAction,
+  purchaseEbookAction
+} from "@/app/actions/auth";
+
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: "Student" | "Admin";
+  enrolled_videos: string[];
+  purchased_ebooks: string[];
+}
+
+interface AuthContextType {
+  user: AuthUser | null;
+  isLoading: boolean;
+  session: Session | null;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ success?: boolean; error?: string }>;
+  signUp: (
+    name: string,
+    email: string,
+    password: string
+  ) => Promise<{ success?: boolean; error?: string }>;
+  signOut: () => Promise<void>;
+  enrollInVideo: (videoId: string) => Promise<{ success?: boolean; error?: string }>;
+  purchaseEbook: (ebookId: string) => Promise<{ success?: boolean; error?: string }>;
+  refreshUser: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+type ProfileRow = {
+  id: string;
+  name: string | null;
+  role: string | null;
+  enrolled_videos: string[] | null;
+  purchased_ebooks: string[] | null;
+};
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+
+  const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id,name,role,enrolled_videos,purchased_ebooks")
+      .eq("id", authUserId)
+      .maybeSingle<ProfileRow>();
+
+    if (error) {
+      // If RLS blocks profile reads, still allow session-based UI.
+      console.error("Supabase profile read failed:", error.message);
+    }
+
+    const role = (data?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as
+      | "Admin"
+      | "Student";
+
+    const finalName =
+      data?.name?.trim() ||
+      fallbackName?.trim() ||
+      email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
+      "Learner";
+
+    try {
+      const syncRes = await createLocalSessionForSupabaseUser(email, finalName, role);
+      if (syncRes.success && syncRes.user) {
+        const enrolled = Array.from(new Set([
+          ...(data?.enrolled_videos ?? []),
+          ...(syncRes.user.enrolled_videos ?? [])
+        ]));
+        const purchased = Array.from(new Set([
+          ...(data?.purchased_ebooks ?? []),
+          ...(syncRes.user.purchased_ebooks ?? [])
+        ]));
+        
+        setUser({
+          id: authUserId,
+          email,
+          name: finalName,
+          role,
+          enrolled_videos: enrolled,
+          purchased_ebooks: purchased,
+        });
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to sync local user database/cookies:", err);
+    }
+
+    setUser({
+      id: authUserId,
+      email,
+      name: finalName,
+      role,
+      enrolled_videos: data?.enrolled_videos ?? [],
+      purchased_ebooks: data?.purchased_ebooks ?? [],
+    });
+  };
+
+  const refreshUser = async () => {
+    try {
+      setIsLoading(true);
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session ?? null);
+      const s = data.session;
+      if (!s?.user) {
+        setUser(null);
+        return;
+      }
+      await loadProfile(
+        s.user.id,
+        s.user.email ?? "",
+        (s.user.user_metadata?.name as string | undefined) ?? undefined
+      );
+    } catch (e) {
+      console.error('Error loading current user:', e);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    refreshUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      setSession(newSession);
+      if (!newSession?.user) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      await loadProfile(
+        newSession.user.id,
+        newSession.user.email ?? "",
+        (newSession.user.user_metadata?.name as string | undefined) ?? undefined
+      );
+      setIsLoading(false);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.warn("Supabase signIn failed, trying local fallback:", error.message);
+      try {
+        const localRes = await loginUser({ email, password });
+        if (localRes.success && localRes.user) {
+          setUser({
+            id: localRes.user.id,
+            email: localRes.user.email,
+            name: localRes.user.name,
+            role: localRes.user.role as "Student" | "Admin",
+            enrolled_videos: localRes.user.enrolled_videos ?? [],
+            purchased_ebooks: localRes.user.purchased_ebooks ?? [],
+          });
+          setIsLoading(false);
+          return { success: true };
+        } else {
+          setIsLoading(false);
+          return { error: localRes.error || error.message };
+        }
+      } catch (err) {
+        setIsLoading(false);
+        return { error: error.message };
+      }
+    }
+    setSession(data.session ?? null);
+    if (data.user) {
+      await loadProfile(data.user.id, data.user.email ?? "", (data.user.user_metadata?.name as string | undefined) ?? undefined);
+    }
+    setIsLoading(false);
+    return { success: true };
+  };
+
+  const signUp = async (name: string, email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+      },
+    });
+
+    let localUser: any = null;
+    try {
+      const localRes = await registerUser({ name, email, password });
+      if (localRes.success && localRes.user) {
+        localUser = localRes.user;
+      }
+    } catch (err) {
+      console.error("Local JSON registerUser failed:", err);
+    }
+
+    if (error) {
+      console.warn("Supabase signUp failed, trying local fallback signup:", error.message);
+      if (localUser) {
+        setUser({
+          id: localUser.id,
+          email: localUser.email,
+          name: localUser.name,
+          role: localUser.role as "Student" | "Admin",
+          enrolled_videos: localUser.enrolled_videos ?? [],
+          purchased_ebooks: localUser.purchased_ebooks ?? [],
+        });
+        setIsLoading(false);
+        return { success: true };
+      } else {
+        setIsLoading(false);
+        return { error: error.message };
+      }
+    }
+
+    // Create a matching profile row (best-effort; RLS must allow insert for anon signups).
+    if (data.user) {
+      try {
+        await supabase.from("profiles").upsert({
+          id: data.user.id,
+          name,
+          role: "Student",
+          enrolled_videos: [],
+          purchased_ebooks: [],
+        });
+      } catch (err) {
+        console.error("Supabase profiles write failed (can be skipped for dev/E2E):", err);
+      }
+      
+      // If email confirmation is required, login automatically via the local user state
+      if (!data.session && localUser) {
+        setUser({
+          id: localUser.id,
+          email: localUser.email,
+          name: localUser.name,
+          role: localUser.role as "Student" | "Admin",
+          enrolled_videos: localUser.enrolled_videos ?? [],
+          purchased_ebooks: localUser.purchased_ebooks ?? [],
+        });
+      } else {
+        await loadProfile(data.user.id, email, name);
+      }
+    }
+
+    if (data.session) {
+      setSession(data.session);
+    }
+    setIsLoading(false);
+    return { success: true };
+  };
+
+  const signOut = async () => {
+    setIsLoading(true);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Supabase signOut error:", err);
+    }
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error("Local signOut error:", err);
+    }
+    setUser(null);
+    setSession(null);
+    setIsLoading(false);
+  };
+
+  const enrollInVideo = async (videoId: string) => {
+    if (!user) return { error: "Not authenticated" };
+    const next = Array.from(new Set([...(user.enrolled_videos ?? []), videoId]));
+    
+    // 1. Try local database update first
+    let localSuccess = false;
+    try {
+      const res = await enrollInVideoAction(videoId);
+      if (res.success) {
+        localSuccess = true;
+      }
+    } catch (err) {
+      console.error("Local video enrollment fallback error:", err);
+    }
+
+    // 2. Try Supabase update
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ enrolled_videos: next })
+        .eq("id", user.id)
+        .select("id,name,role,enrolled_videos,purchased_ebooks")
+        .single<ProfileRow>();
+
+      if (!error && data) {
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                enrolled_videos: data.enrolled_videos ?? [],
+              }
+            : prev
+        );
+        return { success: true };
+      } else {
+        console.warn("Supabase profiles enroll error, using local fallback state:", error?.message);
+      }
+    } catch (err) {
+      console.warn("Supabase profiles enroll exception:", err);
+    }
+
+    // If Supabase failed but local succeeded, update user state with next array
+    if (localSuccess) {
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              enrolled_videos: next,
+            }
+          : prev
+      );
+      return { success: true };
+    }
+
+    return { error: "Failed to enroll in video" };
+  };
+
+  const purchaseEbook = async (ebookId: string) => {
+    if (!user) return { error: "Not authenticated" };
+    const next = Array.from(new Set([...(user.purchased_ebooks ?? []), ebookId]));
+
+    // 1. Try local database update first
+    let localSuccess = false;
+    try {
+      const res = await purchaseEbookAction(ebookId);
+      if (res.success) {
+        localSuccess = true;
+      }
+    } catch (err) {
+      console.error("Local ebook purchase fallback error:", err);
+    }
+
+    // 2. Try Supabase update
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ purchased_ebooks: next })
+        .eq("id", user.id)
+        .select("id,name,role,enrolled_videos,purchased_ebooks")
+        .single<ProfileRow>();
+
+      if (!error && data) {
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                purchased_ebooks: data.purchased_ebooks ?? [],
+              }
+            : prev
+        );
+        return { success: true };
+      } else {
+        console.warn("Supabase profiles purchase error, using local fallback state:", error?.message);
+      }
+    } catch (err) {
+      console.warn("Supabase profiles purchase exception:", err);
+    }
+
+    // If Supabase failed but local succeeded, update user state with next array
+    if (localSuccess) {
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              purchased_ebooks: next,
+            }
+          : prev
+      );
+      return { success: true };
+    }
+
+    return { error: "Failed to purchase ebook" };
+  };
+
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      session,
+      isLoading,
+      signIn,
+      signUp,
+      signOut,
+      enrollInVideo,
+      purchaseEbook,
+      refreshUser,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user, session, isLoading]
+  );
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

@@ -21,12 +21,8 @@ export default async function AdminPage() {
             SECURE ACCESS DENIED
           </h2>
           <p className="text-xs text-slate-600 leading-relaxed uppercase tracking-wider font-semibold">
-            This route is strictly restricted to administrator privileges. To test the CRUD engines, please log out and sign in using the mock admin credentials:
+            This route is strictly restricted to administrator privileges. Please sign in with an administrator account to access this area.
           </p>
-          <div className="w-full p-4 bg-white/40 border border-slate-200/50 backdrop-blur-sm rounded-xl text-left font-mono text-[11px] text-slate-700 space-y-1">
-            <p><span className="text-cyan-600 font-bold">Email:</span> admin@rees52.com</p>
-            <p><span className="text-cyan-600 font-bold">Password:</span> admin123</p>
-          </div>
           <Link
             href="/"
             className="mt-4 px-6 py-2.5 glass-btn-cyan font-bold uppercase text-[10px] tracking-widest rounded-xl w-full text-center"

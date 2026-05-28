@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   addCategory, deleteCategory,
   addProduct, deleteProduct,
@@ -9,7 +10,7 @@ import {
   addVideo, deleteVideo,
   addWebinar, deleteWebinar
 } from '@/app/actions/admin';
-import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, UploadCloud, Link as LinkIcon, ExternalLink, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink, UploadCloud, CheckCircle, X } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -88,16 +89,48 @@ export default function AdminDashboard({
   // Products
   const [prodName, setProdName] = useState('');
   const [prodUrl, setProdUrl] = useState('');
-  const [prodImg, setProdImg] = useState('');
+  const [prodImg, setProdImg] = useState('');       // final public URL
+  const [prodImgPreview, setProdImgPreview] = useState(''); // local blob preview
   const [prodCat, setProdCat] = useState('');
-  const [prodImgUploaded, setProdImgUploaded] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+
+  // Supabase Storage upload helper
+  const uploadProductImage = async (file: File) => {
+    setUploadingImg(true);
+    // Show instant local preview while uploading
+    const localPreview = URL.createObjectURL(file);
+    setProdImgPreview(localPreview);
+    setProdImg(''); // clear previous URL until upload finishes
+
+    const ext = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file, { upsert: false, contentType: file.type });
+
+    if (error) {
+      showMsg(`Upload failed: ${error.message}`, 'error');
+      setProdImgPreview('');
+      setUploadingImg(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(data.path);
+
+    setProdImg(urlData.publicUrl);
+    setUploadingImg(false);
+    showMsg('Image uploaded successfully!', 'success');
+  };
 
   // Ebooks
   const [ebkTitle, setEbkTitle] = useState('');
   const [ebkPdf, setEbkPdf] = useState('');
   const [ebkCat, setEbkCat] = useState('');
   const [ebkProd, setEbkProd] = useState('');
-  const [ebkPdfUploaded, setEbkPdfUploaded] = useState(false);
 
   // Videos
   const [vidTitle, setVidTitle] = useState('');
@@ -148,6 +181,10 @@ export default function AdminDashboard({
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploadingImg) {
+      showMsg('Please wait — image is still uploading…', 'error');
+      return;
+    }
     if (!prodName || !prodUrl || !prodImg || !prodCat) {
       showMsg('Please fill in all product fields', 'error');
       return;
@@ -165,8 +202,9 @@ export default function AdminDashboard({
       setProdName('');
       setProdUrl('');
       setProdImg('');
+      setProdImgPreview('');
       setProdCat('');
-      setProdImgUploaded(false);
+      if (imgInputRef.current) imgInputRef.current.value = '';
       showMsg('Product added successfully!', 'success');
       router.refresh();
     } else {
@@ -204,7 +242,6 @@ export default function AdminDashboard({
       setEbkPdf('');
       setEbkCat('');
       setEbkProd('');
-      setEbkPdfUploaded(false);
       showMsg('Ebook added successfully!', 'success');
       router.refresh();
     } else {
@@ -298,18 +335,6 @@ export default function AdminDashboard({
     }
   };
 
-  // --- Dropzone Simulation Helpers ---
-  const simulateProductImageUpload = () => {
-    setProdImg('https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60');
-    setProdImgUploaded(true);
-    showMsg('Simulated visual upload: image-kit.jpg mapped!', 'success');
-  };
-
-  const simulateEbookPdfUpload = () => {
-    setEbkPdf('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
-    setEbkPdfUploaded(true);
-    showMsg('Simulated visual upload: course_guidebook.pdf mapped!', 'success');
-  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-8 flex flex-col gap-6 text-slate-800">
@@ -449,36 +474,80 @@ export default function AdminDashboard({
                   </select>
                 </div>
                 
-                {/* Visual Image Upload Dropzone */}
+                {/* Image Upload */}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Product Image Asset</label>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Product Image</label>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={imgInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadProductImage(file);
+                    }}
+                  />
+
+                  {/* Dropzone / preview area */}
                   <div
-                    onClick={simulateProductImageUpload}
-                    className="border-2 border-dashed border-cyan-300 hover:border-cyan-500 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                    onClick={() => !uploadingImg && imgInputRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-xl transition-all overflow-hidden cursor-pointer
+                      ${
+                        prodImgPreview
+                          ? 'border-cyan-400 bg-transparent'
+                          : 'border-cyan-300 hover:border-cyan-500 bg-white/20 hover:bg-white/40'
+                      }`}
+                    style={{ minHeight: '9rem' }}
                   >
-                    {prodImgUploaded ? (
+                    {prodImgPreview ? (
+                      /* Image preview */
                       <>
-                        <CheckCircle className="w-6 h-6 text-cyan-600" />
-                        <span className="text-[9px] text-cyan-600 font-bold uppercase">Image asset loaded</span>
+                        <img
+                          src={prodImgPreview}
+                          alt="Preview"
+                          className="w-full h-36 object-cover"
+                        />
+                        {/* Overlay while uploading */}
+                        {uploadingImg && (
+                          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                            <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-[9px] text-cyan-300 uppercase font-bold">Uploading…</span>
+                          </div>
+                        )}
+                        {/* Ready badge */}
+                        {!uploadingImg && prodImg && (
+                          <div className="absolute top-2 right-2 bg-cyan-600 text-white rounded-full px-2 py-0.5 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            <span className="text-[8px] font-bold uppercase">Uploaded</span>
+                          </div>
+                        )}
+                        {/* Change button */}
+                        {!uploadingImg && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProdImg('');
+                              setProdImgPreview('');
+                              if (imgInputRef.current) imgInputRef.current.value = '';
+                            }}
+                            className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
                       </>
                     ) : (
-                      <>
-                        <UploadCloud className="w-6 h-6 text-slate-400" />
-                        <span className="text-[9px] text-slate-500 font-bold uppercase">Simulate Visual Dropzone</span>
-                        <span className="text-[8px] text-slate-400 uppercase">Click to upload mockup image</span>
-                      </>
+                      /* Empty state */
+                      <div className="flex flex-col items-center justify-center gap-2 p-6 h-36">
+                        <UploadCloud className="w-8 h-8 text-slate-400" />
+                        <span className="text-[9px] text-slate-500 font-bold uppercase">Click to upload image</span>
+                        <span className="text-[8px] text-slate-400">JPG, PNG, WEBP — max 5 MB</span>
+                      </div>
                     )}
                   </div>
-                  {prodImg && (
-                    <input
-                      type="text"
-                      value={prodImg}
-                      onChange={(e) => setProdImg(e.target.value)}
-                      className="w-full mt-2 px-3 py-1.5 glass-input rounded-lg text-slate-700 text-[10px]"
-                      placeholder="Image URL"
-                      readOnly
-                    />
-                  )}
                 </div>
 
                 <button
@@ -535,36 +604,17 @@ export default function AdminDashboard({
                   </select>
                 </div>
 
-                {/* PDF Upload Dropzone */}
+                {/* PDF URL input */}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">PDF File Attachment</label>
-                  <div
-                    onClick={simulateEbookPdfUpload}
-                    className="border-2 border-dashed border-cyan-300 hover:border-cyan-500 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
-                  >
-                    {ebkPdfUploaded ? (
-                      <>
-                        <CheckCircle className="w-6 h-6 text-cyan-600" />
-                        <span className="text-[9px] text-cyan-600 font-bold uppercase">PDF Document mapped</span>
-                      </>
-                    ) : (
-                      <>
-                        <UploadCloud className="w-6 h-6 text-slate-400" />
-                        <span className="text-[9px] text-slate-500 font-bold uppercase">Simulate PDF Dropzone</span>
-                        <span className="text-[8px] text-slate-400 uppercase">Click to attach mockup course guide</span>
-                      </>
-                    )}
-                  </div>
-                  {ebkPdf && (
-                    <input
-                      type="text"
-                      value={ebkPdf}
-                      onChange={(e) => setEbkPdf(e.target.value)}
-                      className="w-full mt-2 px-3 py-1.5 glass-input rounded-lg text-slate-700 text-[10px]"
-                      placeholder="PDF File URL"
-                      readOnly
-                    />
-                  )}
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">PDF File URL</label>
+                  <input
+                    type="url"
+                    value={ebkPdf}
+                    onChange={(e) => setEbkPdf(e.target.value)}
+                    placeholder="https://drive.google.com/... or https://yourcdn.com/guide.pdf"
+                    className="w-full px-3 py-2 glass-input rounded-xl text-slate-800 text-xs"
+                    required
+                  />
                 </div>
 
                 <button

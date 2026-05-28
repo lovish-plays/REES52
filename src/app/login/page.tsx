@@ -35,9 +35,9 @@ function LoginForm() {
   // If already logged in, redirect to home/target path
   useEffect(() => {
     if (user && !authLoading) {
-      router.push(redirectTo);
+      window.location.href = redirectTo;
     }
-  }, [user, authLoading, router, redirectTo]);
+  }, [user, authLoading, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ function LoginForm() {
           setSuccessMsg("Account Created Successfully!");
           setShowSuccess(true);
           setTimeout(() => {
-            router.push(redirectTo);
+            window.location.href = redirectTo;
           }, 1800);
         }
       } else if (mode === "signin") {
@@ -67,7 +67,7 @@ function LoginForm() {
           setSuccessMsg("Welcome Back!");
           setShowSuccess(true);
           setTimeout(() => {
-            router.push(redirectTo);
+            window.location.href = redirectTo;
           }, 500);
         }
       } else if (mode === "forgot") {

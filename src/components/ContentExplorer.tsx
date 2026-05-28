@@ -289,8 +289,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         </p>
       </div>
 
-      {/* Sticky filters */}
-      <div className="sticky top-20 z-30 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-xl shadow-sm">
+      {/* Search and filters bar */}
+      <div className="relative z-30 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-xl shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />

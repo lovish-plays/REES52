@@ -148,42 +148,67 @@ export async function logoutUser() {
 
 export async function getCurrentUser() {
   try {
-    // Use Supabase SSR client — reads session from HTTP-only cookies set by middleware
+    // 1. Try Supabase session first
     const supabase = await createClient();
-
-    // getUser() validates the JWT with Supabase Auth server (never trusts client-side cache)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return null;
+    if (user) {
+      // Fetch role explicitly from public.profiles where id = auth.uid()
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, name, role, enrolled_videos, purchased_ebooks')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Profile fetch failed:', profileError.message);
+      }
+
+      const role = profile?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
+      const name =
+        profile?.name?.trim() ||
+        (user.user_metadata?.name as string | undefined) ||
+        user.email?.split('@')[0] ||
+        'User';
+
+      return {
+        id: user.id,
+        name,
+        email: user.email ?? '',
+        role: role as 'Admin' | 'Student',
+        enrolled_videos: profile?.enrolled_videos ?? [],
+        purchased_ebooks: profile?.purchased_ebooks ?? [],
+      };
     }
 
-    // Fetch role explicitly from public.profiles where id = auth.uid()
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, name, role, enrolled_videos, purchased_ebooks')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error('Profile fetch failed:', profileError.message);
+    // 2. Fallback to local session cookie if Supabase auth doesn't have a session
+    const cookieStore = await cookies();
+    const localToken = cookieStore.get('session')?.value;
+    if (localToken) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const JWT_SECRET = process.env.JWT_SECRET || 'rees52-cyber-vault-key-987654';
+        const decoded = jwt.verify(localToken, JWT_SECRET) as any;
+        if (decoded && decoded.userId) {
+          const db = getDB();
+          const localUser = db.users.find(u => u.id === decoded.userId || u.email.toLowerCase() === decoded.email?.toLowerCase());
+          if (localUser) {
+            return {
+              id: localUser.id,
+              name: localUser.name,
+              email: localUser.email,
+              role: localUser.role as 'Admin' | 'Student',
+              enrolled_videos: localUser.enrolled_videos ?? [],
+              purchased_ebooks: localUser.purchased_ebooks ?? [],
+            };
+          }
+        }
+      } catch (jwtErr: any) {
+        console.warn("Local JWT verification failed or expired:", jwtErr.message);
+      }
     }
 
-    const role = profile?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
-    const name =
-      profile?.name?.trim() ||
-      (user.user_metadata?.name as string | undefined) ||
-      user.email?.split('@')[0] ||
-      'User';
-
-    return {
-      id: user.id,
-      name,
-      email: user.email ?? '',
-      role: role as 'Admin' | 'Student',
-      enrolled_videos: profile?.enrolled_videos ?? [],
-      purchased_ebooks: profile?.purchased_ebooks ?? [],
-    };
+    return null;
   } catch (error) {
     console.error('getCurrentUser failed:', error);
     return null;

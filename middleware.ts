@@ -1,6 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function decodeJwtPayload(token: string) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -34,8 +46,20 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session token
-  const { data: { user } } = await supabase.auth.getUser();
+  // 1. Refresh Supabase session token
+  const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+
+  // 2. Validate local fallback session token if present
+  let hasLocalSession = false;
+  const localSession = request.cookies.get("session")?.value;
+  if (localSession) {
+    const payload = decodeJwtPayload(localSession);
+    if (payload && payload.exp && payload.exp * 1000 > Date.now()) {
+      hasLocalSession = true;
+    }
+  }
+
+  const isAuthenticated = !!supabaseUser || hasLocalSession;
 
   const { pathname } = request.nextUrl;
 
@@ -46,7 +70,7 @@ export async function middleware(request: NextRequest) {
 
   const isLoginPage = pathname === "/login";
 
-  if (!user && !isLoginPage) {
+  if (!isAuthenticated && !isLoginPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     if (pathname !== "/") {
@@ -61,7 +85,7 @@ export async function middleware(request: NextRequest) {
     return redirectResponse;
   }
 
-  if (user && isLoginPage) {
+  if (isAuthenticated && isLoginPage) {
     const redirectTo = request.nextUrl.searchParams.get("redirect_to") || "/";
     const redirectUrl = new URL(redirectTo, request.url);
     

@@ -70,6 +70,21 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Network Telemetry states for speed-dependent robotic loading animation
+  const [networkStats, setNetworkStats] = useState<{
+    effectiveType: string;
+    downlink: number;
+    rtt: number;
+    status: "EXCELLENT" | "MODERATE" | "SLOW";
+  }>({
+    effectiveType: "4g",
+    downlink: 10,
+    rtt: 50,
+    status: "EXCELLENT",
+  });
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [networkLoading, setNetworkLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
@@ -140,6 +155,65 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       cancelled = true;
     };
   }, [tab]);
+
+  // Network connection status listener
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator) {
+      const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      if (conn) {
+        const updateConnectionStatus = () => {
+          const dl = conn.downlink || 10;
+          const rtt = conn.rtt || 50;
+          const eff = conn.effectiveType || "4g";
+          
+          let stat: "EXCELLENT" | "MODERATE" | "SLOW" = "EXCELLENT";
+          if (eff === "2g" || dl < 1.5) {
+            stat = "SLOW";
+          } else if (eff === "3g" || dl < 4) {
+            stat = "MODERATE";
+          }
+          
+          setNetworkStats({
+            effectiveType: eff,
+            downlink: dl,
+            rtt: rtt,
+            status: stat,
+          });
+        };
+        
+        updateConnectionStatus();
+        conn.addEventListener("change", updateConnectionStatus);
+        return () => conn.removeEventListener("change", updateConnectionStatus);
+      }
+    }
+  }, []);
+
+  // Telemetry loading progress timer based on estimated speed
+  useEffect(() => {
+    if (loading) {
+      setLoadingProgress(0);
+      setNetworkLoading(true);
+      
+      const speed = networkStats.status;
+      const step = speed === "EXCELLENT" ? 8 : speed === "MODERATE" ? 3.5 : 1.2;
+      const intervalMs = speed === "EXCELLENT" ? 70 : speed === "MODERATE" ? 110 : 200;
+
+      const timer = setInterval(() => {
+        setLoadingProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(timer);
+            setNetworkLoading(false);
+            return 100;
+          }
+          return Math.min(prev + step, 100);
+        });
+      }, intervalMs);
+
+      return () => clearInterval(timer);
+    } else {
+      setNetworkLoading(false);
+    }
+  }, [loading, networkStats.status]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -255,9 +329,90 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       </div>
 
       {/* Grid */}
-      {loading ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center text-slate-600 font-bold uppercase tracking-wider shadow-sm">
-          Loading latest content…
+      {networkLoading ? (
+        <div className="w-full max-w-xl mx-auto rounded-2xl border border-slate-250 bg-slate-900 text-cyan-400 p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden font-mono mt-8 border-cyan-500/25">
+          {/* Subtle horizontal scanline */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-cyan-500/3 to-transparent bg-[length:100%_4px]" />
+          
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-cyan-500 animate-ping"></span>
+              <span className="text-[10px] font-black tracking-widest uppercase">DOWNLINK SYSTEM ACTIVE</span>
+            </div>
+            <span className="text-[8px] bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30 font-bold">AELOS v4.2</span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            {/* SVG Interactive Rotating Loader Ring (Spin speed proportional to network connection speed) */}
+            <div className="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
+              <svg 
+                className="w-full h-full text-cyan-500 animate-spin" 
+                style={{ 
+                  animationDuration: 
+                    networkStats.status === "EXCELLENT" ? "1.8s" : 
+                    networkStats.status === "MODERATE" ? "4.5s" : "12s" 
+                }} 
+                viewBox="0 0 100 100"
+              >
+                <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="90 120" fill="none" />
+                <circle cx="50" cy="50" r="35" stroke="currentColor" strokeWidth="1.5" strokeDasharray="30 40" strokeLinecap="round" fill="none" className="opacity-60" />
+                <circle cx="50" cy="50" r="22" stroke="currentColor" strokeWidth="1" strokeDasharray="5 15" fill="none" className="opacity-40" />
+              </svg>
+              {/* Inner pulsing chip dot */}
+              <div className="absolute w-4.5 h-4.5 bg-cyan-600/30 border border-cyan-400 rounded-full flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping" />
+              </div>
+            </div>
+
+            {/* Readout logs */}
+            <div className="flex-1 space-y-2 text-[10px] text-cyan-300 w-full">
+              <div className="flex justify-between">
+                <span>PORTAL CONFIGURATION:</span>
+                <span className="font-bold text-white uppercase">ROBOTICS FEED</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-800 pt-1">
+                <span>ESTIMATED LATENCY:</span>
+                <span className="font-bold text-white">{networkStats.rtt} ms</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-800 pt-1">
+                <span>DOWNLINK CAP:</span>
+                <span className="font-bold text-white">{networkStats.downlink.toFixed(1)} Mbps</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-800 pt-1">
+                <span>LINK MODE:</span>
+                <span className={`font-black uppercase ${
+                  networkStats.status === "EXCELLENT" ? "text-cyan-400" :
+                  networkStats.status === "MODERATE" ? "text-amber-400" : "text-rose-500 animate-pulse"
+                }`}>
+                  {networkStats.effectiveType} ({networkStats.status})
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Telemetry Warning block for slow connections */}
+          {networkStats.status === "SLOW" && (
+            <div className="mt-4 p-2 bg-rose-950/40 border border-rose-500/20 text-rose-300 text-[8px] rounded uppercase font-bold tracking-wider leading-relaxed text-center animate-pulse">
+              [WARNING: HIGH COAXIAL LATENCY DETECTED - DEPLOYING LIGHTWEIGHT INTERFACE PROTOCOL]
+            </div>
+          )}
+
+          {/* Loading progress bar */}
+          <div className="mt-5 space-y-1.5">
+            <div className="flex justify-between text-[9px] uppercase tracking-wider font-extrabold text-cyan-400/80">
+              <span>BUFF_CORE_SCHEMAS_LOAD...</span>
+              <span>{Math.round(loadingProgress)}%</span>
+            </div>
+            
+            {/* Progress Track */}
+            <div className="w-full h-3.5 bg-slate-950 border border-cyan-500/20 rounded-lg p-0.5 overflow-hidden flex items-center">
+              <div 
+                className="h-full bg-gradient-to-r from-cyan-600 to-blue-600 rounded-sm shadow-[0_0_12px_rgba(6,182,212,0.6)] transition-all duration-300"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm">

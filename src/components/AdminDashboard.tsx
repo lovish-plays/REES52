@@ -90,49 +90,49 @@ export default function AdminDashboard({
   const [prodName, setProdName] = useState('');
   const [prodUrl, setProdUrl] = useState('');
   const [prodImg, setProdImg] = useState('');       // final public URL
-  const [prodImgPreview, setProdImgPreview] = useState(''); // local blob preview
   const [prodCat, setProdCat] = useState('');
   const [uploadingImg, setUploadingImg] = useState(false);
   const imgInputRef = useRef<HTMLInputElement>(null);
 
   // Supabase Storage upload helper
   const uploadProductImage = async (file: File) => {
-    setUploadingImg(true);
-    // Show instant local preview while uploading
-    const localPreview = URL.createObjectURL(file);
-    setProdImgPreview(localPreview);
-    setProdImg(''); // clear previous URL until upload finishes
-
     try {
-      const ext = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      setUploadingImg(true);
+      setProdImg(''); // clear previous URL until upload finishes
 
-      const { data, error } = await supabase.storage
+      // 1. Force a completely unique file name string
+      const fileExt = file.name.split('.').pop();
+      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+      // 2. FORCE the network call to upload the file binary data to Supabase
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(fileName, file, { upsert: false, contentType: file.type });
+        .upload(uniqueFileName, file, { upsert: false, contentType: file.type });
 
-      if (error) {
-        showMsg(`Upload failed: ${error.message}`, 'error');
-        setProdImgPreview('');
-        return;
+      if (uploadError) {
+        throw uploadError;
       }
 
-      if (!data) {
-        showMsg('Upload failed: No data returned from storage', 'error');
-        setProdImgPreview('');
-        return;
+      if (!uploadData) {
+        throw new Error("No upload response data returned from Supabase Storage.");
       }
 
+      // 3. Retrieve the actual public CDN absolute string URL from Supabase
       const { data: urlData } = supabase.storage
         .from('product-images')
-        .getPublicUrl(data.path);
+        .getPublicUrl(uniqueFileName);
 
+      if (!urlData || !urlData.publicUrl) {
+        throw new Error("Failed to generate a valid public CDN URL from Supabase Storage.");
+      }
+
+      // 4. Update the state with the REAL network URL string, NOT a local blob
       setProdImg(urlData.publicUrl);
       showMsg('Image uploaded successfully!', 'success');
-    } catch (err: any) {
-      console.error("Supabase storage upload exception:", err);
-      showMsg(`Upload failed: ${err.message || err}`, 'error');
-      setProdImgPreview('');
+
+    } catch (error: any) {
+      console.error("Critical Storage Error:", error);
+      showMsg(`Storage Error: ${error.message || error}`, 'error');
     } finally {
       setUploadingImg(false);
     }
@@ -214,7 +214,6 @@ export default function AdminDashboard({
       setProdName('');
       setProdUrl('');
       setProdImg('');
-      setProdImgPreview('');
       setProdCat('');
       if (imgInputRef.current) imgInputRef.current.value = '';
       showMsg('Product added successfully!', 'success');
@@ -505,51 +504,44 @@ export default function AdminDashboard({
                   {/* Dropzone / preview area */}
                   <div
                     onClick={() => !uploadingImg && imgInputRef.current?.click()}
-                    className={`relative border-2 border-dashed rounded-xl transition-all overflow-hidden cursor-pointer
+                    className={`relative border-2 border-dashed rounded-xl transition-all overflow-hidden cursor-pointer min-h-[9rem] flex flex-col items-center justify-center
                       ${
-                        prodImgPreview
+                        prodImg
                           ? 'border-cyan-400 bg-transparent'
                           : 'border-cyan-300 hover:border-cyan-500 bg-white/20 hover:bg-white/40'
                       }`}
-                    style={{ minHeight: '9rem' }}
                   >
-                    {prodImgPreview ? (
+                    {uploadingImg ? (
+                      /* Loading state */
+                      <div className="flex flex-col items-center justify-center gap-2 p-6 h-36">
+                        <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[9px] text-cyan-300 uppercase font-bold">Uploading…</span>
+                      </div>
+                    ) : prodImg ? (
                       /* Image preview */
                       <>
                         <img
-                          src={prodImgPreview}
+                          src={prodImg}
                           alt="Preview"
                           className="w-full h-36 object-cover"
                         />
-                        {/* Overlay while uploading */}
-                        {uploadingImg && (
-                          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
-                            <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-[9px] text-cyan-300 uppercase font-bold">Uploading…</span>
-                          </div>
-                        )}
                         {/* Ready badge */}
-                        {!uploadingImg && prodImg && (
-                          <div className="absolute top-2 right-2 bg-cyan-600 text-white rounded-full px-2 py-0.5 flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" />
-                            <span className="text-[8px] font-bold uppercase">Uploaded</span>
-                          </div>
-                        )}
+                        <div className="absolute top-2 right-2 bg-cyan-600 text-white rounded-full px-2 py-0.5 flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          <span className="text-[8px] font-bold uppercase">Uploaded</span>
+                        </div>
                         {/* Change button */}
-                        {!uploadingImg && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setProdImg('');
-                              setProdImgPreview('');
-                              if (imgInputRef.current) imgInputRef.current.value = '';
-                            }}
-                            className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProdImg('');
+                            if (imgInputRef.current) imgInputRef.current.value = '';
+                          }}
+                          className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </>
                     ) : (
                       /* Empty state */

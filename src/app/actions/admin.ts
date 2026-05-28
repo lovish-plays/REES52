@@ -54,11 +54,11 @@ export async function deleteCategory(id: string) {
 export async function addProduct(formData: {
   name: string;
   external_purchase_url: string;
-  image_url: string;
+  image_url?: string;
   category_id: string;
 }) {
-  const { name, external_purchase_url, image_url, category_id } = formData;
-  if (!name || !external_purchase_url || !image_url || !category_id)
+  const { name, external_purchase_url, image_url = '', category_id } = formData;
+  if (!name || !external_purchase_url || !category_id)
     return { error: 'Missing required fields' };
   try {
     const supabase = await getAdminClient();

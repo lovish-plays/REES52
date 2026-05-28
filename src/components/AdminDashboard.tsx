@@ -153,7 +153,7 @@ export default function AdminDashboard({
     const res = await addProduct({
       name: prodName,
       external_purchase_url: prodUrl,
-      image_url: 'https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60',
+      image_url: '',
       category_id: prodCat
     });
     setLoading(false);
@@ -684,7 +684,6 @@ export default function AdminDashboard({
               <table className="w-full text-left text-xs text-slate-700">
                 <thead>
                   <tr className="border-b border-slate-200/50 text-slate-500 uppercase tracking-wider text-[9px]">
-                    <th className="py-2">Visual</th>
                     <th className="py-2">Product Name</th>
                     <th className="py-2">Bound Category</th>
                     <th className="py-2 text-right">Action</th>
@@ -695,10 +694,6 @@ export default function AdminDashboard({
                     const cat = categories.find(c => c.id === p.category_id);
                     return (
                       <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <td className="py-2">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={p.image_url} alt="" className="w-10 h-7 object-cover rounded border border-slate-200" />
-                        </td>
                         <td className="py-2 font-bold text-slate-900 max-w-[150px] truncate">{p.name}</td>
                         <td className="py-2 text-slate-500">{cat?.name || 'Unbound'}</td>
                         <td className="py-2 text-right flex justify-end gap-1">

@@ -104,16 +104,6 @@ export default async function VideoDetailPage({ params }: PageProps) {
                 Infinity Companion Hardware Kit
               </h3>
 
-              {/* Product Visual Box */}
-              <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-
               <div>
                 <p className="text-slate-600 text-[10px] uppercase tracking-wider font-semibold">Product Model</p>
                 <h4 className="font-black text-sm text-slate-900 mt-0.5">{product.name}</h4>

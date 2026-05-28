@@ -578,12 +578,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                 <>
                   {mappedProduct ? (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={mappedProduct.image_url}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover blur-sm opacity-20"
-                      />
                       <div className="relative w-28 h-36 bg-white rounded shadow-xl border border-slate-250/80 overflow-hidden flex flex-col justify-between p-2.5 transform transition-transform duration-500 group-hover/media:scale-103 group-hover/media:rotate-1">
                         <div className="border-b border-cyan-100 pb-1.5">
                           <span className="text-[6px] font-black uppercase text-cyan-700 bg-cyan-50 px-1 py-0.5 rounded border border-cyan-200">
@@ -652,14 +646,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               {/* Companion Product Connection */}
               {mappedProduct && (
                 <div className="rounded-xl border border-cyan-500/20 bg-white/70 p-4 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
-                  <div className="w-full sm:w-20 aspect-video sm:aspect-square rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={mappedProduct.image_url}
-                      alt={mappedProduct.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
                   <div className="flex-1 text-center sm:text-left min-w-0">
                     <span className="text-[8px] font-black uppercase tracking-widest text-cyan-600 bg-cyan-100/50 px-2 py-0.5 rounded-full border border-cyan-200 w-fit inline-block">
                       Required Hardware

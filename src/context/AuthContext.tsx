@@ -135,16 +135,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   };
 
+  // Track whether signIn already initiated a profile load so the listener
+  // doesn't trigger a redundant second fetch for the same session.
+  const profileLoadingRef = React.useRef(false);
+
   useEffect(() => {
     refreshUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);
       if (!newSession?.user) {
         setUser(null);
         setIsLoading(false);
+        profileLoadingRef.current = false;
         return;
       }
+      // Skip if signIn() already kicked off a profile load for this session
+      if (profileLoadingRef.current) return;
       setIsLoading(true);
       await loadProfile(
         newSession.user.id,
@@ -187,11 +194,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: error.message };
       }
     }
+
+    // ── Fast path ───────────────────────────────────────────────────────────
+    // Set the session immediately so the UI can close the modal / redirect
+    // right away. Profile loading is handled asynchronously in the
+    // onAuthStateChange listener that fires after signInWithPassword resolves.
     setSession(data.session ?? null);
+
     if (data.user) {
-      await loadProfile(data.user.id, data.user.email ?? "", (data.user.user_metadata?.name as string | undefined) ?? undefined);
+      // Signal to the listener that we are already loading the profile
+      profileLoadingRef.current = true;
+      // Load profile in the background — do NOT await here
+      loadProfile(
+        data.user.id,
+        data.user.email ?? "",
+        (data.user.user_metadata?.name as string | undefined) ?? undefined
+      ).finally(() => {
+        profileLoadingRef.current = false;
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+
     return { success: true };
   };
 

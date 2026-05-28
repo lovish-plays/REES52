@@ -80,7 +80,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setShowSuccess(true);
           setTimeout(() => {
             onClose();
-          }, 1800);
+          }, 300);
         }
       } else if (mode === "forgot") {
         const res = await sendPasswordResetOtpAction(email.trim());

@@ -465,7 +465,20 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     </span>
                   </div>
 
-                  <h3 className="mt-4 text-sm font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug">
+                  {it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) && (
+                    <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
+                        alt={it.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                      />
+                    </div>
+                  )}
+
+                  <h3 className={`text-sm font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug ${
+                    it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) ? 'mt-3' : 'mt-4'
+                  }`}>
                     {it.title}
                   </h3>
 

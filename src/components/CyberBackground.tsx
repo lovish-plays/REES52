@@ -13,9 +13,9 @@ export default function CyberBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none select-none z-[-1] overflow-hidden bg-[#F7F4EB]">
-      {/* Subtle background grids and coordinates */}
+      {/* Dynamic Digital Dot Grid */}
       <div 
-        className="absolute inset-0 opacity-[0.03]" 
+        className="absolute inset-0 opacity-[0.05]" 
         style={{
           backgroundImage: `
             radial-gradient(circle at 10% 10%, #0891B2 2px, transparent 2px),
@@ -27,78 +27,112 @@ export default function CyberBackground() {
         }}
       />
 
-      {/* Top Left Circuit Board Patch */}
-      <svg className="absolute -left-12 -top-12 w-96 h-96 opacity-[0.045] text-cyan-600 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 400 400" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M 50 100 L 150 100 L 200 150 L 200 250 L 250 300 H 350" />
-        <path d="M 100 50 L 100 150 L 130 180 V 280 L 160 310" />
-        <path d="M 50 200 L 120 200 L 150 230 H 220 L 270 280 V 380" strokeDasharray="4,4" />
-        
-        {/* Connection points / Nodes */}
-        <circle cx="150" cy="100" r="4" fill="currentColor" />
-        <circle cx="200" cy="150" r="4" fill="currentColor" />
-        <circle cx="250" cy="300" r="4" fill="currentColor" />
-        <circle cx="130" cy="180" r="3" fill="currentColor" />
-        <circle cx="220" cy="230" r="3" fill="currentColor" />
-        
-        {/* Coordinate Text */}
-        <text x="60" y="90" fontSize="8" fontFamily="monospace" fontWeight="bold" className="fill-current">SYS.AELOS_LOC.01A</text>
-        <text x="260" y="295" fontSize="8" fontFamily="monospace" fontWeight="bold" className="fill-current">BUS_TYPE:IC2</text>
-      </svg>
-
-      {/* Top Right Tech Radar Widget */}
-      <div className="absolute right-8 top-28 w-44 h-44 opacity-[0.035] flex items-center justify-center">
-        <svg className="w-full h-full text-cyan-700 animate-spin" style={{ animationDuration: '40s' }} viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1">
-          <circle cx="100" cy="100" r="90" />
-          <circle cx="100" cy="100" r="60" strokeDasharray="3,6" />
-          <circle cx="100" cy="100" r="30" />
-          <line x1="100" y1="10" x2="100" y2="190" />
-          <line x1="10" y1="100" x2="190" y2="100" />
-          <path d="M 100 100 L 164 36" strokeWidth="1.5" />
-          {/* Faint degree marks */}
-          <text x="105" y="20" fontSize="6" fontFamily="monospace" className="fill-current">000°</text>
-          <text x="175" y="105" fontSize="6" fontFamily="monospace" className="fill-current">090°</text>
-          <text x="105" y="188" fontSize="6" fontFamily="monospace" className="fill-current">180°</text>
+      {/* ================= HEADER BINDING GRAPHICS (Top Horizontal Tech Band) ================= */}
+      <div className="absolute top-[80px] left-0 right-0 h-10 opacity-[0.10] text-cyan-600 border-b border-dashed border-cyan-400 flex items-center justify-between px-12">
+        <svg className="w-48 h-full" viewBox="0 0 200 40" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M 0 20 H 100 L 120 40" />
+          <path d="M 40 10 H 120 L 130 20" strokeDasharray="3,3" />
+          <circle cx="100" cy="20" r="3" fill="currentColor" />
+          <circle cx="120" cy="40" r="3" fill="currentColor" />
+        </svg>
+        <span className="font-mono text-[7px] tracking-widest text-cyan-700 font-extrabold uppercase">AELOS_HEADER_CONN.ACTIVE</span>
+        <svg className="w-48 h-full" viewBox="0 0 200 40" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M 200 20 H 100 L 80 40" />
+          <path d="M 160 10 H 80 L 70 20" strokeDasharray="3,3" />
+          <circle cx="100" cy="20" r="3" fill="currentColor" />
+          <circle cx="80" cy="40" r="3" fill="currentColor" />
         </svg>
       </div>
 
-      {/* Bottom Right Circuit board connection */}
-      <svg className="absolute -right-20 -bottom-20 w-[450px] h-[450px] opacity-[0.045] text-blue-600" viewBox="0 0 500 500" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M 450 400 L 350 400 L 300 350 L 300 250 L 250 200 H 100" />
-        <path d="M 400 450 L 400 350 L 370 320 V 220 L 320 170 H 150" strokeDasharray="6,4" />
-        <path d="M 450 250 L 380 250 L 350 220 H 280 L 230 170 V 50" />
+      {/* ================= CARDS BACKING GRAPHICS (Mid-Screen Tech Node Canvas) ================= */}
+      
+      {/* Left Central Column Circuit */}
+      <svg className="absolute left-[8%] top-[25%] w-96 h-[500px] opacity-[0.09] text-cyan-600" viewBox="0 0 300 500" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M 50 50 V 200 L 120 270 H 220 L 250 300 V 450" />
+        <path d="M 100 80 V 180 L 140 220 H 180" strokeDasharray="4,4" />
+        <path d="M 20 150 H 110 L 160 200 V 380 L 190 410 H 280" />
         
         {/* Nodes */}
-        <circle cx="350" cy="400" r="4" fill="currentColor" />
-        <circle cx="300" cy="350" r="4" fill="currentColor" />
-        <circle cx="250" cy="200" r="4" fill="currentColor" />
-        <circle cx="370" cy="320" r="3" fill="currentColor" />
-        <circle cx="280" cy="220" r="3" fill="currentColor" />
+        <circle cx="50" cy="50" r="4" fill="currentColor" />
+        <circle cx="120" cy="270" r="3.5" fill="currentColor" />
+        <circle cx="250" cy="300" r="4" fill="currentColor" />
+        <circle cx="160" cy="200" r="3" fill="currentColor" />
+        <circle cx="190" cy="410" r="3" fill="currentColor" />
         
-        {/* Microchip Representation */}
-        <rect x="75" y="185" width="30" height="30" rx="3" fill="none" stroke="currentColor" strokeWidth="2" />
-        <line x1="90" y1="180" x2="90" y2="185" />
-        <line x1="100" y1="180" x2="100" y2="185" />
-        <line x1="90" y1="215" x2="90" y2="220" />
-        <line x1="100" y1="215" x2="100" y2="220" />
-        <line x1="70" y1="195" x2="75" y2="195" />
-        <line x1="70" y1="205" x2="75" y2="205" />
-        <line x1="105" y1="195" x2="110" y2="195" />
-        <line x1="105" y1="205" x2="110" y2="205" />
-
-        <text x="65" y="175" fontSize="8" fontFamily="monospace" fontWeight="bold" className="fill-current">AELOS_MEGA_328P</text>
+        {/* Chips */}
+        <rect x="15" y="140" width="20" height="20" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        
+        <text x="60" y="70" fontSize="7" fontFamily="monospace" className="fill-current font-black">SYS.PORTAL_FEED_A</text>
+        <text x="175" y="215" fontSize="6" fontFamily="monospace" className="fill-current">BUS:UART</text>
       </svg>
 
-      {/* Floating telemetry lines / Faint coordinate labels on margins */}
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-12 font-mono text-[7px] text-slate-500 opacity-20 uppercase tracking-widest leading-none">
-        <div>LAT: 28.6139° N</div>
-        <div>LNG: 77.2090° E</div>
-        <div>SYS: CONNECTED</div>
+      {/* Right Central Column Circuit */}
+      <svg className="absolute right-[8%] top-[22%] w-96 h-[550px] opacity-[0.09] text-blue-600" viewBox="0 0 300 550" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M 250 50 V 220 L 180 290 H 80 L 50 320 V 480" />
+        <path d="M 200 100 V 200 L 160 240 H 120" strokeDasharray="4,4" />
+        <path d="M 280 180 H 190 L 140 230 V 410 L 110 440 H 20" />
+        
+        {/* Nodes */}
+        <circle cx="250" cy="50" r="4" fill="currentColor" />
+        <circle cx="180" cy="290" r="3.5" fill="currentColor" />
+        <circle cx="50" cy="320" r="4" fill="currentColor" />
+        <circle cx="140" cy="230" r="3" fill="currentColor" />
+        <circle cx="110" cy="440" r="3" fill="currentColor" />
+        
+        {/* Chips */}
+        <rect x="265" y="170" width="20" height="20" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        
+        <text x="140" y="90" fontSize="7" fontFamily="monospace" className="fill-current font-black">SYS.PORTAL_FEED_B</text>
+        <text x="60" y="430" fontSize="6" fontFamily="monospace" className="fill-current">BAUD:115200</text>
+      </svg>
+
+      {/* Center Background Tech Gear (Pulsing underneath center page cards) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-[0.065] flex items-center justify-center">
+        <svg className="w-full h-full text-cyan-600 animate-spin" style={{ animationDuration: '60s' }} viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.8">
+          <circle cx="100" cy="100" r="95" />
+          <circle cx="100" cy="100" r="85" strokeDasharray="6,8" />
+          <circle cx="100" cy="100" r="60" />
+          <circle cx="100" cy="100" r="50" strokeDasharray="2,4" />
+          <path d="M 100 5 L 100 195" />
+          <path d="M 5 100 L 195 100" />
+          
+          {/* Concentric Coordinate accents */}
+          <path d="M 100 40 A 60 60 0 0 1 160 100" strokeWidth="1.5" />
+          <path d="M 100 160 A 60 60 0 0 1 40 100" strokeWidth="1.5" />
+          
+          <text x="105" y="15" fontSize="5" fontFamily="monospace" className="fill-current font-bold">AZIMUTH.00</text>
+          <text x="155" y="95" fontSize="5" fontFamily="monospace" className="fill-current font-bold">ELEVATION.90</text>
+        </svg>
       </div>
 
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-12 font-mono text-[7px] text-slate-500 opacity-20 uppercase tracking-widest leading-none text-right">
-        <div>PWA: V4.0.2</div>
-        <div>ENR: OPTIMIZED</div>
+      {/* ================= FOOTER BINDING GRAPHICS (Bottom Horizontal Tech Band) ================= */}
+      <div className="absolute bottom-[240px] left-0 right-0 h-12 opacity-[0.10] text-blue-600 border-t border-dashed border-blue-400 flex items-center justify-between px-12">
+        <svg className="w-48 h-full" viewBox="0 0 200 48" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M 0 28 H 80 L 100 8 V 0" />
+          <path d="M 30 38 H 90 L 110 18" strokeDasharray="4,4" />
+          <circle cx="80" cy="28" r="3" fill="currentColor" />
+          <circle cx="100" cy="8" r="3" fill="currentColor" />
+        </svg>
+        <span className="font-mono text-[7px] tracking-widest text-blue-750 font-extrabold uppercase">AELOS_FOOTER_SHIELD.STABLE</span>
+        <svg className="w-48 h-full" viewBox="0 0 200 48" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M 200 28 H 120 L 100 8 V 0" />
+          <path d="M 170 38 H 110 L 90 18" strokeDasharray="4,4" />
+          <circle cx="120" cy="28" r="3" fill="currentColor" />
+          <circle cx="100" cy="8" r="3" fill="currentColor" />
+        </svg>
+      </div>
+
+      {/* Faint coordinates along margins */}
+      <div className="absolute left-6 top-[40%] -translate-y-1/2 flex flex-col gap-16 font-mono text-[7px] text-slate-600 opacity-30 uppercase tracking-widest leading-none">
+        <div>SYS: ONLINE</div>
+        <div>IP: 192.168.1.52</div>
         <div>BAUD: 115200</div>
+      </div>
+
+      <div className="absolute right-6 top-[40%] -translate-y-1/2 flex flex-col gap-16 font-mono text-[7px] text-slate-600 opacity-30 uppercase tracking-widest leading-none text-right">
+        <div>CORE: V4.2.0</div>
+        <div>LINK: EXCELLENT</div>
+        <div>D-LINK: ACTIVE</div>
       </div>
     </div>
   );

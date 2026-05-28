@@ -12,6 +12,8 @@ import {
   Shield,
   Video,
   X,
+  Bell,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import AuthModal from "@/components/AuthModal";
@@ -25,6 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/lib/supabaseClient";
+import { getNotifications } from "@/app/actions/content";
 
 const TAGLINES = [
   "52 Weeks of Innovation. A New Breakthrough Every Week.",
@@ -49,10 +53,62 @@ export default function Header() {
   const [directoryOpen, setDirectoryOpen] = useState(false);
   const [tagline, setTagline] = useState("");
 
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Real-time animation popup toast
+  const [realtimePopup, setRealtimePopup] = useState<any | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   useEffect(() => {
     const idx = Math.floor(Math.random() * TAGLINES.length);
     setTagline(TAGLINES[idx]);
   }, []);
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const list = await getNotifications();
+        setNotifications(list);
+      } catch (err) {
+        console.error("Failed to load notifications:", err);
+      }
+    }
+    
+    if (user) {
+      loadNotifications();
+    }
+
+    const channel = supabase
+      .channel('realtime-notifications')
+      .on('broadcast', { event: 'new-notification' }, (payload: any) => {
+        const newNotif = {
+          id: payload.payload.id || Date.now().toString(),
+          message: payload.payload.message,
+          link: payload.payload.link || '',
+          created_at: payload.payload.created_at || new Date().toISOString()
+        };
+
+        setNotifications(prev => [newNotif, ...prev]);
+        setHasUnread(true);
+
+        // Trigger popup out of bell icon
+        setRealtimePopup(newNotif);
+        setIsAnimating(true);
+
+        setTimeout(() => {
+          setIsAnimating(false);
+          setTimeout(() => setRealtimePopup(null), 300);
+        }, 5000);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const onLogout = async () => {
     await signOut();
@@ -95,6 +151,127 @@ export default function Header() {
               )
             ) : (
               <>
+                {/* Notification Bell Panel */}
+                <div className="relative">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => {
+                      setNotifOpen(!notifOpen);
+                      setHasUnread(false);
+                    }}
+                    className={`border border-slate-200/80 bg-white/70 hover:bg-white text-slate-800 relative transition-transform duration-200 hover:scale-105 ${
+                      hasUnread ? 'border-cyan-400' : ''
+                    }`}
+                    aria-label="Notifications"
+                  >
+                    <Bell className={`h-4 w-4 text-slate-700 ${hasUnread ? 'animate-bounce text-cyan-600' : ''}`} />
+                    {hasUnread && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                      </span>
+                    )}
+                  </Button>
+
+                  {/* Realtime Announcement Popout speech bubble out of bell icon */}
+                  {realtimePopup && (
+                    <div className={`absolute right-0 top-12 z-50 w-72 bg-gradient-to-br from-cyan-600 to-blue-600 text-white p-4 rounded-2xl shadow-2xl border border-cyan-400/30 flex items-start gap-3 transition-all duration-300 ${
+                      isAnimating ? 'animate-fade-in-up' : 'opacity-0 scale-95 translate-y-2'
+                    }`}>
+                      <Bell className="h-4 w-4 mt-0.5 animate-bounce flex-shrink-0" />
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-[9px] uppercase font-black tracking-widest text-cyan-200">
+                          NEW ANNOUNCEMENT
+                        </p>
+                        <p className="text-[11px] font-bold line-clamp-3 leading-snug mt-0.5">
+                          {realtimePopup.message}
+                        </p>
+                        {realtimePopup.link && (
+                          <a
+                            href={realtimePopup.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white mt-1.5 underline hover:text-cyan-200"
+                          >
+                            <span>Open Link</span>
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notification List Dropdown Panel */}
+                  {notifOpen && (
+                    <div className="absolute right-0 top-12 z-50 w-80 max-h-96 overflow-y-auto glassmorphism p-4 rounded-2xl border border-slate-200/80 shadow-2xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+                          Notifications ({notifications.length})
+                        </h4>
+                        <button
+                          onClick={() => setNotifications([])}
+                          className="text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700 cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col gap-2 overflow-y-auto max-h-72">
+                        {notifications.map((n) => {
+                          const isExpanded = expandedId === n.id;
+                          return (
+                            <div
+                              key={n.id}
+                              onClick={() => setExpandedId(isExpanded ? null : n.id)}
+                              className="group p-2.5 rounded-xl border border-slate-100 bg-white/50 hover:bg-white hover:border-cyan-200 transition-all cursor-pointer text-left"
+                            >
+                              <p className={`text-xs text-slate-800 font-semibold leading-relaxed ${
+                                isExpanded ? '' : 'line-clamp-2'
+                              }`}>
+                                {n.message}
+                              </p>
+                              
+                              {isExpanded && n.link && (
+                                <a
+                                  href={n.link}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-2 w-fit px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-lg flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-cyan-800 hover:bg-cyan-100/80 hover:text-cyan-900 transition-colors"
+                                >
+                                  <span>Visit Link</span>
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+
+                              <div className="mt-2 flex items-center justify-between text-[8px] text-slate-500 font-extrabold uppercase tracking-wider">
+                                <span>
+                                  {new Date(n.created_at).toLocaleDateString(undefined, {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                                <span className="text-cyan-600 group-hover:underline">
+                                  {isExpanded ? 'Show Less' : 'Read More'}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {notifications.length === 0 && (
+                          <div className="py-8 text-center text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                            No notifications yet
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Avatar dropdown (My Learning / My Stuff / Admin / Sign out) */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

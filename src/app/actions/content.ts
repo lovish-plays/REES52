@@ -235,3 +235,18 @@ export async function getUnifiedFeed() {
 
   return { feed, categories, products };
 }
+
+export async function getNotifications() {
+  try {
+    const supabase = await db();
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id,message,link,created_at')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  } catch (e) {
+    console.error('getNotifications:', e);
+    return [];
+  }
+}

@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   addCategory, deleteCategory,
   addProduct, deleteProduct,
   addEbook, deleteEbook,
   addVideo, deleteVideo,
-  addWebinar, deleteWebinar
+  addWebinar, deleteWebinar,
+  addNotification, deleteNotification
 } from '@/app/actions/admin';
-import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { getNotifications } from '@/app/actions/content';
+import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink, Bell } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -68,7 +71,7 @@ export default function AdminDashboard({
   webinars: initialWebinars
 }: AdminDashboardProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'categories' | 'products' | 'ebooks' | 'videos' | 'webinars'>('categories');
+  const [activeTab, setActiveTab] = useState<'categories' | 'products' | 'ebooks' | 'videos' | 'webinars' | 'notifications'>('categories');
 
   // Local state for lists to render CRUD changes instantly
   const [categories, setCategories] = useState<Category[]>(initialCategories);
@@ -76,6 +79,19 @@ export default function AdminDashboard({
   const [ebooks, setEbooks] = useState<Ebook[]>(initialEbooks);
   const [videos, setVideos] = useState<Video[]>(initialVideos);
   const [webinars, setWebinars] = useState<Webinar[]>(initialWebinars);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  // Notifications Form States
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifLink, setNotifLink] = useState('');
+
+  useEffect(() => {
+    async function loadNotifications() {
+      const list = await getNotifications();
+      setNotifications(list);
+    }
+    loadNotifications();
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -292,6 +308,50 @@ export default function AdminDashboard({
     }
   };
 
+  const handleAddNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifMessage) return;
+    setLoading(true);
+    const res = await addNotification(notifMessage, notifLink);
+    setLoading(false);
+    if (res.success && res.notification) {
+      setNotifications(prev => [res.notification, ...prev]);
+      
+      // Trigger real-time broadcast
+      try {
+        await supabase.channel('realtime-notifications').send({
+          type: 'broadcast',
+          event: 'new-notification',
+          payload: {
+            id: res.notification.id,
+            message: notifMessage,
+            link: notifLink || '',
+            created_at: res.notification.created_at
+          }
+        });
+      } catch (err) {
+        console.error("Realtime broadcast failed:", err);
+      }
+
+      setNotifMessage('');
+      setNotifLink('');
+      showMsg('Notification posted successfully!', 'success');
+    } else {
+      showMsg(res.error || 'Failed to post notification. Make sure you ran the Supabase schema script to create the notifications table.', 'error');
+    }
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this notification?')) return;
+    const res = await deleteNotification(id);
+    if (res.success) {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      showMsg('Notification deleted.', 'success');
+    } else {
+      showMsg(res.error || 'Failed to delete notification', 'error');
+    }
+  };
+
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-8 flex flex-col gap-6 text-slate-800">
@@ -324,7 +384,8 @@ export default function AdminDashboard({
           { id: 'products', label: 'Products (Kits)', icon: Cpu },
           { id: 'ebooks', label: 'Ebooks (PDFs)', icon: BookOpen },
           { id: 'videos', label: 'Videos (YouTube)', icon: Video },
-          { id: 'webinars', label: 'Live Webinars', icon: Radio }
+          { id: 'webinars', label: 'Live Webinars', icon: Radio },
+          { id: 'notifications', label: 'Notifications', icon: Bell }
         ].map((tab) => {
           const Icon = tab.icon;
           return (
@@ -640,6 +701,40 @@ export default function AdminDashboard({
               </form>
             )}
 
+            {/* Notification Form */}
+            {activeTab === 'notifications' && (
+              <form onSubmit={handleAddNotification} className="space-y-4">
+                <h3 className="text-xs uppercase tracking-widest text-cyan-600 font-bold mb-4">Post Broadcast Notification</h3>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Notification Message</label>
+                  <textarea
+                    value={notifMessage}
+                    onChange={(e) => setNotifMessage(e.target.value)}
+                    placeholder="E.g., New Arduino video lecture has been released! Check it out."
+                    className="w-full px-3 py-2 glass-input rounded-xl text-slate-800 text-xs h-24 resize-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Redirect Link (Optional)</label>
+                  <input
+                    type="url"
+                    value={notifLink}
+                    onChange={(e) => setNotifLink(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 glass-input rounded-xl text-slate-800 text-xs"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 glass-btn-cyan font-bold uppercase text-[10px] tracking-widest rounded-xl cursor-pointer"
+                >
+                  Post & Broadcast
+                </button>
+              </form>
+            )}
+
           </div>
         </div>
 
@@ -811,6 +906,59 @@ export default function AdminDashboard({
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            )}
+
+            {/* Notifications Table */}
+            {activeTab === 'notifications' && (
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead>
+                  <tr className="border-b border-slate-200/50 text-slate-500 uppercase tracking-wider text-[9px]">
+                    <th className="py-2">Message</th>
+                    <th className="py-2">Redirect Link</th>
+                    <th className="py-2">Posted At</th>
+                    <th className="py-2 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notifications.map((n) => (
+                    <tr key={n.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 font-semibold text-slate-900 max-w-[200px] truncate">{n.message}</td>
+                      <td className="py-3 font-mono text-[10px] text-cyan-600 max-w-[150px] truncate">
+                        {n.link ? (
+                          <a href={n.link} target="_blank" rel="noreferrer" className="underline hover:text-cyan-800">
+                            {n.link}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">None</span>
+                        )}
+                      </td>
+                      <td className="py-3 text-slate-500 text-[10px]">
+                        {new Date(n.created_at).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                      <td className="py-3 text-right">
+                        <button
+                          onClick={() => handleDeleteNotification(n.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {notifications.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-6 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                        No notifications posted yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             )}

@@ -39,6 +39,14 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- Create notifications table
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message TEXT NOT NULL,
+    link TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- =========================================================================
 -- 2. SETUP ROW LEVEL SECURITY (RLS) POLICIES
 -- =========================================================================
@@ -50,6 +58,7 @@ ALTER TABLE public.ebooks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webinars ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies to avoid conflicts
 DROP POLICY IF EXISTS "Allow public read categories" ON public.categories;
@@ -65,6 +74,8 @@ DROP POLICY IF EXISTS "Allow public write webinars" ON public.webinars;
 DROP POLICY IF EXISTS "Allow public read profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Allow individual update profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Allow individual insert profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Allow public read notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Allow public write notifications" ON public.notifications;
 
 -- Create Policies (Allow Public Read)
 CREATE POLICY "Allow public read categories" ON public.categories FOR SELECT USING (true);
@@ -73,6 +84,7 @@ CREATE POLICY "Allow public read ebooks" ON public.ebooks FOR SELECT USING (true
 CREATE POLICY "Allow public read videos" ON public.videos FOR SELECT USING (true);
 CREATE POLICY "Allow public read webinars" ON public.webinars FOR SELECT USING (true);
 CREATE POLICY "Allow public read profiles" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Allow public read notifications" ON public.notifications FOR SELECT USING (true);
 
 -- Create Policies (Allow Public/Admin Writes for Dev/Admin Console access via anon key)
 CREATE POLICY "Allow public write categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
@@ -80,6 +92,7 @@ CREATE POLICY "Allow public write products" ON public.products FOR ALL USING (tr
 CREATE POLICY "Allow public write ebooks" ON public.ebooks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public write videos" ON public.videos FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public write webinars" ON public.webinars FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public write notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
 
 -- Create Policies for Profiles (Allow user CRUD)
 CREATE POLICY "Allow individual insert profiles" ON public.profiles FOR INSERT WITH CHECK (true);

@@ -255,3 +255,34 @@ export async function deleteWebinar(id: string) {
     return { error: e.message };
   }
 }
+
+export async function addNotification(message: string, link?: string) {
+  if (!message) return { error: 'Message is required' };
+  try {
+    const supabase = await getAdminClient();
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert({
+        message,
+        link: link || null,
+      })
+      .select('id,message,link,created_at')
+      .single();
+
+    if (error) return { error: error.message };
+    return { success: true, notification: data };
+  } catch (e: any) {
+    return { error: e.message };
+  }
+}
+
+export async function deleteNotification(id: string) {
+  try {
+    const supabase = await getAdminClient();
+    const { error } = await supabase.from('notifications').delete().eq('id', id);
+    if (error) return { error: error.message };
+    return { success: true };
+  } catch (e: any) {
+    return { error: e.message };
+  }
+}

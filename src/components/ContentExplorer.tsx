@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import AuthModal from "@/components/AuthModal";
 import { getUnifiedFeed } from "@/app/actions/content";
 
-type Tab = "all" | "ebooks" | "videos" | "live";
+type Tab = "all" | "ebooks" | "videos" | "live" | "products";
 
 type Category = {
   id: string;
@@ -92,6 +92,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
 
   // Popup Modal states
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
 
   // Toast state
@@ -119,7 +120,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const t = params.get("type");
-      if (t && ["all", "ebooks", "videos", "live"].includes(t)) {
+      if (t && ["all", "ebooks", "videos", "live", "products"].includes(t)) {
         setTab(t as Tab);
       }
     }
@@ -217,9 +218,9 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     }
   }, [loading, networkStats.status]);
 
-  // Toggle header visibility when a content card is opened
+  // Toggle header visibility when a content card or product card is opened
   useEffect(() => {
-    if (selectedItem) {
+    if (selectedItem || selectedProduct) {
       document.body.classList.add("header-hidden");
     } else {
       document.body.classList.remove("header-hidden");
@@ -227,7 +228,17 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     return () => {
       document.body.classList.remove("header-hidden");
     };
-  }, [selectedItem]);
+  }, [selectedItem, selectedProduct]);
+
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (categoryId && p.category_id !== categoryId) return false;
+      if (!q) return true;
+      const catName = categories.find((c) => c.id === p.category_id)?.name ?? "";
+      return p.name.toLowerCase().includes(q) || catName.toLowerCase().includes(q);
+    });
+  }, [products, search, categoryId, categories]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -325,6 +336,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               { id: "ebooks", label: "EBOOKS" },
               { id: "videos", label: "VIDEOS" },
               { id: "live", label: "LIVE" },
+              { id: "products", label: "PRODUCTS" },
             ] as const
           ).map((t) => (
             <button
@@ -428,6 +440,73 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             </div>
           </div>
         </div>
+      ) : tab === "products" ? (
+        filteredProducts.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm animate-fade-in">
+            <p className="text-sm font-black text-slate-800 uppercase">No matching products found.</p>
+            <p className="mt-2 text-xs text-slate-600 uppercase font-bold">Try clearing filters or search query.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {filteredProducts.map((p) => {
+              const cat = categories.find((c) => c.id === p.category_id);
+
+              return (
+                <div
+                  key={`product:${p.id}`}
+                  onClick={() => {
+                    if (!user) {
+                      router.push("/login?redirect_to=" + encodeURIComponent("/"));
+                    } else {
+                      setSelectedProduct(p);
+                    }
+                  }}
+                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm transition-all hover:border-cyan-500/30 hover:bg-white hover:shadow-md cursor-pointer text-slate-800 animate-fade-in-up"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700">
+                        <Cpu className="h-3 w-3 text-cyan-600" /> Product
+                      </span>
+                      <span className="text-[10px] font-black text-slate-500 uppercase truncate max-w-[120px]">
+                        {cat?.name ?? "Uncategorized"}
+                      </span>
+                    </div>
+
+                    {p.image_url ? (
+                      <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center shadow-sm">
+                        <Cpu className="w-10 h-10 text-cyan-600/50 animate-pulse" />
+                      </div>
+                    )}
+
+                    <h3 className="text-sm font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug mt-3.5">
+                      {p.name}
+                    </h3>
+
+                    <p className="mt-2 text-xs text-slate-600 leading-relaxed line-clamp-2 font-medium">
+                      Explore official REES52 DIY STEM prototyping hardware kit. Designed for educational labs, schools, and makers.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 pt-3 border-t border-slate-100 flex flex-col gap-3">
+                    <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2.5">
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm">
           <p className="text-sm font-black text-slate-800 uppercase">No matching content found.</p>
@@ -535,216 +614,300 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       {/* Description Popup Modal (Using custom .fixed.inset-0 overlay wrapper for E2E compliance) */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="max-w-lg w-full max-h-[90vh] overflow-y-auto bg-[#F7F4EB] text-slate-800 border border-slate-200 shadow-2xl p-6 rounded-2xl relative animate-in zoom-in-95 duration-200">
-            {/* Close Button */}
+          <div className="max-w-lg w-full max-h-[90vh] bg-[#F7F4EB] text-slate-800 border border-slate-200 shadow-2xl rounded-2xl relative animate-in zoom-in-95 duration-200 flex flex-col">
+            {/* Close Button (Fixed at the top right of the modal) */}
             <button
               onClick={() => setSelectedItem(null)}
-              className="absolute right-4 top-4 rounded-lg p-2 text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 transition-colors cursor-pointer"
+              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 w-fit">
-                  {selectedItem.type === "ebook" ? (
-                    <>
-                      <BookOpen className="h-3 w-3 text-cyan-600" /> Ebook Guide
-                    </>
-                  ) : selectedItem.type === "video" ? (
-                    <>
-                      <Video className="h-3 w-3 text-blue-600" /> Video Lecture
-                    </>
-                  ) : (
-                    <>
-                      <Radio className="h-3 w-3 text-rose-600" /> Live Webinar
-                    </>
-                  )}
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  {categories.find((c) => c.id === selectedItem.categoryId)?.name ?? "Uncategorized"}
-                </span>
-              </div>
-              
-              {/* Target for expect(page.locator('.fixed.inset-0 h2:...')).toBeVisible() */}
-              <h2 className="text-slate-900 text-lg md:text-xl font-black uppercase tracking-wide leading-tight mt-2">
-                {selectedItem.title}
-              </h2>
-            </div>
-
-            {/* Modal Card Media Preview */}
-            <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center group/media shadow-sm">
-              {selectedItem.type === "video" ? (
-                <>
-                  {selectedItem.rawUrl && getYouTubeId(selectedItem.rawUrl) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`https://img.youtube.com/vi/${getYouTubeId(selectedItem.rawUrl)}/0.jpg`}
-                      alt={selectedItem.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover/media:scale-102"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
-                      <Video className="w-12 h-12 text-cyan-600 animate-pulse" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/15 group-hover/media:bg-black/25 transition-colors flex items-center justify-center">
-                    <div className="w-12 h-12 bg-cyan-600/90 text-white rounded-full flex items-center justify-center shadow-md transition-transform duration-300 group-hover/media:scale-105">
-                      <Play className="w-5 h-5 fill-white ml-0.5" />
-                    </div>
-                  </div>
-                </>
-              ) : selectedItem.type === "ebook" ? (
-                <>
-                  {mappedProduct ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50">
-                      <div className="relative w-28 h-36 bg-white rounded shadow-xl border border-slate-250/80 overflow-hidden flex flex-col justify-between p-2.5 transform transition-transform duration-500 group-hover/media:scale-103 group-hover/media:rotate-1">
-                        <div className="border-b border-cyan-100 pb-1.5">
-                          <span className="text-[6px] font-black uppercase text-cyan-700 bg-cyan-50 px-1 py-0.5 rounded border border-cyan-200">
-                            Ebook Guide
-                          </span>
-                          <h5 className="text-[8px] font-black text-slate-800 uppercase tracking-wider line-clamp-3 mt-1 leading-snug">
-                            {selectedItem.title}
-                          </h5>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-[5px] text-slate-500 font-extrabold uppercase">
-                            REES52 Infinity
-                          </span>
-                          <BookOpen className="w-3.5 h-3.5 text-cyan-600" />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
-                      <BookOpen className="w-12 h-12 text-cyan-600 animate-pulse" />
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* Webinar */
-                <div className="w-full h-full bg-gradient-to-br from-rose-500/10 to-amber-500/10 flex flex-col items-center justify-center p-4">
-                  <Radio className="w-10 h-10 text-rose-600 live-pulse mb-1.5" />
-                  <span className="text-[8px] font-black text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 uppercase tracking-widest">
-                    Live Broadcast
+            {/* Scrollable Container */}
+            <div className="overflow-y-auto flex-1 p-6 pr-8 space-y-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 w-fit">
+                    {selectedItem.type === "ebook" ? (
+                      <>
+                        <BookOpen className="h-3 w-3 text-cyan-600" /> Ebook Guide
+                      </>
+                    ) : selectedItem.type === "video" ? (
+                      <>
+                        <Video className="h-3 w-3 text-blue-600" /> Video Lecture
+                      </>
+                    ) : (
+                      <>
+                        <Radio className="h-3 w-3 text-rose-600" /> Live Webinar
+                      </>
+                    )}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    {categories.find((c) => c.id === selectedItem.categoryId)?.name ?? "Uncategorized"}
                   </span>
                 </div>
+                
+                {/* Target for expect(page.locator('.fixed.inset-0 h2:...')).toBeVisible() */}
+                <h2 className="text-slate-900 text-lg md:text-xl font-black uppercase tracking-wide leading-tight mt-2">
+                  {selectedItem.title}
+                </h2>
+              </div>
+
+              {/* Modal Card Media Preview */}
+              <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center group/media shadow-sm">
+                {selectedItem.type === "video" ? (
+                  <>
+                    {selectedItem.rawUrl && getYouTubeId(selectedItem.rawUrl) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={`https://img.youtube.com/vi/${getYouTubeId(selectedItem.rawUrl)}/0.jpg`}
+                        alt={selectedItem.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover/media:scale-102"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
+                        <Video className="w-12 h-12 text-cyan-600 animate-pulse" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/15 group-hover/media:bg-black/25 transition-colors flex items-center justify-center">
+                      <div className="w-12 h-12 bg-cyan-600/90 text-white rounded-full flex items-center justify-center shadow-md transition-transform duration-300 group-hover/media:scale-105">
+                        <Play className="w-5 h-5 fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </>
+                ) : selectedItem.type === "ebook" ? (
+                  <>
+                    {mappedProduct ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50">
+                        <div className="relative w-28 h-36 bg-white rounded shadow-xl border border-slate-250/80 overflow-hidden flex flex-col justify-between p-2.5 transform transition-transform duration-500 group-hover/media:scale-103 group-hover/media:rotate-1">
+                          <div className="border-b border-cyan-100 pb-1.5">
+                            <span className="text-[6px] font-black uppercase text-cyan-700 bg-cyan-50 px-1 py-0.5 rounded border border-cyan-200">
+                              Ebook Guide
+                            </span>
+                            <h5 className="text-[8px] font-black text-slate-800 uppercase tracking-wider line-clamp-3 mt-1 leading-snug">
+                              {selectedItem.title}
+                            </h5>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-[5px] text-slate-500 font-extrabold uppercase">
+                              REES52 Infinity
+                            </span>
+                            <BookOpen className="w-3.5 h-3.5 text-cyan-600" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
+                        <BookOpen className="w-12 h-12 text-cyan-600 animate-pulse" />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Webinar */
+                  <div className="w-full h-full bg-gradient-to-br from-rose-500/10 to-amber-500/10 flex flex-col items-center justify-center p-4">
+                    <Radio className="w-10 h-10 text-rose-600 live-pulse mb-1.5" />
+                    <span className="text-[8px] font-black text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 uppercase tracking-widest">
+                      Live Broadcast
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Ebook Unlocked indicator required by E2E test */}
+              {selectedItem.type === "ebook" && isUnlocked && (
+                <div className="text-emerald-700 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 justify-center mt-3 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Ebook Unlocked</span>
+                </div>
               )}
+
+              {/* Video Enrolled indicator */}
+              {selectedItem.type === "video" && isEnrolled && (
+                <div className="text-emerald-700 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 justify-center mt-3 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Video Enrolled</span>
+                </div>
+              )}
+
+              {/* Course Description Section */}
+              <div className="mt-4 space-y-4">
+                <div>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-cyan-700 flex items-center gap-1 mb-1.5">
+                    <Info className="w-3.5 h-3.5" /> Description & Syllabus
+                  </h4>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    {selectedItem.description ?? (
+                      selectedItem.type === "ebook"
+                        ? "This premium PDF textbook covers core electronic schematics, microcontrollers, and pinout instructions. It is designed to walk builders through standard embedded architecture and programming logic step-by-step."
+                        : "Watch this comprehensive video guide to see practical hardware assembly in action. REES52 training engineers showcase breadboard hookups, logic testing, and real-time debugging for this project module."
+                    )}
+                  </p>
+                </div>
+
+                {/* Companion Product Connection */}
+                {mappedProduct && (
+                  <div className="rounded-xl border border-cyan-500/20 bg-white/70 p-4 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
+                    <div className="flex-1 text-center sm:text-left min-w-0">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-cyan-600 bg-cyan-100/50 px-2 py-0.5 rounded-full border border-cyan-200 w-fit inline-block">
+                        Required Hardware
+                      </span>
+                      <h5 className="font-extrabold text-xs text-slate-800 truncate mt-1">{mappedProduct.name}</h5>
+                      <p className="text-[10px] text-slate-600 leading-snug mt-0.5">
+                        Purchase this official kit from the REES52 Store to assemble the hands-on circuits.
+                      </p>
+                    </div>
+                    <a
+                      href={mappedProduct.external_purchase_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-4 py-2 glass-btn-cyan text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 text-center flex-shrink-0 cursor-pointer"
+                    >
+                      <span>Get Kit</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+
+                {/* Main Action buttons */}
+                <div className="pt-2 border-t border-slate-200 flex flex-col gap-2">
+                  {selectedItem.type === "webinar" ? (
+                    <a
+                      href={selectedItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span>Launch Google Meet Webinar</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  ) : selectedItem.type === "video" ? (
+                    isEnrolled ? (
+                      <Link
+                        href={selectedItem.url}
+                        onClick={() => setSelectedItem(null)}
+                        className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2"
+                      >
+                        <Play className="w-4 h-4 text-white fill-white" />
+                        <span>Watch Video Lecture</span>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        className="w-full py-3 text-xs tracking-widest font-black uppercase"
+                        onClick={() => handleEnrollVideo(selectedItem.id)}
+                      >
+                        <Unlock className="w-4 h-4" />
+                        <span>Enroll in Lecture (Free)</span>
+                      </Button>
+                    )
+                  ) : (
+                    isUnlocked ? (
+                      <Link
+                        href={selectedItem.url}
+                        onClick={() => setSelectedItem(null)}
+                        className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        {/* Must exactly contain "Open & Read Ebook PDF" to pass E2E tests */}
+                        <span>Open & Read Ebook PDF</span>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        className="w-full py-3 text-xs tracking-widest font-black uppercase"
+                        onClick={() => handleUnlockEbook(selectedItem.id)}
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>Unlock Ebook</span>
+                      </Button>
+                    )
+                  )}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setSelectedItem(null)}
+                    className="w-full py-2.5 text-xs font-bold uppercase tracking-widest"
+                  >
+                    Close Preview
+                  </Button>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            {/* Ebook Unlocked indicator required by E2E test */}
-            {selectedItem.type === "ebook" && isUnlocked && (
-              <div className="text-emerald-700 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 justify-center mt-3 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Ebook Unlocked</span>
+      {/* Product Details Popup Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="max-w-lg w-full max-h-[90vh] bg-[#F7F4EB] text-slate-800 border border-slate-200 shadow-2xl rounded-2xl relative animate-in zoom-in-95 duration-200 flex flex-col">
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-6 pr-8 space-y-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 w-fit">
+                    <Cpu className="h-3 w-3 text-cyan-600" /> Hardware Product
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    {categories.find((c) => c.id === selectedProduct.category_id)?.name ?? "Uncategorized"}
+                  </span>
+                </div>
+                
+                <h2 className="text-slate-900 text-lg md:text-xl font-black uppercase tracking-wide leading-tight mt-2">
+                  {selectedProduct.name}
+                </h2>
               </div>
-            )}
 
-            {/* Video Enrolled indicator */}
-            {selectedItem.type === "video" && isEnrolled && (
-              <div className="text-emerald-700 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 justify-center mt-3 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Video Enrolled</span>
+              {/* Product Image */}
+              <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shadow-sm">
+                {selectedProduct.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selectedProduct.image_url}
+                    alt={selectedProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
+                    <Cpu className="w-12 h-12 text-cyan-600 animate-pulse" />
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Course Description Section */}
-            <div className="mt-4 space-y-4">
+              {/* Description */}
               <div>
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-cyan-700 flex items-center gap-1 mb-1.5">
-                  <Info className="w-3.5 h-3.5" /> Description & Syllabus
+                  <Info className="w-3.5 h-3.5" /> Product Specifications
                 </h4>
                 <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                  {selectedItem.description ?? (
-                    selectedItem.type === "ebook"
-                      ? "This premium PDF textbook covers core electronic schematics, microcontrollers, and pinout instructions. It is designed to walk builders through standard embedded architecture and programming logic step-by-step."
-                      : "Watch this comprehensive video guide to see practical hardware assembly in action. REES52 training engineers showcase breadboard hookups, logic testing, and real-time debugging for this project module."
-                  )}
+                  Welcome to the official companion hardware kit for REES52. This hardware kit contains high-performance sensors, components, microcontrollers, or drone accessories. Designed specifically to work seamlessly with our STEM courses, video tutorials, and interactive coding files.
                 </p>
               </div>
 
-              {/* Companion Product Connection */}
-              {mappedProduct && (
-                <div className="rounded-xl border border-cyan-500/20 bg-white/70 p-4 flex flex-col sm:flex-row gap-3 items-center shadow-sm">
-                  <div className="flex-1 text-center sm:text-left min-w-0">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-cyan-600 bg-cyan-100/50 px-2 py-0.5 rounded-full border border-cyan-200 w-fit inline-block">
-                      Required Hardware
-                    </span>
-                    <h5 className="font-extrabold text-xs text-slate-800 truncate mt-1">{mappedProduct.name}</h5>
-                    <p className="text-[10px] text-slate-600 leading-snug mt-0.5">
-                      Purchase this official kit from the REES52 Store to assemble the hands-on circuits.
-                    </p>
-                  </div>
-                  <a
-                    href={mappedProduct.external_purchase_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-4 py-2 glass-btn-cyan text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 text-center flex-shrink-0 cursor-pointer"
-                  >
-                    <span>Get Kit</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
+              {/* Action buttons */}
+              <div className="pt-4 border-t border-slate-200 flex flex-col gap-2">
+                <a
+                  href={selectedProduct.external_purchase_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2 cursor-pointer shadow-md hover:scale-[1.01] transition-transform duration-200"
+                >
+                  <span>Buy Now</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
 
-              {/* Main Action buttons */}
-              <div className="pt-2 border-t border-slate-200 flex flex-col gap-2">
-                {selectedItem.type === "webinar" ? (
-                  <a
-                    href={selectedItem.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Launch Google Meet Webinar</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                ) : selectedItem.type === "video" ? (
-                  isEnrolled ? (
-                    <Link
-                      href={selectedItem.url}
-                      onClick={() => setSelectedItem(null)}
-                      className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2"
-                    >
-                      <Play className="w-4 h-4 text-white fill-white" />
-                      <span>Watch Video Lecture</span>
-                    </Link>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      className="w-full py-3 text-xs tracking-widest font-black uppercase"
-                      onClick={() => handleEnrollVideo(selectedItem.id)}
-                    >
-                      <Unlock className="w-4 h-4" />
-                      <span>Enroll in Lecture (Free)</span>
-                    </Button>
-                  )
-                ) : (
-                  isUnlocked ? (
-                    <Link
-                      href={selectedItem.url}
-                      onClick={() => setSelectedItem(null)}
-                      className="w-full py-3 glass-btn-primary font-black text-xs uppercase tracking-widest rounded-xl text-center flex items-center justify-center gap-2"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      {/* Must exactly contain "Open & Read Ebook PDF" to pass E2E tests */}
-                      <span>Open & Read Ebook PDF</span>
-                    </Link>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      className="w-full py-3 text-xs tracking-widest font-black uppercase"
-                      onClick={() => handleUnlockEbook(selectedItem.id)}
-                    >
-                      <Lock className="w-4 h-4" />
-                      <span>Unlock Ebook</span>
-                    </Button>
-                  )
-                )}
                 <Button
                   variant="ghost"
-                  onClick={() => setSelectedItem(null)}
+                  onClick={() => setSelectedProduct(null)}
                   className="w-full py-2.5 text-xs font-bold uppercase tracking-widest"
                 >
                   Close Preview

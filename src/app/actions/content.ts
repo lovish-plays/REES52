@@ -1,7 +1,7 @@
 'use server';
 
 import { getDB } from '@/lib/db';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { createClient } from '@/lib/supabaseServer';
 
 const UUID_MAP: Record<string, string> = {
   "11111111-1111-1111-1111-111111111111": "cat-1",
@@ -61,6 +61,7 @@ function toUUID(id: string | null | undefined): string {
 
 export async function getCategories() {
   try {
+    const supabaseServer = await createClient();
     const { data, error } = await supabaseServer
       .from('categories')
       .select('id,name,slug')
@@ -83,6 +84,7 @@ export async function getCategories() {
 
 export async function getProducts() {
   try {
+    const supabaseServer = await createClient();
     const { data, error } = await supabaseServer
       .from('products')
       .select('id,name,external_url,image_url,category_id');
@@ -106,6 +108,7 @@ export async function getProducts() {
 
 export async function getEbooks() {
   try {
+    const supabaseServer = await createClient();
     const { data, error } = await supabaseServer
       .from('ebooks')
       .select('id,title,pdf_url,category_id,product_id,created_at')
@@ -131,6 +134,7 @@ export async function getEbooks() {
 
 export async function getVideos() {
   try {
+    const supabaseServer = await createClient();
     const { data, error } = await supabaseServer
       .from('videos')
       .select('id,title,youtube_url,category_id,product_id,created_at')
@@ -156,6 +160,7 @@ export async function getVideos() {
 
 export async function getWebinars() {
   try {
+    const supabaseServer = await createClient();
     const { data, error } = await supabaseServer
       .from('webinars')
       .select('id,title,description,meeting_url,schedule_date,is_live')
@@ -181,6 +186,7 @@ export async function getWebinars() {
 
 export async function getCategoryById(id: string) {
   try {
+    const supabaseServer = await createClient();
     const uuidId = toUUID(id);
     const { data, error } = await supabaseServer
       .from('categories')
@@ -203,6 +209,7 @@ export async function getCategoryById(id: string) {
 
 export async function getProductById(id: string) {
   try {
+    const supabaseServer = await createClient();
     const uuidId = toUUID(id);
     const { data, error } = await supabaseServer
       .from('products')
@@ -227,6 +234,7 @@ export async function getProductById(id: string) {
 
 export async function getEbookById(id: string) {
   try {
+    const supabaseServer = await createClient();
     const uuidId = toUUID(id);
     const { data, error } = await supabaseServer
       .from('ebooks')
@@ -252,6 +260,7 @@ export async function getEbookById(id: string) {
 
 export async function getVideoById(id: string) {
   try {
+    const supabaseServer = await createClient();
     const uuidId = toUUID(id);
     const { data, error } = await supabaseServer
       .from('videos')

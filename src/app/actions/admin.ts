@@ -2,7 +2,7 @@
 
 import { getDB, saveDB, generateUUID, Category, Product, Ebook, Video, Webinar } from '@/lib/db';
 import { getCurrentUser } from './auth';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { createClient } from '@/lib/supabaseServer';
 
 // Middleware-like check to ensure user is admin
 async function checkAdmin() {
@@ -34,6 +34,7 @@ export async function addCategory(name: string, slug: string) {
 
   // 2. Save to Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('categories').insert({
       id: newCat.id,
       name: newCat.name,
@@ -59,6 +60,7 @@ export async function deleteCategory(id: string) {
 
   // 2. Delete from Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('categories').delete().eq('id', id);
     if (error) {
       console.error("Supabase category delete failed:", error.message);
@@ -94,6 +96,7 @@ export async function addProduct(formData: { name: string; external_purchase_url
 
   // 2. Save to Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('products').insert({
       id: newProd.id,
       name: newProd.name,
@@ -121,6 +124,7 @@ export async function deleteProduct(id: string) {
 
   // 2. Delete from Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('products').delete().eq('id', id);
     if (error) {
       console.error("Supabase product delete failed:", error.message);
@@ -157,6 +161,7 @@ export async function addEbook(formData: { title: string; pdf_url: string; categ
 
   // 2. Save to Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('ebooks').insert({
       id: newEbook.id,
       title: newEbook.title,
@@ -185,6 +190,7 @@ export async function deleteEbook(id: string) {
 
   // 2. Delete from Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('ebooks').delete().eq('id', id);
     if (error) {
       console.error("Supabase ebook delete failed:", error.message);
@@ -221,6 +227,7 @@ export async function addVideo(formData: { title: string; youtube_url: string; c
 
   // 2. Save to Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('videos').insert({
       id: newVideo.id,
       title: newVideo.title,
@@ -249,6 +256,7 @@ export async function deleteVideo(id: string) {
 
   // 2. Delete from Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('videos').delete().eq('id', id);
     if (error) {
       console.error("Supabase video delete failed:", error.message);
@@ -285,6 +293,7 @@ export async function addWebinar(formData: { title: string; description: string;
 
   // 2. Save to Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('webinars').insert({
       id: newWebinar.id,
       title: newWebinar.title,
@@ -313,6 +322,7 @@ export async function deleteWebinar(id: string) {
 
   // 2. Delete from Supabase (best-effort)
   try {
+    const supabaseServer = await createClient();
     const { error } = await supabaseServer.from('webinars').delete().eq('id', id);
     if (error) {
       console.error("Supabase webinar delete failed:", error.message);

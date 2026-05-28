@@ -258,3 +258,15 @@ input::placeholder, textarea::placeholder {
   color: #64748B !important;
 }
 
+/* Premium Hardware-Accelerated Header Transition when card is opened */
+header {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, opacity;
+}
+
+body.header-hidden header {
+  transform: translateY(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+

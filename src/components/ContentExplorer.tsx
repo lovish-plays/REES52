@@ -215,6 +215,18 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     }
   }, [loading, networkStats.status]);
 
+  // Toggle header visibility when a content card is opened
+  useEffect(() => {
+    if (selectedItem) {
+      document.body.classList.add("header-hidden");
+    } else {
+      document.body.classList.remove("header-hidden");
+    }
+    return () => {
+      document.body.classList.remove("header-hidden");
+    };
+  }, [selectedItem]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return items.filter((it) => {

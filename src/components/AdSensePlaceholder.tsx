@@ -62,14 +62,28 @@ export default function AdSensePlaceholder({
           data-full-width-responsive="true"
         />
 
-        {/* Minimal status indicator when empty (e.g. on localhost) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-[#F7F4EB]/90">
-          <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 bg-slate-200/50 px-1.5 py-0.5 rounded border border-slate-300">
-            AdSense Live Unit
+        {/* Premium SaaS Sponsorship Call-to-Action Panel (Replaces blank grey boxes) */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-cyan-950 p-4 border border-cyan-500/20 text-white select-none">
+          <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:12px_12px]" />
+          
+          <span className="text-[7px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">
+            Sponsorship Active
           </span>
-          <p className="text-[8px] text-slate-500 font-extrabold uppercase mt-1 truncate max-w-[200px]">
-            Slot ID: <span className="text-cyan-700 font-black">{slotId}</span>
+          
+          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-100 mt-2 text-center">
+            Sponsor REES52
+          </h4>
+          
+          <p className="text-[7.5px] text-slate-400 font-bold uppercase mt-1 text-center max-w-[180px] leading-relaxed">
+            Empower the next generation of robotics makers. Reach 20k+ monthly developers.
           </p>
+
+          <a
+            href="mailto:info@rees52.in?subject=Sponsorship%20Inquiry%20-%20REES52%20Infinity"
+            className="mt-3.5 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[7.5px] tracking-widest rounded transition-colors shadow-md pointer-events-auto"
+          >
+            Advertise With Us
+          </a>
         </div>
       </div>
       

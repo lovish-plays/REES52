@@ -850,6 +850,113 @@ body.header-hidden header {
   transition-delay: 0.5s !important;
 }
 
+/* ──── Interactive EdTech & Gamification Platform Overhaul Styles ──── */
+
+/* Smooth fade-in-up animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glowing streak fire animation */
+@keyframes streakPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.6));
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.95));
+  }
+}
+
+.animate-streak-pulse {
+  animation: streakPulse 2s infinite ease-in-out;
+}
+
+/* Glowing badge unlock animation */
+@keyframes badgeGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    border-color: rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.6), 0 0 40px rgba(37, 99, 235, 0.3);
+    border-color: rgba(6, 182, 212, 0.6);
+  }
+}
+
+.animate-badge-glow {
+  animation: badgeGlow 3s infinite ease-in-out;
+}
+
+/* Carousel scrollbar hide helper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Premium Card hover mechanics overrides */
+.premium-interactive-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-interactive-card:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+  box-shadow: 
+    0 25px 50px -12px rgba(15, 23, 42, 0.08),
+    0 0 20px rgba(6, 182, 212, 0.15),
+    0 0 12px rgba(37, 99, 235, 0.08) !important;
+  border-color: rgba(6, 182, 212, 0.35) !important;
+}
+
+/* Micro-Interaction Button Ripple / Slide Effects */
+.premium-btn-interactive {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-btn-interactive::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease-in-out;
+}
+
+.premium-btn-interactive:hover::after {
+  transform: translateX(100%);
+}
+
+.premium-btn-interactive:active {
+  transform: scale(0.97) !important;
+}
+
+/* Glowing ambient card background decoration */
+.glow-ambient-cyan {
+  background: radial-gradient(circle 250px at 50% 50%, rgba(6, 182, 212, 0.04), transparent);
+}
+
+.glow-ambient-orange {
+  background: radial-gradient(circle 200px at 50% 50%, rgba(249, 115, 22, 0.03), transparent);
+}
+
+
 
 
 

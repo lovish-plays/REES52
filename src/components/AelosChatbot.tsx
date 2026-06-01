@@ -13,10 +13,11 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "Who is AELOS?",
-  "Arduino Uno R3 Kit",
-  "How to unlock Ebooks?",
-  "Tell me about Drone kits",
+  "Recommend a project",
+  "Suggest beginner projects",
+  "Help with Arduino",
+  "Find robotics projects",
+  "Track my progress",
 ];
 
 export default function AelosChatbot() {
@@ -24,7 +25,7 @@ export default function AelosChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "Greetings, Maker! I am AELOS, your humanoid robotic companion. Ask me anything about Arduino, robotics kits, sensors, or navigating your Infinity Learning Hub!",
+      text: "Greetings, Maker! I am AELOS, your cybernetic AI mentor. I am equipped to guide your learning journey! Click any of the quick actions below, or ask me any question about Arduino coding, electronics, and microcontrollers.",
       timestamp: new Date(),
     },
   ]);
@@ -41,21 +42,61 @@ export default function AelosChatbot() {
   const getBotResponse = (input: string): Omit<Message, "sender" | "timestamp"> => {
     const q = input.toLowerCase();
 
-    if (q.includes("aelos") || q.includes("humanoid") || q.includes("who are you")) {
+    // ── Upgraded conversational EdTech quick actions ──
+    if (q.includes("recommend a project") || q.includes("recommend")) {
       return {
-        text: "I am AELOS, a advanced educational humanoid robot sold by REES52! I feature 17 high-performance servo motors enabling humanoid movement like walking, dancing, and martial arts. I am designed to teach programming, kinematic structures, and visual coding.",
+        text: "I highly recommend building the 'Mechanical Spider Robot Kit'! It is an immersive course that covers multi-servo calibration, robotics gait kinematics, and obstacle avoidance programming. It will boost your embedded engineering score by 150 points!",
         actions: [
-          { label: "View Humanoid Catalog", link: "https://rees52.com", isExternal: true }
+          { label: "View Spider Robot Kit", link: "/?type=videos" },
+          { label: "Explore Prototyping kits", link: "/?type=products" }
         ]
       };
     }
 
-    if (q.includes("arduino") || q.includes("uno") || q.includes("microcontroller")) {
+    if (q.includes("suggest beginner projects") || q.includes("beginner")) {
       return {
-        text: "The Arduino Uno R3 is the perfect starting board for embedded programming. You can wire LEDs, read analog sensors, and control motors. Check out our 'Getting Started with Arduino Uno R3' ebook and video tutorials here in the portal!",
+        text: "For a smooth start, I suggest the 'Ultrasonic Obstacle Detector' ebook course. It's a beginner-friendly 2.5-hour build covering ping trigger frequencies, active piezo buzzer alerts, and simple hardware conditional loops.",
         actions: [
-          { label: "Go to Ebooks", link: "/?type=ebooks" },
-          { label: "Get Uno Hardware Kit", link: "https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html", isExternal: true }
+          { label: "View Obstacle Detector", link: "/?type=ebooks" },
+          { label: "Explore Ebooks catalog", link: "/?type=ebooks" }
+        ]
+      };
+    }
+
+    if (q.includes("help with arduino") || q.includes("arduino")) {
+      return {
+        text: "Arduino programming is extremely logical! Remember to structure your code with: \n1) 'void setup()' to initialize pinModes (INPUT/OUTPUT).\n2) 'void loop()' to execute conditional statements.\nCheck out our official 'Arduino Uno R3 Starter Kit' guide to see schematics!",
+        actions: [
+          { label: "View Arduino Uno R3 Guide", link: "/?type=ebooks" },
+          { label: "Get Arduino Kit on Store", link: "https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html", isExternal: true }
+        ]
+      };
+    }
+
+    if (q.includes("find robotics projects") || q.includes("robotics")) {
+      return {
+        text: "Robotics and smart vehicle projects are featured in our active 'Robotics & Smart Vehicles' catalog. These include crawler bots, spider gait systems, line tracking vehicles, and flight controllers!",
+        actions: [
+          { label: "Explore Robotics Lectures", link: "/?type=videos" },
+          { label: "Browse Drone components", link: "https://rees52.com/drones/101-rees52-f450-drone-diy-kit.html", isExternal: true }
+        ]
+      };
+    }
+
+    if (q.includes("track my progress") || q.includes("track") || q.includes("progress")) {
+      return {
+        text: "You can track your active learning streak, unlocked achievement badges, total score points, bookmarked libraries, and resume in-progress videos dynamically on your premium 'My Space Dashboard'!",
+        actions: [
+          { label: "Go to My Space Dashboard", link: "/?type=dashboard" }
+        ]
+      };
+    }
+
+    if (q.includes("aelos") || q.includes("humanoid") || q.includes("who are you")) {
+      return {
+        text: "I am AELOS, an advanced educational humanoid robot sold by REES52! I feature 17 high-performance servo motors enabling humanoid movement like walking, dancing, and martial arts. I am designed to teach programming, kinematic structures, and visual coding.",
+        actions: [
+          { label: "View Humanoid Catalog", link: "https://rees52.com", isExternal: true }
         ]
       };
     }
@@ -78,27 +119,9 @@ export default function AelosChatbot() {
       };
     }
 
-    if (q.includes("ebook") || q.includes("read") || q.includes("unlock") || q.includes("pdf")) {
-      return {
-        text: "To unlock Ebooks, click on any ebook card, read the syllabus, and select 'Unlock Ebook'. It will instantly be added to your profile library in the 'My Stuff' section for online reading.",
-        actions: [
-          { label: "Browse Ebooks", link: "/?type=ebooks" }
-        ]
-      };
-    }
-
-    if (q.includes("video") || q.includes("enroll") || q.includes("watch") || q.includes("lecture")) {
-      return {
-        text: "All video lectures on Infinity Learning Hub are free! Tap 'Enroll in Lecture' in the card details view, and you can watch it anytime. Your active lectures are saved in your 'My Learning' dashboard.",
-        actions: [
-          { label: "Browse Lectures", link: "/?type=videos" }
-        ]
-      };
-    }
-
     if (q.includes("hello") || q.includes("hi") || q.includes("hey") || q.includes("greetings")) {
       return {
-        text: "Hello human creator! I am AELOS, your cybernetic teaching companion. Ask me anything about robotics kits, Arduino coding, sensors, or how to navigate our learning hub!"
+        text: "Hello maker! I am AELOS, your cybernetic AI learning companion. Select one of the quick actions below, or ask me any question about embedded engineering, electronics, or robotics coding!"
       };
     }
 

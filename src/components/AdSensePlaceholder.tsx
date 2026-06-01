@@ -16,7 +16,6 @@ export default function AdSensePlaceholder({
   className = "",
 }: AdSensePlaceholderProps) {
   const [mounted, setMounted] = useState(false);
-  const [adLoaded, setAdLoaded] = useState(false);
   const adRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
@@ -27,10 +26,8 @@ export default function AdSensePlaceholder({
     if (!mounted) return;
 
     try {
-      // Initialize the AdSense ad unit through the global Google push window function
       if (typeof window !== "undefined") {
         ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        setAdLoaded(true);
       }
     } catch (e) {
       console.warn("Google AdSense load block or pending approval:", e);
@@ -40,50 +37,44 @@ export default function AdSensePlaceholder({
   if (!mounted) return null;
 
   const isVertical = format === "vertical";
-  const isHorizontal = format === "horizontal";
 
   return (
     <div 
-      className={`w-full flex flex-col items-center justify-center overflow-hidden my-4 transition-all duration-300 ${
-        isVertical ? "min-h-[250px]" : isHorizontal ? "min-h-[90px]" : "min-h-[120px]"
-      } ${className}`}
+      className={`w-full flex flex-col items-center justify-center overflow-hidden my-2 max-w-full ${className}`}
     >
-      {/* Live Google AdSense Ins Element */}
-      <ins
-        ref={adRef}
-        className="adsbygoogle"
-        style={{
-          display: "block",
-          width: "100%",
-          height: "auto",
-          minWidth: "250px",
-          minHeight: isVertical ? "250px" : "90px",
-        }}
-        data-ad-client={ADSENSE_CLIENT_ID}
-        data-ad-slot={slotId}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
+      {/* Compact Dashed Container (Max 90px tall on dev to keep it short & neat!) */}
+      <div className="w-full border border-dashed border-slate-200/80 bg-slate-400/5 px-3 py-2.5 rounded-xl flex flex-col items-center justify-center text-center relative min-h-[76px] max-h-[84px] overflow-hidden">
+        {/* Live Active Ad Ins tag */}
+        <ins
+          ref={adRef}
+          className="adsbygoogle"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            minWidth: "250px",
+          }}
+          data-ad-client={ADSENSE_CLIENT_ID}
+          data-ad-slot={slotId}
+          data-ad-format={format}
+          data-full-width-responsive="true"
+        />
 
-      {/* Standard Outlined Fallback for Local Development & Telemetry Auditing */}
-      <div className="w-full flex flex-col items-center justify-center pointer-events-none mt-2">
-        <div className="w-full border border-dashed border-slate-300 bg-slate-500/5 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-          <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 bg-slate-200/50 px-2 py-0.5 rounded border border-slate-350">
-            AdSense Active Unit
+        {/* Clean, minimalist overlay readout for local developer visual verification */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-[#F7F4EB]/90">
+          <span className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 bg-slate-200/40 px-1.5 py-0.5 rounded border border-slate-300">
+            Ad Placement
           </span>
-          <p className="text-[9px] text-slate-500 font-extrabold uppercase mt-1">
-            Slot: <span className="text-cyan-700 font-black">{slotId}</span>
-          </p>
-          <p className="text-[7.5px] text-slate-400 font-semibold mt-0.5 leading-relaxed max-w-[200px]">
-            Served via {ADSENSE_CLIENT_ID.substring(0, 10)}... (Live Production tags enabled)
+          <p className="text-[8px] text-slate-500 font-extrabold uppercase mt-0.5 truncate max-w-[200px]">
+            Slot ID: <span className="text-cyan-700 font-black">{slotId}</span>
           </p>
         </div>
-        
-        {/* Compliance Advertisement Label */}
-        <span className="text-[8px] text-slate-400 font-extrabold uppercase tracking-widest mt-1.5">
-          Advertisement
-        </span>
       </div>
+      
+      {/* Compliance Advertisement Label */}
+      <span className="text-[7px] text-slate-400 font-extrabold uppercase tracking-widest mt-1">
+        Advertisement
+      </span>
     </div>
   );
 }

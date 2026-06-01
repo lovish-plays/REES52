@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles, BarChart2 } from "lucide-react";
 
 interface AdSensePlaceholderProps {
@@ -9,22 +9,36 @@ interface AdSensePlaceholderProps {
   className?: string;
 }
 
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1234567890123456";
+
 export default function AdSensePlaceholder({
   slotId = "default-slot",
   format = "auto",
   className = "",
 }: AdSensePlaceholderProps) {
   const [mounted, setMounted] = useState(false);
+  const adRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!mounted) return;
+
+    try {
+      if (typeof window !== "undefined") {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      }
+    } catch (e) {
+      console.warn("Google AdSense load block or pending approval:", e);
+    }
+  }, [mounted]);
+
   if (!mounted) return null;
 
   const triggerGtagAdClick = () => {
     if (typeof window !== "undefined" && window.gtag) {
-      // Fire structured custom event to Analytics
       window.gtag("event", "adsense_slot_clicked", {
         slot_id: slotId,
         format: format,
@@ -51,7 +65,26 @@ export default function AdSensePlaceholder({
       {/* Background sweep sweep */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/3 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
 
-      <div className={`flex flex-col items-center justify-center gap-2 ${isHorizontal ? "flex-row text-left flex-1" : ""}`}>
+      {/* Live Google AdSense INS tag */}
+      <div className="w-full relative z-10 overflow-hidden">
+        <ins
+          ref={adRef}
+          className="adsbygoogle"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "auto",
+            minWidth: "250px",
+          }}
+          data-ad-client={ADSENSE_CLIENT_ID}
+          data-ad-slot={slotId}
+          data-ad-format={format}
+          data-full-width-responsive="true"
+        />
+      </div>
+
+      {/* Premium Visual Fallback Elements */}
+      <div className="flex flex-col items-center justify-center gap-2 mt-2">
         <div className="p-2.5 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-400/20 group-hover:scale-105 transition-transform duration-300">
           <Sparkles className="w-5 h-5 text-cyan-600 animate-pulse" />
         </div>

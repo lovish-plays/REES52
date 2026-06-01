@@ -11,6 +11,7 @@ import RobotPeeker from "@/components/RobotPeeker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SchemaMarkup from "@/components/SchemaMarkup";
 import { Suspense } from "react";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -115,6 +116,12 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1234567890123456"}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
           <Suspense fallback={null}>
             <GoogleAnalytics />
           </Suspense>

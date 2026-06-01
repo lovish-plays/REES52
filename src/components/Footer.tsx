@@ -103,11 +103,11 @@ export default function Footer() {
           <div className="flex flex-col gap-1.5">
             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-600">Support Channels</h4>
             <a
-              href="mailto:support@rees52.com"
+              href="mailto:info@rees52.in"
               className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-cyan-600 transition-all duration-300 hover:translate-x-1 w-fit group"
             >
               <Mail className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform duration-300" />
-              <span>support@rees52.com</span>
+              <span>info@rees52.in</span>
             </a>
           </div>
 

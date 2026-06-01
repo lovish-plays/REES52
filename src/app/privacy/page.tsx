@@ -283,7 +283,7 @@ export default function PrivacyPage() {
             Contact
           </h2>
           <p>
-            Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call <strong>+91 95995 94520</strong> or email us at <a href="mailto:support@rees52.com" className="text-cyan-600 underline">support@rees52.com</a> or contact us at <strong>G-9, Om Vihar, phase-5, Uttam nagar, 110059 new delhi DL, India</strong>.
+            Should you have any questions about our privacy practices or this Privacy Policy, or if you would like to exercise any of the rights available to you, please call <strong>+91 95995 94520</strong> or email us at <a href="mailto:info@rees52.in" className="text-cyan-600 underline">info@rees52.in</a> or contact us at <strong>G-9, Om Vihar, phase-5, Uttam nagar, 110059 new delhi DL, India</strong>.
           </p>
         </section>
       </div>

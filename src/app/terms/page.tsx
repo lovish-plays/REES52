@@ -142,7 +142,7 @@ export default function TermsPage() {
               <strong className="text-slate-900">Contact No:</strong> +91 959959 4520
             </p>
             <p className="text-slate-850">
-              <strong className="text-slate-900">Mail ID:</strong> support@rees52.com
+              <strong className="text-slate-900">Mail ID:</strong> info@rees52.in
             </p>
           </div>
         </section>

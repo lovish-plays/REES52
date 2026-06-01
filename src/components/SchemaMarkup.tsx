@@ -19,7 +19,7 @@ export default function SchemaMarkup() {
       "@type": "ContactPoint",
       "telephone": "+91-9599594520",
       "contactType": "customer service",
-      "email": "support@rees52.com",
+      "email": "info@rees52.in",
       "areaServed": "IN",
       "availableLanguage": ["en", "hi"]
     },

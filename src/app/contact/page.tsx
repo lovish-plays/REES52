@@ -3,7 +3,7 @@ import { Phone, Mail, MapPin, MessageSquare, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Contact REES52 | Electronics & Robotics Support",
-  description: "Get in touch with REES52. Call us at +91 95995 94520 or email support@rees52.com for sales, support, and business inquiries.",
+  description: "Get in touch with REES52. Call us at +91 95995 94520 or email info@rees52.in for sales, support, and business inquiries.",
   keywords: ["Contact REES52", "REES52 Phone Number", "REES52 Support Email", "Robotics customer care"],
 };
 
@@ -43,7 +43,7 @@ export default function ContactPage() {
             <Clock className="w-5 h-5 text-cyan-600 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-slate-800 uppercase tracking-wide">Working Hours</p>
-              <p className="text-[11px] text-slate-600 font-semibold mt-1">Monday – Saturday: 10:00 AM – 6:30 PM (IST)</p>
+              <p className="text-[11px] text-slate-650 font-semibold mt-1">Monday – Saturday: 10:00 AM – 6:30 PM (IST)</p>
             </div>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function ContactPage() {
 
           {/* Email card */}
           <a
-            href="mailto:support@rees52.com"
+            href="mailto:info@rees52.in"
             className="glassmorphism bg-white/70 p-6 rounded-2xl shadow-md border border-slate-200/50 flex items-center gap-5 hover:scale-[1.02] transition-all group cursor-pointer"
           >
             <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl group-hover:bg-cyan-500/20 transition-colors">
@@ -77,7 +77,7 @@ export default function ContactPage() {
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mail Us</span>
               <span className="text-md md:text-lg font-black text-slate-900 block mt-0.5">
-                support@rees52.com
+                info@rees52.in
               </span>
             </div>
           </a>

@@ -104,7 +104,7 @@ export default function AelosChatbot() {
 
     if (q.includes("help") || q.includes("support") || q.includes("email") || q.includes("contact")) {
       return {
-        text: "I'm on it! You can contact the REES52 official support team at support@rees52.com for catalog requests or hardware troubleshooting. Let me know if I can guide you to any portal section instead!"
+        text: "I'm on it! You can contact the REES52 official support team at info@rees52.in for catalog requests or hardware troubleshooting. Let me know if I can guide you to any portal section instead!"
       };
     }
 

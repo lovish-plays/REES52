@@ -104,7 +104,7 @@ export default function CookiePolicyPage() {
           </p>
           <p className="text-xs text-slate-700 leading-relaxed font-semibold mt-3">
             If you have any questions or data request queries about our Cookie Policy, please contact our support department at:
-            <a href="mailto:support@rees52.com" className="text-cyan-700 hover:text-cyan-600 underline font-bold ml-1">support@rees52.com</a>.
+            <a href="mailto:info@rees52.in" className="text-cyan-700 hover:text-cyan-600 underline font-bold ml-1">info@rees52.in</a>.
           </p>
         </div>
       </div>

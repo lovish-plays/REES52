@@ -462,7 +462,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             <p className="mt-2 text-xs text-slate-600 uppercase font-bold">Try clearing filters or search query.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
             {filteredProducts.map((p, idx) => {
               const cat = categories.find((c) => c.id === p.category_id);
 
@@ -542,7 +542,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
           <p className="mt-2 text-xs text-slate-600 uppercase font-bold">Try clearing filters or search query.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
           {filtered.map((it, idx) => {
             const cat = categories.find((c) => c.id === it.categoryId);
             const prod = products.find((p) => p.id === it.productId);

@@ -117,18 +117,18 @@ export default function Header() {
   };
 
   const overlayLinkClass =
-    "flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/70 p-5 backdrop-blur-xl transition-all hover:border-cyan-500/40 hover:bg-white hover:shadow-md";
+    "flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/70 p-5 backdrop-blur-xl transition-all duration-300 hover:border-cyan-500/40 hover:bg-white hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] premium-btn-shimmer";
 
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-slate-200/60 bg-[#F7F4EB]/70 backdrop-blur-xl shadow-sm">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
-          <Link href="/" className="group flex items-center gap-3">
-            <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 p-2 shadow-sm group-hover:neon-glow">
+          <Link href="/" className="group flex items-center gap-3 premium-logo-group">
+            <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-cyan-500/20 to-blue-600/20 p-2 shadow-sm premium-logo-icon">
               <GraduationCap className="h-5 w-5 text-cyan-600" />
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-black tracking-wider text-slate-900">
+              <span className="text-sm font-black tracking-wider text-slate-900 premium-logo-text">
                 REES<span className="text-cyan-600">52</span>
               </span>
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
@@ -145,7 +145,7 @@ export default function Header() {
           <div className="flex items-center gap-2">
             {!user ? (
               !isLoginPage && (
-                <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)}>
+                <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)} className="premium-btn-shimmer">
                   Sign In
                 </Button>
               )
@@ -160,7 +160,7 @@ export default function Header() {
                       setNotifOpen(!notifOpen);
                       setHasUnread(false);
                     }}
-                    className={`border border-slate-200/80 bg-white/70 hover:bg-white text-slate-800 relative transition-transform duration-200 hover:scale-105 ${
+                    className={`border border-slate-200/80 bg-white/70 text-slate-800 relative transition-all premium-bell-hover ${
                       hasUnread ? 'border-cyan-400' : ''
                     }`}
                     aria-label="Notifications"
@@ -276,10 +276,10 @@ export default function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/70 px-2 py-2 hover:bg-white hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/20 cursor-pointer"
+                      className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/70 px-2 py-2 hover:bg-white hover:border-cyan-400/40 hover:shadow-md hover:scale-[1.04] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/20 cursor-pointer group"
                       aria-label="User menu"
                     >
-                      <Avatar className="h-9 w-9">
+                      <Avatar className="h-9 w-9 transition-transform duration-300 group-hover:scale-105">
                         <AvatarFallback className="bg-cyan-100 text-cyan-900 font-bold">
                           {user.name?.trim()?.charAt(0)?.toUpperCase() ?? "U"}
                         </AvatarFallback>
@@ -305,13 +305,13 @@ export default function Header() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-slate-200" />
                     <DropdownMenuItem asChild className="focus:bg-cyan-50 focus:text-cyan-950">
-                      <Link href="/my-learning" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 transition-colors">
+                      <Link href="/my-learning" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
                         <Video className="h-4 w-4 text-cyan-600" />
                         <span className="font-extrabold text-[10px] uppercase tracking-widest">My Learning</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="focus:bg-cyan-50 focus:text-cyan-950">
-                      <Link href="/my-stuff" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 transition-colors">
+                      <Link href="/my-stuff" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
                         <BookOpen className="h-4 w-4 text-cyan-600" />
                         <span className="font-extrabold text-[10px] uppercase tracking-widest">My Stuff</span>
                       </Link>
@@ -320,7 +320,7 @@ export default function Header() {
                       <>
                         <DropdownMenuSeparator className="bg-slate-200" />
                         <DropdownMenuItem asChild className="focus:bg-slate-100 focus:text-slate-950">
-                          <Link href="/admin" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-900 hover:text-slate-950 transition-colors">
+                          <Link href="/admin" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-900 hover:text-slate-950 hover:translate-x-1.5 transition-transform duration-200">
                             <Shield className="h-4 w-4 text-slate-800" />
                             <span className="font-extrabold text-[10px] uppercase tracking-widest text-slate-900">Admin Control</span>
                           </Link>
@@ -329,7 +329,7 @@ export default function Header() {
                     )}
                     <DropdownMenuSeparator className="bg-slate-200" />
                     <DropdownMenuItem asChild>
-                      <button onClick={onLogout} className="w-full text-left flex items-center gap-2 text-rose-800 hover:text-rose-950 focus:bg-rose-50 focus:text-rose-950 cursor-pointer border-none bg-transparent outline-none px-2 py-1.5">
+                      <button onClick={onLogout} className="w-full text-left flex items-center gap-2 text-rose-800 hover:text-rose-950 focus:bg-rose-50 focus:text-rose-950 cursor-pointer border-none bg-transparent outline-none px-2 py-1.5 hover:translate-x-1.5 transition-transform duration-200">
                         <LogOut className="h-4 w-4 text-rose-600" />
                         <span className="font-extrabold text-[10px] uppercase tracking-widest">Sign Out</span>
                       </button>
@@ -343,9 +343,9 @@ export default function Header() {
                   variant="ghost"
                   onClick={() => setDirectoryOpen(true)}
                   aria-label="More navigation"
-                  className="border border-slate-200 bg-white/70 hover:bg-white text-slate-800"
+                  className="border border-slate-200 bg-white/70 hover:bg-white text-slate-800 hover:border-cyan-400/40 hover:shadow-md hover:scale-108 transition-all duration-300 group"
                 >
-                  <MoreVertical className="h-4 w-4 text-slate-700" />
+                  <MoreVertical className="h-4 w-4 text-slate-700 group-hover:rotate-90 transition-transform duration-300" />
                 </Button>
               </>
             )}

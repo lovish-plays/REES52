@@ -311,14 +311,14 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search lectures, ebooks, webinars..."
-              className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:border-cyan-500/40 focus:ring-2 focus:ring-cyan-500/10 transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none premium-input-pulse"
             />
           </div>
 
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-cyan-500/40 focus:ring-2 focus:ring-cyan-500/10 transition-all md:w-72"
+            className="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-sm text-slate-800 outline-none premium-input-pulse md:w-72"
           >
             <option value="" className="text-slate-900 bg-white">All Categories</option>
             {categories.map((c) => (
@@ -342,10 +342,10 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+              className={`rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-[1.05] hover:translate-y-[-1px] cursor-pointer ${
                 tab === t.id
-                  ? "bg-cyan-600/15 text-slate-900 border border-cyan-500/30 shadow-sm"
-                  : "border border-slate-200 bg-white/70 text-slate-600 hover:bg-white"
+                  ? "bg-cyan-600/15 text-slate-900 border border-cyan-500/40 shadow-md"
+                  : "border border-slate-200 bg-white/70 text-slate-600 hover:bg-white hover:border-cyan-500/20 hover:shadow-sm"
               }`}
             >
               {t.label}
@@ -461,11 +461,11 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                       setSelectedProduct(p);
                     }
                   }}
-                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm transition-all hover:border-cyan-500/30 hover:bg-white hover:shadow-md cursor-pointer text-slate-800 animate-fade-in-up"
+                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 animate-fade-in-up premium-grid-card"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
                         <Cpu className="h-3 w-3 text-cyan-600" /> Product
                       </span>
                       <span className="text-[10px] font-black text-slate-500 uppercase truncate max-w-[120px]">
@@ -479,7 +479,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                         <img
                           src={p.image_url}
                           alt={p.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                          className="w-full h-full object-cover premium-card-image"
                         />
                       </div>
                     ) : (
@@ -498,7 +498,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-slate-100 flex flex-col gap-3">
-                    <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2.5">
+                    <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2.5 premium-card-btn">
                       View Details
                     </Button>
                   </div>
@@ -528,11 +528,11 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     setSelectedItem(it);
                   }
                 }}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm transition-all hover:border-cyan-500/30 hover:bg-white hover:shadow-md cursor-pointer text-slate-800"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-5 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 premium-grid-card"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
                       {it.type === "ebook" ? (
                         <>
                           <BookOpen className="h-3 w-3 text-cyan-600" /> Ebook
@@ -558,7 +558,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                       <img
                         src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
                         alt={it.title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                        className="w-full h-full object-cover premium-card-image"
                       />
                     </div>
                   )}
@@ -601,7 +601,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     </span>
                   </div>
 
-                  <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2.5">
+                  <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2.5 premium-card-btn">
                     View Details
                   </Button>
                 </div>
@@ -618,7 +618,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             {/* Close Button (Fixed at the top right of the modal) */}
             <button
               onClick={() => setSelectedItem(null)}
-              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 transition-colors cursor-pointer"
+              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 hover:rotate-90 hover:scale-110 cursor-pointer"
               aria-label="Close modal"
             >
               <X className="h-4 w-4" />
@@ -844,7 +844,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             {/* Close Button */}
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 transition-colors cursor-pointer"
+              className="absolute right-4 top-4 z-20 rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 hover:rotate-90 hover:scale-110 cursor-pointer"
               aria-label="Close modal"
             >
               <X className="h-4 w-4" />

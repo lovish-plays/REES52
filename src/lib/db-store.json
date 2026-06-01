@@ -46,6 +46,33 @@
       "purchased_ebooks": [
         "ebk-1"
       ]
+    },
+    {
+      "id": "usr-c474c56a-4b98-44d0-8b9f-46d5e4a19432",
+      "name": "Robo Student",
+      "email": "student-1779960212150@rees52.com",
+      "password_hash": "",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-71274b65-4182-40ff-a483-bdf9c9ee627c",
+      "name": "Robo Student",
+      "email": "student-1779960236040@rees52.com",
+      "password_hash": "",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-2a6fbd89-3e0d-47d2-b8cc-38fe794282ac",
+      "name": "Robo Student",
+      "email": "student-1779960258056@rees52.com",
+      "password_hash": "",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
     }
   ]
 }

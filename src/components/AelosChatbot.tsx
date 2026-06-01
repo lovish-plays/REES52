@@ -174,11 +174,11 @@ export default function AelosChatbot() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-transform cursor-pointer border border-cyan-400/40 group"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl premium-bot-btn cursor-pointer border border-cyan-400/40 group"
         aria-label="Aelos AI Chatbot"
       >
-        <span className="absolute -inset-1.5 rounded-full bg-cyan-500/20 animate-ping opacity-75"></span>
-        <Bot className="w-7 h-7 group-hover:rotate-6 transition-transform" />
+        <span className="absolute -inset-1.5 rounded-full bg-cyan-500/20 animate-ping opacity-75 pointer-events-none"></span>
+        <Bot className="w-7 h-7 transition-transform duration-300 premium-bot-icon" />
       </button>
 
       {/* Chat Window Panel */}
@@ -200,7 +200,7 @@ export default function AelosChatbot() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white/80 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer"
+              className="text-white/80 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-all duration-300 hover:rotate-90 hover:scale-110 cursor-pointer"
               aria-label="Close chat"
             >
               <X className="w-4.5 h-4.5" />
@@ -285,7 +285,7 @@ export default function AelosChatbot() {
               <button
                 key={i}
                 onClick={() => handleSend(sug)}
-                className="flex-shrink-0 px-3 py-1 border border-slate-200/90 bg-white hover:bg-slate-50 hover:border-cyan-500/30 text-slate-700 text-[9px] font-extrabold uppercase tracking-wider rounded-full transition-all cursor-pointer shadow-sm"
+                className="flex-shrink-0 px-3 py-1 border border-slate-200/90 bg-white text-slate-700 text-[9px] font-extrabold uppercase tracking-wider rounded-full transition-all cursor-pointer shadow-sm premium-suggestion-pill"
               >
                 {sug}
               </button>
@@ -305,13 +305,13 @@ export default function AelosChatbot() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask Aelos a question..."
-              className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 placeholder:text-slate-500 focus:outline-none focus:border-cyan-600/50 focus:bg-white transition-all shadow-inner"
+              className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-850 placeholder:text-slate-500 focus:outline-none transition-all premium-input-pulse"
             />
             <Button
               type="submit"
               size="icon"
               variant="primary"
-              className="rounded-xl w-9.5 h-9.5 glass-btn-primary flex items-center justify-center cursor-pointer shadow-md"
+              className="rounded-xl w-9.5 h-9.5 glass-btn-primary flex items-center justify-center cursor-pointer shadow-md premium-btn-shimmer"
               disabled={!inputValue.trim()}
             >
               <Send className="w-4 h-4 text-white" />

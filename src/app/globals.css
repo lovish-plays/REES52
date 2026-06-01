@@ -344,6 +344,7 @@ body.header-hidden header {
 
 /* Custom Red Opaque Notification Panel */
 .notification-panel {
+  position: absolute !important;
   background-color: #F7F4EB !important; /* Fully opaque theme background */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -364,4 +365,491 @@ body.header-hidden header {
 .notification-panel:hover::before {
   background: linear-gradient(135deg, #DC2626, #16A34A) !important;
 }
+
+/* ==========================================================================
+   PREMIUM HIGH-FIDELITY HOVER ANIMATIONS & ULTRA-MODERN MICRO-INTERACTIONS
+   ========================================================================== */
+
+/* 1. Liquid Shimmer / Sweep Effect for Buttons */
+.premium-btn-shimmer {
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 0 0 0 rgba(8, 145, 178, 0) !important;
+}
+
+.premium-btn-shimmer::after {
+  content: '' !important;
+  position: absolute !important;
+  top: -50% !important;
+  left: -70% !important;
+  width: 40% !important;
+  height: 200% !important;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.35) 70%,
+    rgba(255, 255, 255, 0) 100%
+  ) !important;
+  transform: rotate(25deg) !important;
+  transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.premium-btn-shimmer:hover:not(:disabled) {
+  transform: translateY(-2.5px) scale(1.03) !important;
+  letter-spacing: 0.05em !important;
+  box-shadow: 
+    0 10px 24px -6px rgba(8, 145, 178, 0.28), 
+    0 0 20px rgba(8, 145, 178, 0.18) !important;
+}
+
+.premium-btn-shimmer:hover:not(:disabled)::after {
+  left: 140% !important;
+  opacity: 1 !important;
+}
+
+.premium-btn-shimmer:active:not(:disabled) {
+  transform: translateY(-0.5px) scale(0.98) !important;
+}
+
+/* 2. Elastic Link Underlines with Traveling Cyber Dots */
+.premium-nav-link {
+  position: relative !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.premium-nav-link::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -4px !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, #0891B2, #2563EB) !important;
+  transform: scaleX(0) !important;
+  transform-origin: center !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  border-radius: 4px !important;
+}
+
+.premium-nav-link:hover {
+  color: #0891B2 !important;
+  letter-spacing: 0.04em !important;
+}
+
+.premium-nav-link:hover::after {
+  transform: scaleX(1) !important;
+}
+
+.premium-nav-link::before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -5px !important;
+  left: 0 !important;
+  width: 4px !important;
+  height: 4px !important;
+  background: #DB2777 !important;
+  border-radius: 50% !important;
+  opacity: 0 !important;
+  transform: scale(0) !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 0 8px #DB2777 !important;
+  z-index: 20 !important;
+}
+
+.premium-nav-link:hover::before {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  animation: travelDot 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+@keyframes travelDot {
+  0% { left: 0%; }
+  100% { left: calc(100% - 4px); }
+}
+
+/* 3. Logo Hover Interactive Classes */
+.premium-logo-group:hover .premium-logo-icon {
+  transform: rotate(12deg) scale(1.08) !important;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.25) !important;
+  border-color: rgba(6, 182, 212, 0.6) !important;
+}
+
+.premium-logo-group:hover .premium-logo-text {
+  letter-spacing: 0.06em !important;
+  color: #0891B2 !important;
+}
+
+.premium-logo-icon {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.premium-logo-text {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* 4. Spring Bell Wiggling Animation */
+@keyframes bellWiggle {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(-15deg); }
+  30% { transform: rotate(12deg); }
+  45% { transform: rotate(-10deg); }
+  60% { transform: rotate(8deg); }
+  75% { transform: rotate(-4deg); }
+  90% { transform: rotate(2deg); }
+}
+
+.premium-bell-hover:hover {
+  animation: bellWiggle 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+  background-color: white !important;
+  border-color: rgba(6, 182, 212, 0.45) !important;
+  color: #0891B2 !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2) !important;
+}
+
+/* 5. AELOS Chatbot floating button and suggestions */
+.premium-bot-btn {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.premium-bot-btn:hover {
+  transform: scale(1.1) translateY(-2px) !important;
+  box-shadow: 
+    0 20px 35px -10px rgba(8, 145, 178, 0.35), 
+    0 0 25px rgba(8, 145, 178, 0.25) !important;
+}
+
+.premium-bot-btn:hover .premium-bot-icon {
+  transform: rotate(15deg) scale(1.08) !important;
+}
+
+.premium-bot-btn:active {
+  transform: scale(0.95) !important;
+}
+
+.premium-suggestion-pill {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.premium-suggestion-pill:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  border-color: rgba(8, 145, 178, 0.45) !important;
+  color: #0891B2 !important;
+  background-color: rgba(8, 145, 178, 0.04) !important;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.06) !important;
+}
+
+/* 6. Active Focus Glow and Breathe for Text Fields / Selects */
+.premium-input-pulse {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-input-pulse:hover {
+  border-color: rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.08) !important;
+}
+
+.premium-input-pulse:focus {
+  animation: inputBreathe 2.5s infinite ease-in-out !important;
+  outline: none !important;
+}
+
+@keyframes inputBreathe {
+  0%, 100% {
+    border-color: rgba(8, 145, 178, 0.8) !important;
+    box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.15), 0 0 22px rgba(8, 145, 178, 0.12) !important;
+  }
+  50% {
+    border-color: rgba(37, 99, 235, 0.8) !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), 0 0 22px rgba(37, 99, 235, 0.12) !important;
+  }
+}
+
+/* 7. Premium Grid Card lifting and tilting mechanics */
+.premium-grid-card {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-grid-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 
+    0 30px 60px -15px rgba(30, 41, 59, 0.08),
+    0 0 25px rgba(6, 182, 212, 0.12),
+    0 0 15px rgba(219, 39, 119, 0.08) !important;
+}
+
+.premium-grid-card:hover::before {
+  background: linear-gradient(135deg, #0891B2, #2563EB) !important;
+}
+
+.premium-grid-card .premium-card-image {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-grid-card:hover .premium-card-image {
+  transform: scale(1.06) rotate(0.5deg) !important;
+}
+
+.premium-grid-card .premium-card-btn {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.premium-grid-card:hover .premium-card-btn {
+  background: linear-gradient(135deg, #0891B2, #2563EB) !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25) !important;
+}
+
+.premium-card-badge {
+  transition: all 0.3s ease !important;
+}
+
+.premium-grid-card:hover .premium-card-badge {
+  transform: scale(1.05) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2) !important;
+  border-color: rgba(6, 182, 212, 0.4) !important;
+}
+
+/* 8. Premium Social Icon floating */
+.premium-social-icon {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.premium-social-icon:hover {
+  transform: translateY(-4px) scale(1.12) !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 9. Direct mechanical SVG animations for CyberBackground */
+@keyframes spinJointSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes jointPulse {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.08); }
+}
+
+@keyframes hudLineFlicker {
+  0%, 100% { opacity: 0.14; }
+  45% { opacity: 0.14; }
+  50% { opacity: 0.35; }
+  52% { opacity: 0.08; }
+  55% { opacity: 0.25; }
+  60% { opacity: 0.14; }
+}
+
+@keyframes visorGlow {
+  0%, 100% { fill: rgba(6, 182, 212, 0.15); filter: drop-shadow(0 0 2px rgba(6, 182, 212, 0.2)); }
+  50% { fill: rgba(6, 182, 212, 0.4); filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.6)); }
+}
+
+.bg-joint-spin {
+  transform-origin: 100px 180px;
+  animation: spinJointSlow 30s linear infinite !important;
+}
+
+.bg-joint-pulse {
+  transform-origin: 290px 320px;
+  animation: jointPulse 6s ease-in-out infinite !important;
+}
+
+.bg-hud-flicker {
+  animation: hudLineFlicker 8s ease-in-out infinite !important;
+}
+
+.bg-visor-glow {
+  animation: visorGlow 4s ease-in-out infinite !important;
+}
+
+/* ==========================================================================
+   PREMIUM PAGE-LOAD SPLASH SCREEN & CONTENT ENTRANCE TRANSITIONS
+   ========================================================================== */
+
+.premium-splash-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  background-color: #0d0e12 !important; /* Premium Obsidian dark background for load splash */
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(8, 145, 178, 0.12) 0%, transparent 50%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 34px 34px, 34px 34px !important;
+  backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.premium-splash-overlay.fade-out {
+  opacity: 0 !important;
+  transform: scale(1.06) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Spinner and cyber concentric ring sets */
+@keyframes spinClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinCounterClockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-clockwise {
+  animation: spinClockwise 8s linear infinite !important;
+  transform-origin: center !important;
+}
+
+.animate-spin-counter {
+  animation: spinCounterClockwise 5s linear infinite !important;
+  transform-origin: center !important;
+}
+
+/* Terminal Log Animations */
+@keyframes terminalLineAppear {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-log-appear {
+  animation: terminalLineAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* Typing cursor blinking */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.animate-cursor-blink {
+  animation: cursorBlink 0.9s steps(2, start) infinite !important;
+}
+
+/* Dynamic Entrance Fade for root layout pages */
+@keyframes pageLoadedEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.995);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-loaded-entrance {
+  animation: pageLoadedEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* ==========================================================================
+   SNAPCHAT-STYLE INTERACTIVE SCROLL-TO-TOP PEEKING ROBOT
+   ========================================================================== */
+
+.premium-robot-peeker {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(-100%) !important;
+  z-index: 100 !important;
+  transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  pointer-events: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.premium-robot-peeker.active {
+  transform: translateX(-50%) translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+/* Robotic eye horizontal blinking */
+@keyframes robotEyeBlink {
+  0%, 75%, 100% {
+    transform: scaleY(1) !important;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 4px #06b6d4) !important;
+  }
+  80%, 90% {
+    transform: scaleY(0.1) !important;
+    opacity: 0.6 !important;
+    filter: none !important;
+  }
+}
+
+.peeker-visor-glow {
+  transform-origin: 30px 17px !important; /* coordinates of the eye path center */
+  animation: robotEyeBlink 6s ease-in-out infinite !important;
+}
+
+/* Floating speech bubble */
+@keyframes speechFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.peeker-speech-bubble {
+  background: rgba(247, 244, 235, 0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(6, 182, 212, 0.25) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1), 0 0 15px rgba(6, 182, 212, 0.05) !important;
+  border-radius: 12px !important;
+  padding: 6px 12px !important;
+  font-family: monospace !important;
+  font-size: 8px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  margin-top: 8px !important;
+  white-space: nowrap !important;
+  position: relative !important;
+  opacity: 0 !important;
+  transform: scale(0.85) translateY(12px) !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  pointer-events: none !important;
+  animation: speechFloat 4s ease-in-out infinite !important;
+}
+
+/* Speech arrow */
+.peeker-speech-bubble::before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -4px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(45deg) !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: rgba(247, 244, 235, 0.9) !important;
+  border-right: 1px solid rgba(6, 182, 212, 0.25) !important;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.25) !important;
+}
+
+.premium-robot-peeker.active .peeker-speech-bubble {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+  transition-delay: 0.5s !important;
+}
+
+
+
 

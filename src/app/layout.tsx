@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AelosChatbot from "@/components/AelosChatbot";
 import CyberBackground from "@/components/CyberBackground";
+import SplashLoader from "@/components/SplashLoader";
+import RobotPeeker from "@/components/RobotPeeker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -104,9 +106,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
+          <SplashLoader />
+          <RobotPeeker />
           <CyberBackground />
           <Header />
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col page-loaded-entrance">
             {children}
           </main>
           <Footer />

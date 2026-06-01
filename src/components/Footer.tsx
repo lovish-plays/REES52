@@ -13,11 +13,11 @@ export default function Footer() {
         
         {/* Column 1: Brand Philosophy (4 cols) */}
         <div className="md:col-span-4 flex flex-col gap-4">
-          <Link href="/" className="flex items-center gap-2 group w-fit">
-            <div className="p-1.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg shadow-sm">
+          <Link href="/" className="flex items-center gap-2 w-fit premium-logo-group">
+            <div className="p-1.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg shadow-sm premium-logo-icon">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-extrabold text-md tracking-wider text-slate-900 group-hover:text-cyan-600 transition-colors">
+            <span className="font-extrabold text-md tracking-wider text-slate-900 premium-logo-text">
               REES<span className="text-cyan-600">52</span> <span className="text-[10px] font-bold text-slate-500 uppercase ml-1">Infinity Learning</span>
             </span>
           </Link>
@@ -60,24 +60,24 @@ export default function Footer() {
         <div className="md:col-span-2 flex flex-col gap-3">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-600">Learning Portal</h4>
           <ul className="flex flex-col gap-2 text-xs font-semibold">
-            <li>
-              <Link href="/" className="hover:text-cyan-600 transition-colors">
+            <li className="w-fit py-0.5">
+              <Link href="/" className="premium-nav-link text-slate-700">
                 Content Explorer
               </Link>
             </li>
-            <li>
-              <Link href="/my-learning" className="hover:text-cyan-600 transition-colors">
+            <li className="w-fit py-0.5">
+              <Link href="/my-learning" className="premium-nav-link text-slate-700">
                 My Learning Lectures
               </Link>
             </li>
-            <li>
-              <Link href="/my-stuff" className="hover:text-cyan-600 transition-colors">
+            <li className="w-fit py-0.5">
+              <Link href="/my-stuff" className="premium-nav-link text-slate-700">
                 My Unlocked Ebooks
               </Link>
             </li>
             {user?.role === 'Admin' && (
-              <li>
-                <Link href="/admin" className="text-slate-900 hover:text-slate-950 font-black transition-colors">
+              <li className="w-fit py-0.5">
+                <Link href="/admin" className="premium-nav-link text-slate-900 font-black">
                   Admin Control
                 </Link>
               </li>
@@ -93,10 +93,10 @@ export default function Footer() {
               href="https://rees52.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.2 text-xs font-bold text-cyan-600 hover:text-cyan-700 w-fit group"
+              className="flex items-center gap-1.5 text-xs font-bold text-cyan-600 hover:text-cyan-700 w-fit group transition-all duration-300 hover:translate-x-1"
             >
               <span>Explore REES52 Catalog</span>
-              <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-1 group-hover:scale-110 transition-transform duration-300" />
             </a>
           </div>
 
@@ -104,9 +104,9 @@ export default function Footer() {
             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-600">Support Channels</h4>
             <a
               href="mailto:support@rees52.com"
-              className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-cyan-600 transition-colors w-fit"
+              className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-cyan-600 transition-all duration-300 hover:translate-x-1 w-fit group"
             >
-              <Mail className="w-4 h-4 text-cyan-600" />
+              <Mail className="w-4 h-4 text-cyan-600 group-hover:scale-110 transition-transform duration-300" />
               <span>support@rees52.com</span>
             </a>
           </div>
@@ -119,7 +119,7 @@ export default function Footer() {
                 href="https://www.youtube.com/@REES52_Official"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 transition-all border border-slate-200/50"
+                className="p-1.5 rounded-lg bg-white hover:bg-rose-600 hover:text-white text-slate-600 transition-all border border-slate-200/50 hover:border-rose-600 premium-social-icon shadow-sm hover:shadow-rose-600/20"
                 aria-label="YouTube Channel"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -131,7 +131,7 @@ export default function Footer() {
                 href="https://www.linkedin.com/company/rees-52/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-700 transition-all border border-slate-200/50"
+                className="p-1.5 rounded-lg bg-white hover:bg-blue-700 hover:text-white text-slate-600 transition-all border border-slate-200/50 hover:border-blue-700 premium-social-icon shadow-sm hover:shadow-blue-700/20"
                 aria-label="LinkedIn Profile"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +144,7 @@ export default function Footer() {
                 href="https://www.facebook.com/rees52education/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-all border border-slate-200/50"
+                className="p-1.5 rounded-lg bg-white hover:bg-blue-600 hover:text-white text-slate-600 transition-all border border-slate-200/50 hover:border-blue-600 premium-social-icon shadow-sm hover:shadow-blue-600/20"
                 aria-label="Facebook Page"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -155,7 +155,7 @@ export default function Footer() {
                 href="https://www.instagram.com/rees52_b2b"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-white hover:bg-pink-50 text-slate-600 hover:text-pink-600 transition-all border border-slate-200/50"
+                className="p-1.5 rounded-lg bg-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:text-white text-slate-600 transition-all border border-slate-200/50 hover:border-pink-500 premium-social-icon shadow-sm hover:shadow-pink-500/20"
                 aria-label="Instagram Handle"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -168,7 +168,7 @@ export default function Footer() {
                 href="https://x.com/rees52education"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 hover:text-black transition-all border border-slate-200/50"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-900 hover:text-white text-slate-600 transition-all border border-slate-200/50 hover:border-slate-900 premium-social-icon shadow-sm hover:shadow-slate-900/20"
                 aria-label="X Profile"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -184,17 +184,17 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 border-t border-slate-200/40 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
         <span>© 2013 REES52 (Robotics Embedded Education Services Private Limited). All rights reserved.</span>
-        <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center sm:justify-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-          <Link href="/about" className="hover:text-cyan-600 transition-colors">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center sm:justify-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+          <Link href="/about" className="premium-nav-link text-slate-500 py-0.5">
             About Us
           </Link>
-          <Link href="/contact" className="hover:text-cyan-600 transition-colors">
+          <Link href="/contact" className="premium-nav-link text-slate-500 py-0.5">
             Contact Us
           </Link>
-          <Link href="/privacy" className="hover:text-cyan-600 transition-colors">
+          <Link href="/privacy" className="premium-nav-link text-slate-500 py-0.5">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="hover:text-cyan-600 transition-colors">
+          <Link href="/terms" className="premium-nav-link text-slate-500 py-0.5">
             Terms & Conditions
           </Link>
         </div>

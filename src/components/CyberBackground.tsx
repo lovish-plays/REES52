@@ -31,17 +31,21 @@ export default function CyberBackground() {
         strokeWidth="2"
       >
         {/* Shoulder servo joint (Concentric abstract rings) */}
-        <circle cx="100" cy="180" r="80" strokeWidth="2.5" />
-        <circle cx="100" cy="180" r="55" strokeDasharray="6,6" />
-        <circle cx="100" cy="180" r="30" />
+        <g className="bg-joint-spin">
+          <circle cx="100" cy="180" r="80" strokeWidth="2.5" />
+          <circle cx="100" cy="180" r="55" strokeDasharray="6,6" />
+          <circle cx="100" cy="180" r="30" />
+        </g>
         
         {/* Arm actuator struts (Abstract angled shapes) */}
         <path d="M 180 180 L 290 320 L 260 480 L 100 550" strokeWidth="3" strokeLinecap="round" />
         <path d="M 155 235 L 240 340 L 210 460" strokeDasharray="8,4" />
         
         {/* Elbow / Joint actuator (concentric rings) */}
-        <circle cx="290" cy="320" r="35" strokeWidth="2" />
-        <circle cx="290" cy="320" r="18" fill="currentColor" className="opacity-20" />
+        <g className="bg-joint-pulse">
+          <circle cx="290" cy="320" r="35" strokeWidth="2" />
+          <circle cx="290" cy="320" r="18" fill="currentColor" className="opacity-20" />
+        </g>
         
         {/* Wrist / Forearm plates */}
         <path d="M 260 480 L 330 520 L 300 620 L 200 590 Z" fill="none" strokeWidth="2" />
@@ -49,8 +53,10 @@ export default function CyberBackground() {
         <line x1="300" y1="510" x2="270" y2="580" strokeWidth="1.5" strokeDasharray="3,3" />
 
         {/* Abstract floating HUD lines */}
-        <path d="M 180 100 L 240 100 L 260 120" strokeWidth="1" strokeDasharray="4,4" />
-        <text x="270" y="125" fontSize="8" fontFamily="monospace" fontWeight="black" className="fill-current">ACTUATOR_L.01</text>
+        <g className="bg-hud-flicker">
+          <path d="M 180 100 L 240 100 L 260 120" strokeWidth="1" strokeDasharray="4,4" />
+          <text x="270" y="125" fontSize="8" fontFamily="monospace" fontWeight="black" className="fill-current">ACTUATOR_L.01</text>
+        </g>
       </svg>
 
       {/* ================= RIGHT SIDE: ABSTRACT HUMANOID HELMET/HEAD PROFILE ================= */}
@@ -76,7 +82,7 @@ export default function CyberBackground() {
         <path 
           d="M 125 250 L 70 250 L 50 290 L 105 340 L 138 290 Z" 
           fill="currentColor" 
-          className="opacity-15"
+          className="opacity-15 bg-visor-glow"
         />
         <path 
           d="M 125 250 L 70 250 L 50 290 L 105 340 L 138 290 Z" 
@@ -84,8 +90,8 @@ export default function CyberBackground() {
           strokeLinejoin="round" 
         />
         {/* Glow telemetry indicators on visor */}
-        <circle cx="75" cy="275" r="4" fill="currentColor" />
-        <line x1="50" y1="290" x2="160" y2="290" strokeWidth="1" strokeDasharray="3,3" />
+        <circle cx="75" cy="275" r="4" fill="currentColor" className="bg-hud-flicker" />
+        <line x1="50" y1="290" x2="160" y2="290" strokeWidth="1" strokeDasharray="3,3" className="bg-hud-flicker" />
 
         {/* Back-of-head cooling vents / mechanical plates */}
         <path d="M 280 100 V 520" strokeWidth="1.5" strokeDasharray="12,6" />
@@ -99,8 +105,10 @@ export default function CyberBackground() {
         <path d="M 250 510 L 210 570" strokeWidth="1" />
 
         {/* Abstract coordinate overlay */}
-        <path d="M 120 450 L 60 450 L 40 470" strokeWidth="1" />
-        <text x="10" y="485" fontSize="8" fontFamily="monospace" fontWeight="black" className="fill-current">CORE.SYS_OK</text>
+        <g className="bg-hud-flicker">
+          <path d="M 120 450 L 60 450 L 40 470" strokeWidth="1" />
+          <text x="10" y="485" fontSize="8" fontFamily="monospace" fontWeight="black" className="fill-current">CORE.SYS_OK</text>
+        </g>
       </svg>
     </div>
   );

@@ -45,9 +45,9 @@ export default function AelosChatbot() {
     // ── Upgraded conversational EdTech quick actions ──
     if (q.includes("recommend a project") || q.includes("recommend")) {
       return {
-        text: "I highly recommend building the 'Mechanical Spider Robot Kit'! It is an immersive course that covers multi-servo calibration, robotics gait kinematics, and obstacle avoidance programming. It will boost your embedded engineering score by 150 points!",
+        text: "I highly recommend building the 'Mechanical Spider Robot Kit'! It is an immersive course that covers multi-servo calibration, robotics gait kinematics, and obstacle avoidance programming.",
         actions: [
-          { label: "View Spider Robot Kit", link: "/?type=videos" },
+          { label: "View Spider Robot Kit", link: "/?type=products" },
           { label: "Explore Prototyping kits", link: "/?type=products" }
         ]
       };
@@ -55,10 +55,10 @@ export default function AelosChatbot() {
 
     if (q.includes("suggest beginner projects") || q.includes("beginner")) {
       return {
-        text: "For a smooth start, I suggest the 'Ultrasonic Obstacle Detector' ebook course. It's a beginner-friendly 2.5-hour build covering ping trigger frequencies, active piezo buzzer alerts, and simple hardware conditional loops.",
+        text: "For a smooth start, I suggest the 'Ultrasonic Obstacle Detector' video lecture. It's a beginner-friendly 2.5-hour build covering ping trigger frequencies, active piezo buzzer alerts, and simple hardware conditional loops.",
         actions: [
-          { label: "View Obstacle Detector", link: "/?type=ebooks" },
-          { label: "Explore Ebooks catalog", link: "/?type=ebooks" }
+          { label: "View Obstacle Detector", link: "/?type=videos" },
+          { label: "Explore Videos catalog", link: "/?type=videos" }
         ]
       };
     }
@@ -85,7 +85,7 @@ export default function AelosChatbot() {
 
     if (q.includes("track my progress") || q.includes("track") || q.includes("progress")) {
       return {
-        text: "You can track your active learning streak, unlocked achievement badges, total score points, bookmarked libraries, and resume in-progress videos dynamically on your premium 'My Space Dashboard'!",
+        text: "You can track your enrolled courses, unlocked guide ebooks, bookmarked libraries, and resume in-progress videos dynamically on your premium 'My Space Dashboard'!",
         actions: [
           { label: "Go to My Space Dashboard", link: "/?type=dashboard" }
         ]

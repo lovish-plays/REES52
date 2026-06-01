@@ -13,7 +13,6 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
   const [projectsCount, setProjectsCount] = useState(0);
   const [resourcesCount, setResourcesCount] = useState(0);
   const [categoriesCount, setCategoriesCount] = useState(0);
-  const [communityCount, setCommunityCount] = useState(0);
 
   useEffect(() => {
     // Clean interactive spring-based count-up math
@@ -34,14 +33,12 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
       setProjectsCount(Math.round(easeProgress * 52));
       setResourcesCount(Math.round(easeProgress * 100));
       setCategoriesCount(Math.round(easeProgress * 10));
-      setCommunityCount(Math.round(easeProgress * 2500));
 
       if (frame >= totalFrames) {
         clearInterval(timer);
         setProjectsCount(52);
         setResourcesCount(100);
         setCategoriesCount(10);
-        setCommunityCount(2500);
       }
     }, frameRate);
 
@@ -94,8 +91,8 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
           </button>
         </div>
 
-        {/* Gamified Count-Up Stats Dashboard */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 pt-8 w-full border-t border-slate-200/60 mt-4">
+        {/* Count-Up Stats Dashboard */}
+        <div className="grid grid-cols-3 gap-4 md:gap-8 pt-8 w-full border-t border-slate-200/60 mt-4">
           
           <div className="flex flex-col items-center p-3 rounded-2xl bg-white/50 border border-slate-100 hover:border-cyan-500/20 transition-all shadow-sm">
             <div className="flex items-center gap-1 text-cyan-600 mb-1">
@@ -124,16 +121,6 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
             </div>
             <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
               {categoriesCount}+
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center p-3 rounded-2xl bg-white/50 border border-slate-100 hover:border-cyan-500/20 transition-all shadow-sm">
-            <div className="flex items-center gap-1 text-orange-600 mb-1">
-              <Users className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Community</span>
-            </div>
-            <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-              {communityCount >= 1000 ? `${(communityCount / 1000).toFixed(1)}k+` : `${communityCount}+`}
             </span>
           </div>
 

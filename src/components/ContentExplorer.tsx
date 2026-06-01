@@ -438,14 +438,62 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     });
   };
 
-  const triggerQuickPreview = (id: string, type: "video" | "ebook", e?: React.MouseEvent) => {
+  const triggerQuickPreview = (id: string, type: "video" | "ebook" | "product", e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+
+    // Check if the preview matches our featured carousel items and populate them beautifully!
+    if (id === "22222222-2222-2222-2222-222222222222") {
+      const prod = products.find(p => p.id === id) || {
+        id,
+        name: "Mechanical Spider Robot Kit",
+        external_purchase_url: "https://rees52.com/robotics/456-rees52-4wd-smart-robot-car-kit.html",
+        image_url: "https://img.youtube.com/vi/W4EaB6HhM_M/0.jpg",
+        category_id: "11111111-1111-1111-1111-111111111111"
+      };
+      setSelectedProduct(prod as Product);
+      return;
+    }
+
+    if (id === "44444444-4444-4444-4444-444444444442") {
+      setPreviewItem({
+        isOpen: true,
+        id,
+        title: "Ultrasonic Obstacle Detector",
+        description: "Master sensor interface, frequency ping emission, and tactile feedback buzzer calibration for visual assistance hardware.",
+        type: "video",
+        difficulty: "Beginner",
+        duration: "2.5 Hours",
+        categoryName: "Arduino & Microcontrollers",
+      });
+      return;
+    }
+
+    if (id === "22222222-2222-2222-2222-222222222223") {
+      const prod = products.find(p => p.id === id) || {
+        id,
+        name: "IoT Soil Moisture System",
+        external_purchase_url: "https://rees52.com/sensors/789-rees52-ultimate-sensor-kit.html",
+        image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=60",
+        category_id: "11111111-1111-1111-1111-111111111113"
+      };
+      setSelectedProduct(prod as Product);
+      return;
+    }
+
+    if (type === "product") {
+      const prod = products.find(p => p.id === id);
+      if (prod) setSelectedProduct(prod);
+      return;
+    }
     const item = items.find(it => it.id === id);
     if (!item) return;
 
     const cat = categories.find(c => c.id === item.categoryId);
-    const difficulty = id.includes("soil") ? "Advanced" : id.includes("spider") ? "Intermediate" : "Beginner";
-    const duration = id.includes("soil") ? "5 Hours" : id.includes("spider") ? "4 Hours" : "2.5 Hours";
+    const titleLower = item.title.toLowerCase();
+    const difficulty = titleLower.includes("soil") || titleLower.includes("moisture") ? "Advanced" : 
+                       titleLower.includes("spider") || titleLower.includes("robot") ? "Intermediate" : "Beginner";
+    const duration = titleLower.includes("soil") || titleLower.includes("moisture") ? "5 Hours" : 
+                     titleLower.includes("spider") || titleLower.includes("robot") ? "4 Hours" : "2.5 Hours";
 
     setPreviewItem({
       isOpen: true,
@@ -519,6 +567,9 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               triggerQuickPreview(id, route.replace("s", "") as any);
             }
           }}
+          products={products}
+          items={items}
+          categories={categories}
         />
       )}
 
@@ -665,7 +716,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
           products={products}
           items={items}
           bookmarks={bookmarks}
-          likes={likes}
           onRemoveBookmark={(id) => syncBookmarks(bookmarks.filter(item => item !== id))}
           onNavigateToItem={(url) => {
             const match = url.match(/\/([^\/]+)\/([^\/]+)$/);
@@ -673,6 +723,11 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               const [_, route, id] = match;
               triggerQuickPreview(id, route.replace("s", "") as any);
             }
+          }}
+          onExploreClick={() => {
+            setTab("all");
+            const target = document.getElementById("explorer-anchor");
+            if (target) target.scrollIntoView({ behavior: "smooth" });
           }}
         />
       ) : (

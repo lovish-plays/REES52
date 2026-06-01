@@ -44,7 +44,7 @@ export default function AdSensePlaceholder({
       className={`w-full flex flex-col items-center justify-center overflow-hidden my-2 max-w-full ${className}`}
     >
       {/* Clean, completely empty dashed live ad container */}
-      <div className="w-full border border-dashed border-slate-350 bg-slate-400/5 px-4 py-3 rounded-xl flex flex-col items-center justify-center text-center relative min-h-[90px] overflow-hidden">
+      <div className="w-full h-[307px] border border-dashed border-slate-350 bg-slate-400/5 px-4 py-3 rounded-xl flex flex-col items-center justify-center text-center relative overflow-hidden">
         
         {/* Live Active Ad Ins Element */}
         <ins

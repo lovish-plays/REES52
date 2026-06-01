@@ -476,20 +476,20 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                       setSelectedProduct(p);
                     }
                   }}
-                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-4 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 animate-fade-in-up premium-grid-card"
+                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-3.5 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 animate-fade-in-up premium-grid-card"
                 >
                   <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
-                        <Cpu className="h-3 w-3 text-cyan-600" /> Product
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/75 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
+                        <Cpu className="h-2.5 w-2.5 text-cyan-600" /> Product
                       </span>
-                      <span className="text-[10px] font-black text-slate-500 uppercase truncate max-w-[120px]">
+                      <span className="text-[9px] font-black text-slate-500 uppercase truncate max-w-[100px]">
                         {cat?.name ?? "Uncategorized"}
                       </span>
                     </div>
 
                     {p.image_url ? (
-                      <div className="mt-2.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
+                      <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={p.image_url}
@@ -500,22 +500,22 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                         />
                       </div>
                     ) : (
-                      <div className="mt-2.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center shadow-sm">
-                        <Cpu className="w-10 h-10 text-cyan-600/50 animate-pulse" />
+                      <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center shadow-sm">
+                        <Cpu className="w-8 h-8 text-cyan-600/50 animate-pulse" />
                       </div>
                     )}
 
-                    <h3 className="text-sm font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug mt-2.5">
+                    <h3 className="text-xs font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug mt-2 truncate">
                       {p.name}
                     </h3>
 
-                    <p className="mt-2 text-xs text-slate-650 leading-relaxed line-clamp-1 font-medium">
+                    <p className="mt-1.5 text-[11px] text-slate-600 leading-relaxed line-clamp-1 font-medium">
                       Explore official REES52 DIY STEM prototyping hardware kit. Designed for educational labs, schools, and makers.
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col gap-3">
-                    <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2 premium-card-btn">
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-2">
+                    <Button variant="default" className="w-full pointer-events-none uppercase text-[9px] tracking-widest font-black py-1.5 premium-card-btn">
                       View Details
                     </Button>
                   </div>
@@ -557,32 +557,32 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     setSelectedItem(it);
                   }
                 }}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-4 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 premium-grid-card"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-3.5 backdrop-blur-xl shadow-sm cursor-pointer text-slate-800 premium-grid-card"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/75 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/75 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
                       {it.type === "ebook" ? (
                         <>
-                          <BookOpen className="h-3 w-3 text-cyan-600" /> Ebook
+                          <BookOpen className="h-2.5 w-2.5 text-cyan-600" /> Ebook
                         </>
                       ) : it.type === "video" ? (
                         <>
-                          <Video className="h-3 w-3 text-blue-600" /> Video
+                          <Video className="h-2.5 w-2.5 text-blue-600" /> Video
                         </>
                       ) : (
                         <>
-                          <Radio className="h-3 w-3 text-rose-600" /> Live
+                          <Radio className="h-2.5 w-2.5 text-rose-600" /> Live
                         </>
                       )}
                     </span>
-                    <span className="text-[10px] font-black text-slate-500 uppercase truncate max-w-[120px]">
+                    <span className="text-[9px] font-black text-slate-500 uppercase truncate max-w-[100px]">
                       {cat?.name ?? "Uncategorized"}
                     </span>
                   </div>
 
                   {it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) && (
-                    <div className="mt-2.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
+                    <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
@@ -594,25 +594,25 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     </div>
                   )}
 
-                  <h3 className={`text-sm font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug ${
-                    it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) ? 'mt-2.5' : 'mt-3.5'
+                  <h3 className={`text-xs font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug truncate ${
+                    it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) ? 'mt-2' : 'mt-3'
                   }`}>
                     {it.title}
                   </h3>
 
                   {it.description ? (
-                    <p className="mt-2 text-xs text-slate-655 line-clamp-1 leading-relaxed">
+                    <p className="mt-1 text-[11px] text-slate-600 line-clamp-1 leading-relaxed">
                       {it.description}
                     </p>
                   ) : (
-                    <p className="mt-2 text-[10px] text-slate-500 line-clamp-1 leading-relaxed italic">
+                    <p className="mt-1 text-[10px] text-slate-500 line-clamp-1 leading-relaxed italic">
                       Explore official REES52 guides, code schemas, and hands-on modules designed for robotics makers.
                     </p>
                   )}
 
                   {prod && (
-                    <div className="mt-2.5 flex items-center gap-2 text-[10px] text-slate-600 font-bold uppercase tracking-wider">
-                      <Cpu className="h-3.5 w-3.5 text-cyan-600" />
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-600 font-bold uppercase tracking-wider">
+                      <Cpu className="h-3 w-3 text-cyan-600" />
                       <span className="truncate text-cyan-700">
                         {prod.name}
                       </span>
@@ -620,9 +620,9 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                   )}
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-[9px] text-slate-500 font-bold uppercase">
+                    <Calendar className="h-3 w-3 text-slate-400" />
                     <span>
                       {new Date(it.date).toLocaleDateString(undefined, {
                         month: "short",
@@ -632,7 +632,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     </span>
                   </div>
 
-                  <Button variant="default" className="w-full pointer-events-none uppercase text-[10px] tracking-widest font-black py-2 premium-card-btn">
+                  <Button variant="default" className="w-full pointer-events-none uppercase text-[9px] tracking-widest font-black py-1.5 premium-card-btn">
                     View Details
                   </Button>
                 </div>

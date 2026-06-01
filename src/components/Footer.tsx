@@ -197,6 +197,9 @@ export default function Footer() {
           <Link href="/terms" className="premium-nav-link text-slate-500 py-0.5">
             Terms & Conditions
           </Link>
+          <Link href="/cookie-policy" className="premium-nav-link text-slate-500 py-0.5">
+            Cookie Policy
+          </Link>
         </div>
       </div>
     </footer>

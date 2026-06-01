@@ -17,6 +17,22 @@ function decodeJwtPayload(token: string) {
   }
 }
 
+function addSecurityHeaders(response: NextResponse) {
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+  );
+  response.headers.set(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://*.doubleclick.net https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.youtube.com https://img.youtube.com https://*.rees52.com https://*.google-analytics.com https://*.doubleclick.net; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.doubleclick.net; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.youtube.com https://www.youtube.com https://*.google.com;"
+  );
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -26,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    return supabaseResponse;
+    return addSecurityHeaders(supabaseResponse);
   }
 
   const supabase = createServerClient(
@@ -69,12 +85,12 @@ export async function middleware(request: NextRequest) {
 
   // Exclude API routes from redirect checks
   if (pathname.startsWith("/api")) {
-    return supabaseResponse;
+    return addSecurityHeaders(supabaseResponse);
   }
 
   const isLoginPage = pathname === "/login";
   const isHomePage = pathname === "/";
-  const isInformationalPage = ["/about", "/contact", "/privacy", "/terms"].includes(pathname);
+  const isInformationalPage = ["/about", "/contact", "/privacy", "/terms", "/cookie-policy"].includes(pathname);
 
   if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage) {
     const redirectUrl = request.nextUrl.clone();
@@ -86,7 +102,7 @@ export async function middleware(request: NextRequest) {
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });
-    return redirectResponse;
+    return addSecurityHeaders(redirectResponse);
   }
 
   if (isAuthenticated && isLoginPage) {
@@ -98,10 +114,10 @@ export async function middleware(request: NextRequest) {
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });
-    return redirectResponse;
+    return addSecurityHeaders(redirectResponse);
   }
 
-  return supabaseResponse;
+  return addSecurityHeaders(supabaseResponse);
 }
 
 export const config = {

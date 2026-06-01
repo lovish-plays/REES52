@@ -8,6 +8,9 @@ import AelosChatbot from "@/components/AelosChatbot";
 import CyberBackground from "@/components/CyberBackground";
 import SplashLoader from "@/components/SplashLoader";
 import RobotPeeker from "@/components/RobotPeeker";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import SchemaMarkup from "@/components/SchemaMarkup";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,6 +83,12 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1
     }
+  },
+  alternates: {
+    canonical: "https://rees52.com",
+  },
+  verification: {
+    google: "yoursiteconsoleverificationtoken",
   }
 };
 
@@ -106,6 +115,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
+          <SchemaMarkup />
           <SplashLoader />
           <RobotPeeker />
           <CyberBackground />

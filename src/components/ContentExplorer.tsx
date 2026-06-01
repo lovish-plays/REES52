@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AdSensePlaceholder from "@/components/AdSensePlaceholder";
 import {
   BookOpen,
   Calendar,
@@ -274,6 +275,13 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       showToast(res.error, "error");
     } else {
       showToast("Successfully enrolled in video lecture!", "success");
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "enroll_video", {
+          item_id: id,
+          item_name: selectedItem?.title,
+          category: categories.find(c => c.id === selectedItem?.categoryId)?.name,
+        });
+      }
     }
   };
 
@@ -287,6 +295,13 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       showToast(res.error, "error");
     } else {
       showToast("Successfully unlocked Ebook guide!", "success");
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "unlock_ebook", {
+          item_id: id,
+          item_name: selectedItem?.title,
+          category: categories.find(c => c.id === selectedItem?.categoryId)?.name,
+        });
+      }
     }
   };
 
@@ -448,10 +463,10 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredProducts.map((p) => {
+            {filteredProducts.map((p, idx) => {
               const cat = categories.find((c) => c.id === p.category_id);
 
-              return (
+              const productCard = (
                 <div
                   key={`product:${p.id}`}
                   onClick={() => {
@@ -480,6 +495,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                           src={p.image_url}
                           alt={p.name}
                           className="w-full h-full object-cover premium-card-image"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
                     ) : (
@@ -504,6 +521,18 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                   </div>
                 </div>
               );
+
+              if (idx === 2) {
+                return (
+                  <Fragment key={`prod-group:${p.id}`}>
+                    {productCard}
+                    <div className="col-span-1 h-full">
+                      <AdSensePlaceholder slotId="ca-pub-rees52-product-inline-ad" />
+                    </div>
+                  </Fragment>
+                );
+              }
+              return productCard;
             })}
           </div>
         )
@@ -514,11 +543,11 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {filtered.map((it) => {
+          {filtered.map((it, idx) => {
             const cat = categories.find((c) => c.id === it.categoryId);
             const prod = products.find((p) => p.id === it.productId);
 
-            return (
+            const itemCard = (
               <div
                 key={`${it.type}:${it.id}`}
                 onClick={() => {
@@ -559,6 +588,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                         src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
                         alt={it.title}
                         className="w-full h-full object-cover premium-card-image"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   )}
@@ -607,6 +638,18 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                 </div>
               </div>
             );
+
+            if (idx === 2) {
+              return (
+                <Fragment key={`group:${it.id}`}>
+                  {itemCard}
+                  <div className="col-span-1 h-full">
+                    <AdSensePlaceholder slotId="ca-pub-rees52-card-inline-ad" />
+                  </div>
+                </Fragment>
+              );
+            }
+            return itemCard;
           })}
         </div>
       )}
@@ -664,6 +707,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                         src={`https://img.youtube.com/vi/${getYouTubeId(selectedItem.rawUrl)}/0.jpg`}
                         alt={selectedItem.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover/media:scale-102"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
@@ -875,6 +920,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     src={selectedProduct.image_url}
                     alt={selectedProduct.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">

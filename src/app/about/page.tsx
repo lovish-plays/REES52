@@ -99,7 +99,7 @@ export default function AboutPage() {
               <ShieldCheck className="w-6 h-6 text-green-600" />
             </div>
             <h3 className="text-md font-black uppercase tracking-wider text-slate-900 mb-2">
-              2) Integrity
+              3) Integrity
             </h3>
             <p className="text-xs text-slate-600 font-semibold leading-relaxed">
               Honesty and transparency are at the core of our business. We believe in building trust through ethical practices.

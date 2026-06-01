@@ -129,6 +129,13 @@ export default function AelosChatbot() {
     setInputValue("");
     setIsTyping(true);
 
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "chatbot_interaction", {
+        message_length: text.length,
+        query: text,
+      });
+    }
+
     try {
       // Format chat history for Gemini API (user / model parts)
       const chatHistory = messages.map(m => ({
@@ -313,6 +320,7 @@ export default function AelosChatbot() {
               variant="primary"
               className="rounded-xl w-9.5 h-9.5 glass-btn-primary flex items-center justify-center cursor-pointer shadow-md premium-btn-shimmer"
               disabled={!inputValue.trim()}
+              aria-label="Send message"
             >
               <Send className="w-4 h-4 text-white" />
             </Button>

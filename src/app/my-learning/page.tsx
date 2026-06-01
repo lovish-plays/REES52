@@ -64,9 +64,9 @@ export default async function MyLearningPage() {
                 key={video.id}
                 className="group relative flex flex-col justify-between overflow-hidden rounded-2xl glassmorphism hover:border-cyan-500/50 hover:shadow-lg transition-all duration-300 bg-white/70"
               >
-                <div className="p-5 flex-1 flex flex-col justify-between">
+                <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="flex items-center gap-1.5 text-[9px] font-black text-blue-800 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-250 uppercase tracking-widest">
                         <Play className="w-2.5 h-2.5 text-blue-700 fill-blue-700" /> Enrolled
                       </span>
@@ -82,7 +82,7 @@ export default async function MyLearningPage() {
                     </h3>
                   </div>
 
-                  <div className="mt-6 flex items-center justify-between text-[10px] text-slate-700 font-bold uppercase tracking-wider">
+                  <div className="mt-4 flex items-center justify-between text-[10px] text-slate-700 font-bold uppercase tracking-wider">
                     <span>Video Lecture</span>
                     <span className="text-cyan-700 flex items-center gap-1 font-black">
                       Ready <Play className="w-3 h-3 text-cyan-600 fill-cyan-600 animate-pulse" />
@@ -90,10 +90,10 @@ export default async function MyLearningPage() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-white/40 border-t border-slate-200/50 flex flex-col gap-2 backdrop-blur-sm">
+                <div className="p-3 bg-white/40 border-t border-slate-200/50 flex flex-col gap-2 backdrop-blur-sm">
                   <Link
                     href={`/videos/${video.id}`}
-                    className="w-full py-2.5 glass-btn-cyan font-black text-xs uppercase tracking-widest rounded-lg text-center flex items-center justify-center gap-1 transition-all"
+                    className="w-full py-2 glass-btn-cyan font-black text-xs uppercase tracking-widest rounded-lg text-center flex items-center justify-center gap-1 transition-all"
                   >
                     <span>Watch Preview</span>
                     <ArrowRight className="w-3.5 h-3.5" />

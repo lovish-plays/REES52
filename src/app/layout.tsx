@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     title: "REES52 Learning Hub | Premium Robotics & STEM Education",
     description:
       "Master robotics, embedded systems, Arduino, IoT, and drone building with hands-on ebooks, video lectures, and live webinars.",
-    url: "https://rees52.com",
+    url: "https://rees52.tech",
     siteName: "REES52 Learning Hub",
     locale: "en_US",
     type: "website"
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     }
   },
   alternates: {
-    canonical: "https://rees52.com",
+    canonical: "https://rees52.tech",
   },
   verification: {
     google: "yoursiteconsoleverificationtoken",

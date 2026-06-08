@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 export default function SchemaMarkup() {
   const pathname = usePathname();
-  const baseUrl = "https://rees52.com";
+  const baseUrl = "https://rees52.tech";
 
   // 1. Organization Schema
   const organizationSchema = {

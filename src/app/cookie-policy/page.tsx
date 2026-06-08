@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Read the official Cookie Policy of REES52. Learn how we use essential, local storage fallback session cookies, and analytics cookies to deliver a secure learning experience.",
   keywords: ["REES52 Cookie Policy", "robotic portal cookies", "essential cookies", "analytics tracking"],
   alternates: {
-    canonical: "https://rees52.com/cookie-policy",
+    canonical: "https://rees52.tech/cookie-policy",
   }
 };
 

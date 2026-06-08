@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/_next/', '/admin/', '/api/'],
     },
-    sitemap: 'https://rees52.com/sitemap.xml',
+    sitemap: 'https://rees52.tech/sitemap.xml',
   }
 }

@@ -236,11 +236,47 @@ export async function getCurrentUser() {
           const db = getDB();
           const localUser = db.users.find(u => u.id === decoded.userId || u.email.toLowerCase() === decoded.email?.toLowerCase());
           if (localUser) {
+            // Dynamically sync role, name, and ID from Supabase profiles if possible
+            let finalRole = localUser.role;
+            let finalName = localUser.name;
+            try {
+              const supabase = await createClient();
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('id, name, role')
+                .eq('email', localUser.email.toLowerCase())
+                .maybeSingle();
+
+              if (profile) {
+                const checkedRole = profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
+                let changed = false;
+                if (localUser.role !== checkedRole) {
+                  localUser.role = checkedRole;
+                  finalRole = checkedRole;
+                  changed = true;
+                }
+                if (profile.name && localUser.name !== profile.name) {
+                  localUser.name = profile.name;
+                  finalName = profile.name;
+                  changed = true;
+                }
+                if (profile.id && localUser.id !== profile.id) {
+                  localUser.id = profile.id;
+                  changed = true;
+                }
+                if (changed) {
+                  saveDB(db);
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to dynamically fetch role from Supabase in getCurrentUser:", err);
+            }
+
             return {
               id: localUser.id,
-              name: localUser.name,
+              name: finalName,
               email: localUser.email,
-              role: localUser.role as 'Admin' | 'Student',
+              role: finalRole as 'Admin' | 'Student',
               enrolled_videos: localUser.enrolled_videos ?? [],
               purchased_ebooks: localUser.purchased_ebooks ?? [],
             };

@@ -10,8 +10,8 @@ import RobotPeeker from "@/components/RobotPeeker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SchemaMarkup from "@/components/SchemaMarkup";
 import StoreTransitionModal from "@/components/StoreTransitionModal";
+import MobileViewportHandler from "@/components/MobileViewportHandler";
 import { Suspense } from "react";
-import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -120,6 +120,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
+          <MobileViewportHandler />
           <Suspense fallback={null}>
             <GoogleAnalytics />
           </Suspense>

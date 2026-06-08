@@ -33,8 +33,18 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      onOpenAutoFocus={(e) => {
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
+          e.preventDefault();
+        }
+        if (props.onOpenAutoFocus) {
+          props.onOpenAutoFocus(e);
+        }
+      }}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 w-[calc(100%-2rem)] md:w-full max-w-md translate-x-[-50%] translate-y-[-50%] rounded-2xl border border-white/10 bg-white/5 p-6 text-white shadow-[0_30px_120px_rgba(0,0,0,0.75),0_0_40px_rgba(34,211,238,0.08)] backdrop-blur-xl",
+        "fixed left-[50%] z-50 w-[calc(100%-2rem)] md:w-full max-w-md translate-x-[-50%] rounded-2xl border border-white/10 bg-white/5 p-6 text-white shadow-[0_30px_120px_rgba(0,0,0,0.75),0_0_40px_rgba(34,211,238,0.08)] backdrop-blur-xl",
+        "top-[calc(var(--visual-viewport-offsetTop,0px)+var(--visual-viewport-height,100vh)/2)] translate-y-[-50%]",
+        "max-h-[calc(var(--visual-viewport-height,100vh)-2rem)] overflow-y-auto",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className
       )}

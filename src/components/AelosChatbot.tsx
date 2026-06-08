@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Cpu, Bot, Sparkles, BookOpen, Video, ExternalLink } from "lucide-react";
+import { X, Send, Cpu, Bot, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { askAelosAiAction } from "@/app/actions/chatbot";
 
@@ -213,7 +213,13 @@ export default function AelosChatbot() {
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[500px] sm:h-[520px] bg-[#F7F4EB]/95 border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 backdrop-blur-xl">
+        <div 
+          className="fixed right-4 sm:right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)] bg-[#F7F4EB]/95 border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 backdrop-blur-xl"
+          style={{
+            bottom: "calc(var(--layout-viewport-height, 100vh) - var(--visual-viewport-height, 100vh) + var(--visual-viewport-offsetTop, 0px) + 5rem)",
+            height: "min(520px, calc(var(--visual-viewport-height, 100vh) - 6rem))"
+          }}
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-white px-4 py-3.5 flex items-center justify-between border-b border-cyan-500/25">
             <div className="flex items-center gap-2.5">

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Fragment, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
@@ -10,6 +10,9 @@ import MetricsSection from "@/components/MetricsSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import LearnerDashboard from "@/components/LearnerDashboard";
 import QuickPreviewModal from "@/components/QuickPreviewModal";
+import WhatYoullBuild from "@/components/WhatYoullBuild";
+import AboutAcademy from "@/components/AboutAcademy";
+import CommunityProjects from "@/components/CommunityProjects";
 import { getItemMetadata } from "@/lib/projectMetadata";
 import {
   BookOpen,
@@ -122,6 +125,33 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
   const [likes, setLikes] = useState<string[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [communityProjects, setCommunityProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("rees_community_projects");
+      if (stored) {
+        setCommunityProjects(JSON.parse(stored));
+      }
+    }
+  }, [searchFocused]);
+
+  const matchingSuggestions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return { items: [], projects: [] };
+
+    const matchingItems = items.filter(it => 
+      it.title.toLowerCase().includes(q) || 
+      (it.description && it.description.toLowerCase().includes(q))
+    ).slice(0, 3);
+
+    const matchingProjects = communityProjects.filter(p => 
+      p.title.toLowerCase().includes(q) || 
+      p.description.toLowerCase().includes(q)
+    ).slice(0, 3);
+
+    return { items: matchingItems, projects: matchingProjects };
+  }, [search, items, communityProjects]);
 
   // Modal states
   const [selectedItem, setSelectedItem] = useState<FeedItem | null>(null);
@@ -403,6 +433,39 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     return list.slice(0, 6);
   }, [items, bookmarks, likes]);
 
+  // ── Discovery sections memos ──
+  const popularTutorials = useMemo(() => {
+    const list = items.map((it) => {
+      const meta = getItemMetadata(it);
+      return { ...it, ...meta };
+    }).filter(it => it.type === "video");
+    return list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 4);
+  }, [items]);
+
+  const trendingTutorials = useMemo(() => {
+    const list = items.map((it) => {
+      const meta = getItemMetadata(it);
+      return { ...it, ...meta };
+    }).filter(it => it.type === "video" || it.type === "webinar");
+    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+  }, [items]);
+
+  const latestTutorials = useMemo(() => {
+    const list = items.map((it) => {
+      const meta = getItemMetadata(it);
+      return { ...it, ...meta };
+    }).filter(it => it.type === "video");
+    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+  }, [items]);
+
+  const popularEbooks = useMemo(() => {
+    const list = items.map((it) => {
+      const meta = getItemMetadata(it);
+      return { ...it, ...meta };
+    }).filter(it => it.type === "ebook");
+    return list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 4);
+  }, [items]);
+
   const handleEnrollVideo = async (id: string) => {
     if (!user) {
       setAuthOpen(true);
@@ -474,6 +537,156 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     }).catch(() => {
       showToast("Failed to copy share link.", "error");
     });
+  };
+
+  const renderItemCard = (it: FeedItem & { difficulty: string; duration: string; durationMins: number; overview?: string }) => {
+    const cat = categories.find((c) => c.id === it.categoryId);
+    const prod = products.find((p) => p.id === it.productId);
+    const isSaved = bookmarks.includes(it.id);
+    const isLiked = likes.includes(it.id);
+
+    return (
+      <div
+        key={`${it.type}:${it.id}`}
+        className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-3.5 backdrop-blur-xl shadow-sm text-slate-800 premium-interactive-card"
+      >
+        <div>
+          {/* Badge Tags */}
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/75 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-705 premium-card-badge">
+              {it.type === "ebook" ? (
+                <>
+                  <BookOpen className="h-2.5 w-2.5 text-cyan-600" /> Ebook
+                </>
+              ) : it.type === "video" ? (
+                <>
+                  <Video className="h-2.5 w-2.5 text-blue-600" /> Video
+                </>
+              ) : (
+                <>
+                  <Radio className="h-2.5 w-2.5 text-rose-600" /> Live
+                </>
+              )}
+            </span>
+            <span className="text-[9px] font-black text-slate-500 uppercase truncate max-w-[100px]">
+              {cat?.name ?? "Uncategorized"}
+            </span>
+          </div>
+
+          {/* Image Thumbnail Overlay */}
+          {it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) && (
+            <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
+              <Image
+                src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
+                alt={it.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover premium-card-image"
+              />
+              {/* Quick overlays */}
+              <div className="absolute top-2 right-2 flex gap-1.5 z-25">
+                <button
+                  type="button"
+                  onClick={(e) => handleBookmarkToggle(it.id, e)}
+                  className="p-1.5 bg-white/95 hover:bg-white text-slate-650 hover:text-cyan-705 rounded-lg shadow-sm border border-slate-200 transition-colors cursor-pointer"
+                >
+                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "text-cyan-600 fill-cyan-600" : ""}`} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => handleLikeToggle(it.id, e)}
+                  className="p-1.5 bg-white/95 hover:bg-white text-slate-655 hover:text-rose-600 rounded-lg shadow-sm border border-slate-200 transition-colors cursor-pointer"
+                >
+                  <Heart className={`w-3.5 h-3.5 ${isLiked ? "text-rose-600 fill-rose-600" : ""}`} />
+                </button>
+              </div>
+
+              {/* Quick eye details trigger on center hover */}
+              <div 
+                onClick={(e) => triggerQuickPreview(it.id, it.type as any, e)}
+                className="absolute inset-0 bg-black/5 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 duration-300 cursor-pointer"
+              >
+                <span className="px-3 py-1.5 bg-white/90 rounded-lg border border-slate-200 text-[8.5px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1 shadow-md">
+                  <Eye className="w-3.5 h-3.5 text-cyan-600" /> Quick Preview
+                </span>
+              </div>
+            </div>
+          )}
+
+          <h3 className={`text-xs font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug truncate ${
+            it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) ? 'mt-2' : 'mt-3'
+          }`}>
+            {it.title}
+          </h3>
+
+          {it.description ? (
+            <p className="mt-1 text-[11px] text-slate-600 line-clamp-1 leading-relaxed">
+              {it.description}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-slate-500 line-clamp-1 leading-relaxed italic">
+              Explore official REES52 guides, code schemas, and hands-on modules designed for robotics makers.
+            </p>
+          )}
+
+          {prod && (
+            <div className="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-600 font-bold uppercase tracking-wider">
+              <Cpu className="h-3 w-3 text-cyan-600" />
+              <span className="truncate text-cyan-700">
+                {prod.name}
+              </span>
+            </div>
+          )}
+
+          {/* Difficulty, Duration and Progress status badges */}
+          <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-slate-100/60">
+            <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider">
+              <span className={`px-1.5 py-0.5 rounded-md border ${
+                it.difficulty === "Beginner" ? "border-emerald-200 bg-emerald-50 text-emerald-800" :
+                it.difficulty === "Intermediate" ? "border-amber-200 bg-amber-50 text-amber-800" :
+                "border-rose-200 bg-rose-50 text-rose-800"
+              }`}>
+                {it.difficulty}
+              </span>
+              <span className="text-slate-500">{it.duration}</span>
+            </div>
+            {(() => {
+              const progressPct = user?.progress?.[it.id]?.percentage || 0;
+              if (progressPct > 0) {
+                return (
+                  <span className={`text-[8.5px] font-black uppercase tracking-widest ${
+                    progressPct === 100 ? "text-emerald-600" : "text-cyan-600"
+                  }`}>
+                    {progressPct === 100 ? "✓ Done" : `${progressPct}%`}
+                  </span>
+                );
+              }
+              return null;
+            })()}
+          </div>
+        </div>
+
+        {/* Bottom Details Section */}
+        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setSelectedItem(it)}
+            className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[9px] tracking-widest rounded-lg transition-colors cursor-pointer text-center"
+          >
+            View Details
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => handleShareTrigger(it.id, it.title, e)}
+            className="p-2 border border-slate-200 hover:border-slate-350 text-slate-500 hover:text-slate-800 bg-white rounded-lg transition-colors cursor-pointer"
+            title="Share Link"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const triggerQuickPreview = (id: string, type: "video" | "ebook" | "product", e?: React.MouseEvent) => {
@@ -614,6 +827,10 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         />
       )}
 
+      {tab === "all" && search === "" && categoryId === "" && difficultyFilter === "" && durationFilter === "" && (
+        <WhatYoullBuild onSelectProject={(term) => handleExecuteSearch(term)} />
+      )}
+
       {/* ── 3. Smart Search & Modular Navigation Bar ── */}
       <div className="relative z-30 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-xl shadow-sm space-y-4">
         
@@ -633,50 +850,119 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             {/* Smart Suggestions & History Dropdown */}
             {searchFocused && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-xl rounded-2xl p-4 z-40 text-left space-y-4 animate-in fade-in duration-200">
-                
-                {/* Popular Queries */}
-                <div className="space-y-1.5">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                    <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Trending Topics
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {popularSearches.map((query) => (
-                      <button
-                        key={query}
-                        onClick={() => handleExecuteSearch(query)}
-                        className="px-2.5 py-1 text-[10px] font-extrabold uppercase bg-slate-50 hover:bg-cyan-50 border border-slate-200 hover:border-cyan-200 text-slate-650 hover:text-cyan-800 rounded-lg cursor-pointer transition-colors"
-                      >
-                        {query}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Search History */}
-                {searchHistory.length > 0 && (
-                  <div className="space-y-1.5 border-t border-slate-100 pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
-                        Recent Searches
+                {search.trim().length === 0 ? (
+                  <>
+                    {/* Popular Queries */}
+                    <div className="space-y-1.5">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                        <TrendingUp className="w-3.5 h-3.5 text-cyan-600" /> Trending Topics
                       </span>
-                      <button
-                        onClick={handleClearHistory}
-                        className="text-[7.5px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest cursor-pointer"
-                      >
-                        Clear All
-                      </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {popularSearches.map((query) => (
+                          <button
+                            key={query}
+                            type="button"
+                            onClick={() => handleExecuteSearch(query)}
+                            className="px-2.5 py-1 text-[10px] font-extrabold uppercase bg-slate-50 hover:bg-cyan-50 border border-slate-200 hover:border-cyan-200 text-slate-650 hover:text-cyan-800 rounded-lg cursor-pointer transition-colors"
+                          >
+                            {query}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {searchHistory.map((query) => (
-                        <button
-                          key={query}
-                          onClick={() => handleExecuteSearch(query)}
-                          className="px-2.5 py-1 text-[10px] font-extrabold bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 rounded-lg cursor-pointer flex items-center gap-1 transition-colors"
-                        >
-                          <span>{query}</span>
-                        </button>
-                      ))}
-                    </div>
+
+                    {/* Search History */}
+                    {searchHistory.length > 0 && (
+                      <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+                            Recent Searches
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleClearHistory}
+                            className="text-[7.5px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest cursor-pointer"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {searchHistory.map((query) => (
+                            <button
+                              key={query}
+                              type="button"
+                              onClick={() => handleExecuteSearch(query)}
+                              className="px-2.5 py-1 text-[10px] font-extrabold bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 rounded-lg cursor-pointer flex items-center gap-1 transition-colors"
+                            >
+                              <span>{query}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Matching Tutorials / Ebooks */}
+                    {matchingSuggestions.items.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          Matching Resources
+                        </span>
+                        <div className="flex flex-col gap-1.5">
+                          {matchingSuggestions.items.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                handleExecuteSearch(item.title);
+                                triggerQuickPreview(item.id, item.type as any);
+                              }}
+                              className="w-full text-left p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg text-xs font-semibold text-slate-800 flex items-center justify-between gap-3 transition-all cursor-pointer"
+                            >
+                              <span className="truncate">{item.title}</span>
+                              <span className="text-[8px] font-black uppercase bg-slate-100 border px-1.5 py-0.5 rounded text-slate-500 flex-shrink-0">
+                                {item.type}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Matching Community Projects */}
+                    {matchingSuggestions.projects.length > 0 && (
+                      <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          Matching Student Projects
+                        </span>
+                        <div className="flex flex-col gap-1.5">
+                          {matchingSuggestions.projects.map((proj) => (
+                            <button
+                              key={proj.id}
+                              type="button"
+                              onClick={() => {
+                                handleExecuteSearch(proj.title);
+                                const el = document.getElementById("community-projects-section");
+                                if (el) el.scrollIntoView({ behavior: "smooth" });
+                              }}
+                              className="w-full text-left p-2 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg text-xs font-semibold text-slate-800 flex items-center justify-between gap-3 transition-all cursor-pointer"
+                            >
+                              <span className="truncate">{proj.title}</span>
+                              <span className="text-[8px] font-black uppercase bg-cyan-50 border border-cyan-200 px-1.5 py-0.5 rounded text-cyan-800 flex-shrink-0">
+                                Community
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {matchingSuggestions.items.length === 0 && matchingSuggestions.projects.length === 0 && (
+                      <div className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        No matches found for "{search}"
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1031,157 +1317,67 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               </div>
             )
           ) : filtered.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm animate-fade-in">
               <p className="text-sm font-black text-slate-800 uppercase">No matching content found.</p>
-              <p className="mt-2 text-xs text-slate-600 uppercase font-bold">Try clearing filters or search query.</p>
+              <p className="mt-2 text-xs text-slate-500 font-medium">Try adjusting your filters, tags, or search query.</p>
+            </div>
+          ) : tab === "all" && search === "" && categoryId === "" && difficultyFilter === "" && durationFilter === "" ? (
+            <div className="space-y-10 animate-fade-in">
+              {/* Popular Tutorials */}
+              {popularTutorials.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+                    <TrendingUp className="w-4 h-4 text-cyan-600" /> Popular Tutorials
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
+                    {popularTutorials.map((it) => renderItemCard(it))}
+                  </div>
+                </div>
+              )}
+
+              {/* Trending Tutorials */}
+              {trendingTutorials.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-cyan-600 animate-pulse" /> Trending Tutorials
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
+                    {trendingTutorials.map((it) => renderItemCard(it))}
+                  </div>
+                </div>
+              )}
+
+              {/* Latest Tutorials */}
+              {latestTutorials.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+                    <Cpu className="w-4 h-4 text-cyan-600" /> Latest Tutorials
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
+                    {latestTutorials.map((it) => renderItemCard(it))}
+                  </div>
+                </div>
+              )}
+
+              {/* Popular Ebooks */}
+              {popularEbooks.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-cyan-600" /> Popular Ebooks
+                  </h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
+                    {popularEbooks.map((it) => renderItemCard(it))}
+                  </div>
+                </div>
+              )}
+
+              <CommunityProjects />
+              <AboutAcademy />
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
               {filtered.map((it, idx) => {
-                const cat = categories.find((c) => c.id === it.categoryId);
-                const prod = products.find((p) => p.id === it.productId);
-                const isSaved = bookmarks.includes(it.id);
-                const isLiked = likes.includes(it.id);
-
-                const itemCard = (
-                  <div
-                    key={`${it.type}:${it.id}`}
-                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/60 p-3.5 backdrop-blur-xl shadow-sm text-slate-800 premium-interactive-card"
-                  >
-                    <div>
-                      {/* Badge Tags */}
-                      <div className="flex items-center justify-between gap-1.5">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/75 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-slate-700 premium-card-badge">
-                          {it.type === "ebook" ? (
-                            <>
-                              <BookOpen className="h-2.5 w-2.5 text-cyan-600" /> Ebook
-                            </>
-                          ) : it.type === "video" ? (
-                            <>
-                              <Video className="h-2.5 w-2.5 text-blue-600" /> Video
-                            </>
-                          ) : (
-                            <>
-                              <Radio className="h-2.5 w-2.5 text-rose-600" /> Live
-                            </>
-                          )}
-                        </span>
-                        <span className="text-[9px] font-black text-slate-500 uppercase truncate max-w-[100px]">
-                          {cat?.name ?? "Uncategorized"}
-                        </span>
-                      </div>
-
-                      {/* Image Thumbnail Overlay */}
-                      {it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) && (
-                        <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
-                          <Image
-                            src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
-                            alt={it.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 300px"
-                            className="object-cover premium-card-image"
-                          />
-                          {/* Quick overlays */}
-                          <div className="absolute top-2 right-2 flex gap-1.5 z-25">
-                            <button
-                              onClick={(e) => handleBookmarkToggle(it.id, e)}
-                              className="p-1.5 bg-white/90 hover:bg-white text-slate-650 hover:text-cyan-700 rounded-lg shadow-sm border border-slate-200 transition-colors cursor-pointer"
-                            >
-                              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "text-cyan-600 fill-cyan-600" : ""}`} />
-                            </button>
-                            <button
-                              onClick={(e) => handleLikeToggle(it.id, e)}
-                              className="p-1.5 bg-white/90 hover:bg-white text-slate-650 hover:text-rose-600 rounded-lg shadow-sm border border-slate-200 transition-colors cursor-pointer"
-                            >
-                              <Heart className={`w-3.5 h-3.5 ${isLiked ? "text-rose-600 fill-rose-600" : ""}`} />
-                            </button>
-                          </div>
-
-                          {/* Quick eye details trigger on center hover */}
-                          <div 
-                            onClick={(e) => triggerQuickPreview(it.id, it.type as any, e)}
-                            className="absolute inset-0 bg-black/5 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 duration-300 cursor-pointer"
-                          >
-                            <span className="px-3 py-1.5 bg-white/90 rounded-lg border border-slate-200 text-[8.5px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1 shadow-md">
-                              <Eye className="w-3.5 h-3.5 text-cyan-600" /> Quick Preview
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      <h3 className={`text-xs font-black tracking-wide text-slate-900 group-hover:text-cyan-700 leading-snug truncate ${
-                        it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) ? 'mt-2' : 'mt-3'
-                      }`}>
-                        {it.title}
-                      </h3>
-
-                      {it.description ? (
-                        <p className="mt-1 text-[11px] text-slate-600 line-clamp-1 leading-relaxed">
-                          {it.description}
-                        </p>
-                      ) : (
-                        <p className="mt-1 text-[10px] text-slate-500 line-clamp-1 leading-relaxed italic">
-                          Explore official REES52 guides, code schemas, and hands-on modules designed for robotics makers.
-                        </p>
-                      )}
-
-                      {prod && (
-                        <div className="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-600 font-bold uppercase tracking-wider">
-                          <Cpu className="h-3 w-3 text-cyan-600" />
-                          <span className="truncate text-cyan-700">
-                            {prod.name}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Difficulty, Duration and Progress status badges */}
-                      <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-slate-100/60">
-                        <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider">
-                          <span className={`px-1.5 py-0.5 rounded-md border ${
-                            it.difficulty === "Beginner" ? "border-emerald-200 bg-emerald-50 text-emerald-800" :
-                            it.difficulty === "Intermediate" ? "border-amber-200 bg-amber-50 text-amber-800" :
-                            "border-rose-200 bg-rose-50 text-rose-800"
-                          }`}>
-                            {it.difficulty}
-                          </span>
-                          <span className="text-slate-500">{it.duration}</span>
-                        </div>
-                        {(() => {
-                          const progressPct = user?.progress?.[it.id]?.percentage || 0;
-                          if (progressPct > 0) {
-                            return (
-                              <span className={`text-[8.5px] font-black uppercase tracking-widest ${
-                                progressPct === 100 ? "text-emerald-600" : "text-cyan-600"
-                              }`}>
-                                {progressPct === 100 ? "✓ Done" : `${progressPct}%`}
-                              </span>
-                            );
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Bottom Details Section */}
-                    <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedItem(it)}
-                        className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[9px] tracking-widest rounded-lg transition-colors cursor-pointer text-center"
-                      >
-                        View Details
-                      </button>
-
-                      <button
-                        onClick={(e) => handleShareTrigger(it.id, it.title, e)}
-                        className="p-2 border border-slate-200 hover:border-slate-350 text-slate-500 hover:text-slate-800 bg-white rounded-lg transition-colors cursor-pointer"
-                        title="Share Link"
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                );
-
+                const itemCard = renderItemCard(it);
                 if (idx === 2) {
                   return (
                     <Fragment key={`group:${it.id}`}>

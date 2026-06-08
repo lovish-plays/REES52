@@ -259,7 +259,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
           {/* Shop Components section */}
           <div className="glassmorphism-cyan p-6 rounded-2xl border border-cyan-300 bg-white/70 shadow-xl flex flex-col gap-4">
             <span className="text-[10px] font-black uppercase tracking-widest text-cyan-700 bg-cyan-100/50 px-3 py-1 rounded-full border border-cyan-200 w-fit">
-              Shop Components
+              Project Hardware Kit
             </span>
 
             {product && (
@@ -271,7 +271,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
 
             {meta?.components && meta.components.length > 0 && (
               <div className="space-y-2.5">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Required Parts List</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Components Used in This Project</p>
                 
                 <div className="flex flex-col gap-2">
                   {meta.components.map((c, i) => (
@@ -282,7 +282,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
                       rel="noopener noreferrer"
                       className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-cyan-50/30 border border-slate-200 hover:border-cyan-300 rounded-xl transition-all group cursor-pointer text-left"
                     >
-                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800 group-hover:text-cyan-800">{c.name}</span>
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-880 group-hover:text-cyan-800">{c.name}</span>
                       <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-600" />
                     </a>
                   ))}

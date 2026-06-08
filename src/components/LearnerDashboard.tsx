@@ -121,6 +121,47 @@ export default function LearnerDashboard({
     return list.slice(0, 3);
   }, [items, bookmarks, user]);
 
+  // Latest Content matching newest arrivals
+  const latestContent = useMemo(() => {
+    if (items.length === 0) return [];
+    return [...items]
+      .sort((a, b) => {
+        const dateA = a.date || a.created_at || "";
+        const dateB = b.date || b.created_at || "";
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      })
+      .slice(0, 3);
+  }, [items]);
+
+  // Continue Learning Logic
+  const primaryContinueItem = useMemo(() => {
+    if (enrolledItems.length === 0) return null;
+    
+    // 1. Try to find the most recently viewed item that is enrolled and not completed
+    const activeRecent = recentlyViewedItems.find(r => 
+      enrolledItems.some(e => e.id === r.id && e.progressPct < 100)
+    );
+    if (activeRecent) {
+      return enrolledItems.find(e => e.id === activeRecent.id);
+    }
+    
+    // 2. Try to find any enrolled item with progress > 0 and < 100
+    const inProgress = enrolledItems.find(e => e.progressPct > 0 && e.progressPct < 100);
+    if (inProgress) return inProgress;
+    
+    // 3. Try to find any enrolled item < 100
+    const notCompleted = enrolledItems.find(e => e.progressPct < 100);
+    if (notCompleted) return notCompleted;
+    
+    // 4. Default to first enrolled item
+    return enrolledItems[0];
+  }, [enrolledItems, recentlyViewedItems]);
+
+  const otherContinueItems = useMemo(() => {
+    if (!primaryContinueItem) return [];
+    return enrolledItems.filter(e => e.id !== primaryContinueItem.id);
+  }, [enrolledItems, primaryContinueItem]);
+
   // Gamification Badges List Setup
   const badgesData = [
     {
@@ -282,18 +323,18 @@ export default function LearnerDashboard({
         </div>
       </div>
 
-      {/* ── 3. Continue Learning Grid ── */}
+      {/* ── 3. Continue Learning: Prominent Card & Active workbench ── */}
       <div className="space-y-4">
         <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-1.5">
-          <Play className="w-4 h-4 text-cyan-600 fill-cyan-600" /> Continue Learning ({enrolledItems.length})
+          <Play className="w-4 h-4 text-cyan-600 fill-cyan-600 animate-pulse" /> Continue Learning
         </h3>
         
-        {enrolledItems.length === 0 ? (
+        {!primaryContinueItem ? (
           <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col items-center justify-center space-y-3">
             <Play className="w-8 h-8 text-slate-350" />
             <div>
-              <p className="text-xs font-black text-slate-800 uppercase">No active courses yet</p>
-              <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Enroll in video lectures or unlock ebooks in the explorer feed to start tracking your progress.</p>
+              <p className="text-xs font-black text-slate-800 uppercase">No active workbench courses yet</p>
+              <p className="text-[10px] text-slate-550 font-bold uppercase mt-1">Enroll in video lectures or unlock ebooks in the explorer feed to start tracking your progress.</p>
             </div>
             <button
               onClick={onExploreClick}
@@ -303,112 +344,191 @@ export default function LearnerDashboard({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {enrolledItems.map((item) => (
-              <div 
-                key={item.id}
-                className="group p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-500/30 rounded-2xl shadow-sm transition-all flex flex-col justify-between gap-4"
-              >
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[7px] font-black uppercase tracking-wider ${
-                      item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
-                    }`}>
-                      {item.type === "video" ? "Video Lecture" : "Ebook"}
-                    </span>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                      {item.progressPct === 100 ? "Completed" : "In Progress"}
-                    </span>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Primary Continue Card (2 cols) */}
+            <div className="lg:col-span-2 relative p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 border border-cyan-500/30 rounded-3xl overflow-hidden shadow-xl flex flex-col justify-between min-h-[260px] group transition-all hover:border-cyan-400/50 animate-fade-in">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition-all duration-500" />
+              
+              <div className="space-y-4 z-10">
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest ${
+                    primaryContinueItem.type === "video" 
+                      ? "border-blue-500/30 bg-blue-500/10 text-blue-400" 
+                      : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
+                  }`}>
+                    {primaryContinueItem.type === "video" ? "Active Video Lecture" : "Active Ebook Blueprint"}
+                  </span>
                   
-                  <h4 className="text-xs font-black text-slate-900 group-hover:text-cyan-700 leading-snug truncate">
-                    {item.title}
-                  </h4>
-
-                  {/* Progress bar info */}
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center justify-between text-[8.5px] font-bold text-slate-500 uppercase">
-                      <span>Last: {item.lastLesson}</span>
-                      <span>{item.progressPct}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-0.5">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          item.progressPct === 100 ? "bg-emerald-500" : "bg-cyan-500"
-                        }`}
-                        style={{ width: `${item.progressPct}%` }}
-                      />
-                    </div>
-                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500 animate-pulse">
+                    {primaryContinueItem.progressPct === 100 ? "Completed" : "In Progress"}
+                  </span>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-                  <button
-                    onClick={() => onNavigateToItem(item.url)}
-                    className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[8.5px] tracking-widest rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-all flex-shrink-0"
-                  >
-                    <span>{item.progressPct === 100 ? "Review Module" : "Resume"}</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-
-                  {item.progressPct === 100 && (
-                    <Link
-                      href={`/certificate/${item.id}`}
-                      className="py-2 px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[8.5px] tracking-widest rounded-lg flex items-center justify-center gap-1 transition-all flex-shrink-0"
-                    >
-                      <Award className="w-3.5 h-3.5" />
-                      <span>Certificate</span>
-                    </Link>
-                  )}
+                <div className="space-y-2">
+                  <h4 className="text-lg md:text-xl font-black text-white leading-snug group-hover:text-cyan-400 transition-colors">
+                    {primaryContinueItem.title}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-cyan-500" /> Currently On: <span className="text-slate-200">{primaryContinueItem.lastLesson}</span>
+                  </p>
                 </div>
               </div>
-            ))}
+
+              <div className="space-y-4 pt-4 border-t border-white/5 z-10">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <span>Workbench Progress</span>
+                  <span className="text-cyan-400">{primaryContinueItem.progressPct}%</span>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="flex-1 w-full h-3 bg-slate-950 border border-white/10 rounded-full p-0.5 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        primaryContinueItem.progressPct === 100 
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" 
+                          : "bg-gradient-to-r from-cyan-500 to-blue-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
+                      }`}
+                      style={{ width: `${primaryContinueItem.progressPct}%` }}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
+                    <button
+                      onClick={() => onNavigateToItem(primaryContinueItem.url)}
+                      className="flex-1 sm:flex-none px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95"
+                    >
+                      <span>{primaryContinueItem.progressPct === 100 ? "Review Module" : "Resume"}</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    
+                    {primaryContinueItem.progressPct === 100 && (
+                      <Link
+                        href={`/certificate/${primaryContinueItem.id}`}
+                        className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span>Certificate</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Other Enrolled Modules List (1 col) */}
+            <div className="p-5 bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col justify-between min-h-[260px]">
+              <div className="space-y-3">
+                <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-800 border-b border-slate-100 pb-2 flex justify-between items-center">
+                  <span>Other Enrolled Modules</span>
+                  <span className="text-slate-400">({otherContinueItems.length})</span>
+                </h5>
+
+                {otherContinueItems.length === 0 ? (
+                  <div className="py-8 text-center flex flex-col items-center justify-center">
+                    <Cpu className="w-8 h-8 text-slate-300 mb-2" />
+                    <p className="text-[9px] text-slate-400 font-extrabold uppercase leading-relaxed max-w-[150px] mx-auto">
+                      Workbench is clear. Start another hardware tutorial to stack modules!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1.5 no-scrollbar">
+                    {otherContinueItems.map(item => (
+                      <div 
+                        key={item.id}
+                        onClick={() => onNavigateToItem(item.url)}
+                        className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <h6 className="text-[10px] font-black text-slate-900 truncate">
+                            {item.title}
+                          </h6>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[8px] text-cyan-600 font-extrabold">{item.progressPct}% done</span>
+                            <div className="w-16 h-1 bg-slate-200 rounded-full overflow-hidden p-[0.5px]">
+                              <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${item.progressPct}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={onExploreClick}
+                className="w-full mt-4 py-2 border border-slate-200 hover:border-slate-350 text-slate-700 font-black uppercase text-[8.5px] tracking-widest rounded-xl transition-colors cursor-pointer text-center bg-white"
+              >
+                Find More Projects
+              </button>
+            </div>
+
           </div>
         )}
       </div>
 
-      {/* ── 4. Recently Viewed & Recommended Content ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Recently Viewed */}
-        <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Clock className="w-4 h-4 text-cyan-600" /> Recently Viewed
-            </h3>
+      {/* ── 4. Recently Viewed: Horizontal Scrollable Row ── */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+          <Clock className="w-4 h-4 text-cyan-600 animate-pulse" /> Recently Viewed
+        </h3>
 
-            {recentlyViewedItems.length === 0 ? (
-              <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-150 flex flex-col items-center justify-center py-8">
-                <Clock className="w-6 h-6 text-slate-350 mb-2" />
-                <p className="text-[10px] text-slate-550 font-bold uppercase">No recently viewed modules</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2.5 max-h-[200px] overflow-y-auto pr-1 no-scrollbar">
-                {recentlyViewedItems.map((item) => (
-                  <div 
-                    key={`recent:${item.id}`}
-                    onClick={() => onNavigateToItem(item.url)}
-                    className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider mb-0.5 ${
+        {recentlyViewedItems.length === 0 ? (
+          <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col items-center justify-center py-10">
+            <Clock className="w-8 h-8 text-slate-300 mb-2" />
+            <p className="text-[10px] text-slate-550 font-bold uppercase">No recently viewed modules</p>
+            <p className="text-[9px] text-slate-400 font-semibold uppercase mt-0.5">As you study projects, they will be saved here for rapid access.</p>
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-3 pt-1 scroll-smooth snap-x no-scrollbar">
+            {recentlyViewedItems.map((item) => {
+              const cat = categories.find((c) => c.id === item.categoryId);
+              const progress = user?.progress?.[item.id] || { percentage: 0 };
+              const progressPct = progress.percentage || 0;
+              
+              return (
+                <div 
+                  key={`recent:${item.id}`}
+                  onClick={() => onNavigateToItem(item.url)}
+                  className="snap-start w-72 flex-shrink-0 bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-500/20 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[120px]"
+                >
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[7px] font-black uppercase tracking-wider ${
                         item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
                       }`}>
                         {item.type}
                       </span>
-                      <h4 className="text-[11px] font-black text-slate-900 truncate leading-snug">
-                        {item.title}
-                      </h4>
+                      <span className="text-[8.5px] font-black text-slate-400 uppercase truncate">
+                        {cat?.name ?? "Academy"}
+                      </span>
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    <h4 className="text-[11px] font-black text-slate-900 line-clamp-2 leading-snug">
+                      {item.title}
+                    </h4>
                   </div>
-                ))}
-              </div>
-            )}
+                  
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-2 mt-2">
+                    <span className="text-[8px] font-extrabold uppercase text-slate-500">
+                      {progressPct === 100 ? "Completed" : progressPct > 0 ? `${progressPct}% complete` : "Not Started"}
+                    </span>
+                    <span className="text-[8.5px] font-black text-cyan-600 hover:text-cyan-700 flex items-center gap-0.5 uppercase">
+                      Resume <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Recommended Next Projects */}
+      {/* ── 5. Recommended For You & Latest Content (Parallel Lists) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Recommended For You */}
         <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
@@ -426,7 +546,7 @@ export default function LearnerDashboard({
                   <div 
                     key={`rec:${item.id}`}
                     onClick={() => onNavigateToItem(item.url)}
-                    className="p-2.5 bg-cyan-50/20 hover:bg-cyan-50/50 border border-cyan-200/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                    className="p-2.5 bg-cyan-50/20 hover:bg-cyan-50/50 border border-cyan-200/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors animate-fade-in"
                   >
                     <div className="min-w-0">
                       <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider mb-0.5 ${
@@ -446,9 +566,52 @@ export default function LearnerDashboard({
           </div>
         </div>
 
+        {/* Latest Content */}
+        <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <Zap className="w-4 h-4 text-cyan-600" /> New Arrivals
+            </h3>
+
+            {latestContent.length === 0 ? (
+              <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-150 flex flex-col items-center justify-center py-8">
+                <Zap className="w-6 h-6 text-slate-350 mb-2" />
+                <p className="text-[10px] text-slate-555 font-bold uppercase">No new arrivals found</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2.5">
+                {latestContent.map((item) => (
+                  <div 
+                    key={`latest:${item.id}`}
+                    onClick={() => onNavigateToItem(item.url)}
+                    className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors animate-fade-in"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider ${
+                          item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
+                        }`}>
+                          {item.type}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-850 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest animate-pulse">
+                          New
+                        </span>
+                      </div>
+                      <h4 className="text-[11px] font-black text-slate-900 truncate leading-snug">
+                        {item.title}
+                      </h4>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
-      {/* ── 5. Saved Blueprints (Bookmarks) & Notifications ── */}
+      {/* ── 6. Saved Blueprints (Bookmarks) & Notifications ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Bookmarked Library */}
@@ -484,7 +647,7 @@ export default function LearnerDashboard({
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => onNavigateToItem(item.url)}
-                      className="p-1.5 bg-slate-950 hover:bg-slate-850 text-white rounded-lg cursor-pointer"
+                      className="p-1.5 bg-slate-950 hover:bg-slate-855 text-white rounded-lg cursor-pointer"
                       title="View resource"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -507,7 +670,7 @@ export default function LearnerDashboard({
         {/* Real Database Notifications Center */}
         <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-550 flex items-center gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
               <Bell className="w-4 h-4 text-cyan-600" /> Notifications
             </span>
             <span className="h-2 w-2 rounded-full bg-cyan-500"></span>
@@ -526,7 +689,7 @@ export default function LearnerDashboard({
                 <div key={notif.id} className="p-2.5 bg-slate-50 rounded-xl border border-slate-150 flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-cyan-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-[10px] text-slate-750 font-semibold leading-relaxed">{notif.message}</p>
+                    <p className="text-[10px] text-slate-700 font-semibold leading-relaxed">{notif.message}</p>
                     <span className="text-[7.5px] text-slate-400 font-extrabold uppercase mt-1 block">
                       {new Date(notif.created_at).toLocaleDateString(undefined, {
                         month: "short",

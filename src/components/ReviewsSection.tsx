@@ -9,7 +9,6 @@ import {
   ChevronLeft, 
   ChevronRight, 
   MessageSquare, 
-  X, 
   User,
   Sparkles
 } from "lucide-react";
@@ -33,29 +32,34 @@ export default function ReviewsSection() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   // Fetch reviews on mount
-  async function loadReviews() {
-    try {
-      setLoading(true);
-      const list = await getReviewsAction();
-      setReviews(list);
-    } catch (err) {
-      console.error("Failed to load reviews:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    let active = true;
+    const loadReviews = async () => {
+      try {
+        const list = await getReviewsAction();
+        if (active) {
+          setReviews(list);
+        }
+      } catch (err) {
+        console.error("Failed to load reviews:", err);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
     loadReviews();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Pre-fill name if user changes
   useEffect(() => {
-    if (user) {
-      setReviewerName(user.name);
-    } else {
-      setReviewerName("");
-    }
+    const targetName = user ? user.name : "";
+    Promise.resolve().then(() => {
+      setReviewerName(targetName);
+    });
   }, [user]);
 
   const handlePrev = () => {
@@ -219,11 +223,11 @@ export default function ReviewsSection() {
             </div>
           </div>
 
-          {/* Carousel Buttons: Left & Right */}
+          {/* Carousel Buttons: Left & Right (Desktop only) */}
           <button
             onClick={handlePrev}
             aria-label="Previous Review"
-            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 sm:p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600 z-10"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -231,23 +235,41 @@ export default function ReviewsSection() {
           <button
             onClick={handleNext}
             aria-label="Next Review"
-            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 sm:p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600 z-10"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          {/* Dots Indicator */}
-          <div className="flex justify-center gap-1.5 mt-5">
-            {reviews.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  currentIndex === idx ? "w-6 bg-cyan-600" : "w-2 bg-slate-350"
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
+          {/* Dots Indicator & Mobile Controls */}
+          <div className="flex items-center justify-center gap-4 mt-5">
+            <button
+              onClick={handlePrev}
+              aria-label="Previous Review"
+              className="sm:hidden rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 shadow-sm active:scale-95"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex justify-center gap-1.5">
+              {reviews.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    currentIndex === idx ? "w-6 bg-cyan-600" : "w-2 bg-slate-350"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleNext}
+              aria-label="Next Review"
+              className="sm:hidden rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 shadow-sm active:scale-95"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
 
         </div>

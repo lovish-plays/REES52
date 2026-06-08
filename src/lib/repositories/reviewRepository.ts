@@ -10,7 +10,7 @@ export class ReviewRepository {
     try {
       const { data, error } = await supabasePublic
         .from('reviews')
-        .select('id, name, rating, review, created_at')
+        .select('id, name, email, rating, review, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -18,15 +18,26 @@ export class ReviewRepository {
         return [];
       }
 
-      return (data || []).map((item: any) => ({
+      interface ReviewRow {
+        id: string;
+        name: string;
+        email: string | null;
+        rating: number;
+        review: string;
+        created_at: string;
+      }
+
+      return ((data || []) as ReviewRow[]).map((item) => ({
         id: item.id,
         name: item.name,
+        email: item.email || '',
         rating: item.rating,
         review: item.review,
         created_at: item.created_at
       }));
-    } catch (err: any) {
-      console.error('[ReviewRepository.getReviews] exception:', err.message || err);
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[ReviewRepository.getReviews] exception:', errMsg);
       return [];
     }
   }
@@ -36,11 +47,13 @@ export class ReviewRepository {
    */
   static async addReview(
     name: string,
+    email: string,
     rating: number,
     review: string
   ): Promise<{ success: boolean; review?: Review; error?: string }> {
     try {
       const cleanName = (name || 'Anonymous Learner').trim();
+      const cleanEmail = (email || 'anonymous@rees52.tech').trim().toLowerCase();
       const cleanReview = (review || '').trim();
       const ratingVal = Math.min(5, Math.max(1, rating));
 
@@ -50,6 +63,7 @@ export class ReviewRepository {
 
       const newReview = {
         name: cleanName,
+        email: cleanEmail,
         rating: ratingVal,
         review: cleanReview,
         created_at: new Date().toISOString()
@@ -66,19 +80,32 @@ export class ReviewRepository {
         return { success: false, error: error.message };
       }
 
+      interface ReviewRow {
+        id: string;
+        name: string;
+        email: string | null;
+        rating: number;
+        review: string;
+        created_at: string;
+      }
+
+      const inserted = data as ReviewRow;
+
       return {
         success: true,
         review: {
-          id: data.id,
-          name: data.name,
-          rating: data.rating,
-          review: data.review,
-          created_at: data.created_at
+          id: inserted.id,
+          name: inserted.name,
+          email: inserted.email || '',
+          rating: inserted.rating,
+          review: inserted.review,
+          created_at: inserted.created_at
         }
       };
-    } catch (err: any) {
-      console.error('[ReviewRepository.addReview] exception:', err.message || err);
-      return { success: false, error: err.message || 'Failed to submit review to database.' };
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Failed to submit review to database.';
+      console.error('[ReviewRepository.addReview] exception:', errMsg);
+      return { success: false, error: errMsg };
     }
   }
 }

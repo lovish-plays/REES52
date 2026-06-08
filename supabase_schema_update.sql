@@ -8,6 +8,7 @@
 CREATE TABLE IF NOT EXISTS public.reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    email TEXT NOT NULL DEFAULT 'anonymous@rees52.tech',
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     review TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

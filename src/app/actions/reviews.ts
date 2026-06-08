@@ -24,14 +24,17 @@ export async function submitReviewAction(
   try {
     // Attempt to resolve active user for profile properties
     const currentUser = await getCurrentUser();
+    const email = currentUser?.email || 'anonymous@rees52.tech';
     
     return await ReviewRepository.addReview(
       name,
+      email,
       rating,
       review
     );
-  } catch (err: any) {
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : 'An error occurred while saving the review.';
     console.error('submitReviewAction error:', err);
-    return { success: false, error: err.message || 'An error occurred while saving the review.' };
+    return { success: false, error: errMsg };
   }
 }

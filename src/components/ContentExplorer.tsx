@@ -10,7 +10,7 @@ import MetricsSection from "@/components/MetricsSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import LearnerDashboard from "@/components/LearnerDashboard";
 import QuickPreviewModal from "@/components/QuickPreviewModal";
-import WhatYoullBuild from "@/components/WhatYoullBuild";
+
 import AboutAcademy from "@/components/AboutAcademy";
 import CommunityProjects from "@/components/CommunityProjects";
 import { getItemMetadata } from "@/lib/projectMetadata";
@@ -827,9 +827,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         />
       )}
 
-      {tab === "all" && search === "" && categoryId === "" && difficultyFilter === "" && durationFilter === "" && (
-        <WhatYoullBuild onSelectProject={(term) => handleExecuteSearch(term)} />
-      )}
+
 
       {/* ── 3. Smart Search & Modular Navigation Bar ── */}
       <div className="relative z-30 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-xl shadow-sm space-y-4">

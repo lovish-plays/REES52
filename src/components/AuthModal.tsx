@@ -74,6 +74,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         } else {
           setSuccessMsg("Account Created Successfully!");
           setShowSuccess(true);
+          setLoading(false);
           setTimeout(() => {
             onClose();
           }, 1800);
@@ -86,6 +87,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         } else {
           setSuccessMsg("Welcome Back!");
           setShowSuccess(true);
+          setLoading(false);
           setTimeout(() => {
             onClose();
           }, 300);

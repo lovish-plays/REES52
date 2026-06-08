@@ -58,60 +58,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
 
   const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
-    let { data, error } = await supabase
-      .from("profiles")
-      .select("id,name,role,enrolled_videos,purchased_ebooks")
-      .eq("id", authUserId)
-      .maybeSingle<ProfileRow>();
-
-    if (error) {
-      console.error("Supabase profile read failed:", error.message);
-    }
-
-    if (!data && !error) {
-      // Self-healing: if the user authenticated successfully but has no profile row, create it
-      const role = "Student";
-      const name = fallbackName?.trim() || email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
-      
-      const { data: newProfile, error: insertError } = await supabase
+    console.log("[AuthContext] loadProfile started for authUserId:", authUserId);
+    try {
+      console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
+      let { data, error } = await supabase
         .from("profiles")
-        .insert({
-          id: authUserId,
-          name,
-          email,
-          role,
-          enrolled_videos: [],
-          purchased_ebooks: []
-        })
         .select("id,name,role,enrolled_videos,purchased_ebooks")
+        .eq("id", authUserId)
         .maybeSingle<ProfileRow>();
 
-      if (!insertError && newProfile) {
-        data = newProfile;
-      } else if (insertError) {
-        console.error("Self-healing profile creation failed:", insertError.message);
+      if (error) {
+        console.error("[AuthContext] Supabase profile read failed:", error.message);
+      } else {
+        console.log("[AuthContext] Supabase profile read succeeded. Data:", data);
       }
+
+      if (!data && !error) {
+        console.log("[AuthContext] No profile found. Creating self-healing profile...");
+        const role = "Student";
+        const name = fallbackName?.trim() || email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: authUserId,
+            name,
+            email,
+            role,
+            enrolled_videos: [],
+            purchased_ebooks: []
+          })
+          .select("id,name,role,enrolled_videos,purchased_ebooks")
+          .maybeSingle<ProfileRow>();
+
+        if (!insertError && newProfile) {
+          console.log("[AuthContext] Self-healing profile created successfully:", newProfile);
+          data = newProfile;
+        } else if (insertError) {
+          console.error("[AuthContext] Self-healing profile creation failed:", insertError.message);
+        }
+      }
+
+      const role = (data?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as
+        | "Admin"
+        | "Student";
+
+      const finalName =
+        data?.name?.trim() ||
+        fallbackName?.trim() ||
+        email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
+        "Learner";
+
+      console.log("[AuthContext] Setting user state. role:", role, "name:", finalName);
+      setUser({
+        id: authUserId,
+        email,
+        name: finalName,
+        role,
+        enrolled_videos: data?.enrolled_videos ?? [],
+        purchased_ebooks: data?.purchased_ebooks ?? [],
+      });
+      console.log("[AuthContext] User state set successfully in loadProfile.");
+    } catch (e: any) {
+      console.error("[AuthContext] loadProfile encountered unexpected error:", e);
     }
-
-    const role = (data?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as
-      | "Admin"
-      | "Student";
-
-    const finalName =
-      data?.name?.trim() ||
-      fallbackName?.trim() ||
-      email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
-      "Learner";
-
-    // Supabase is the single source of truth — no local DB sync needed.
-    setUser({
-      id: authUserId,
-      email,
-      name: finalName,
-      role,
-      enrolled_videos: data?.enrolled_videos ?? [],
-      purchased_ebooks: data?.purchased_ebooks ?? [],
-    });
   };
 
   const refreshUser = async () => {
@@ -200,12 +210,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log("[AuthContext] signIn started for email:", email);
     setIsLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.warn("Supabase signIn failed, trying local fallback:", error.message);
-      try {
+    // Prevent the onAuthStateChange listener from triggering concurrent loadProfile calls
+    profileLoadingRef.current = true;
+    try {
+      console.log("[AuthContext] Calling supabase.auth.signInWithPassword...");
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        console.warn("[AuthContext] Supabase signIn failed:", error.message);
+        console.log("[AuthContext] Trying local fallback loginUser...");
         const localRes = await loginUser({ email, password });
+        console.log("[AuthContext] local fallback loginUser response:", localRes);
         if (localRes.success && localRes.user) {
           setUser({
             id: localRes.user.id,
@@ -215,49 +232,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             enrolled_videos: localRes.user.enrolled_videos ?? [],
             purchased_ebooks: localRes.user.purchased_ebooks ?? [],
           });
+          console.log("[AuthContext] Local fallback sign in successful. User state set.");
+          profileLoadingRef.current = false;
           setIsLoading(false);
           return { success: true };
         } else {
+          console.warn("[AuthContext] Local fallback sign in failed:", localRes.error);
+          profileLoadingRef.current = false;
           setIsLoading(false);
           return { error: localRes.error || error.message };
         }
-      } catch (err) {
-        setIsLoading(false);
-        return { error: error.message };
       }
-    }
 
-    // ── Fast path ───────────────────────────────────────────────────────────
-    // Set the session immediately so the UI can close the modal / redirect
-    // right away. Profile loading is handled asynchronously in the
-    // onAuthStateChange listener that fires after signInWithPassword resolves.
-    setSession(data.session ?? null);
+      console.log("[AuthContext] Supabase signInWithPassword succeeded. data.user:", data.user?.id);
+      console.log("[AuthContext] Setting session...");
+      setSession(data.session ?? null);
 
-    if (data.user) {
-      try {
+      if (data.user) {
         const role = data.user.user_metadata?.role || 'Student';
         const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
-        await createLocalSessionForSupabaseUser(data.user.id, data.user.email ?? '', name, role);
-      } catch (syncErr) {
-        console.error("Local JSON db sync failed on signIn:", syncErr);
-      }
+        
+        console.log("[AuthContext] Calling createLocalSessionForSupabaseUser...");
+        const localSessionRes = await createLocalSessionForSupabaseUser(data.user.id, data.user.email ?? '', name, role);
+        console.log("[AuthContext] createLocalSessionForSupabaseUser completed:", localSessionRes);
 
-      // Signal to the listener that we are already loading the profile
-      profileLoadingRef.current = true;
-      // Load profile in the background — do NOT await here
-      loadProfile(
-        data.user.id,
-        data.user.email ?? "",
-        (data.user.user_metadata?.name as string | undefined) ?? undefined
-      ).finally(() => {
+        console.log("[AuthContext] Starting loadProfile in background...");
+        loadProfile(
+          data.user.id,
+          data.user.email ?? "",
+          (data.user.user_metadata?.name as string | undefined) ?? undefined
+        ).then(() => {
+          console.log("[AuthContext] Background loadProfile resolved successfully");
+        }).catch((err) => {
+          console.error("[AuthContext] Background loadProfile failed:", err);
+        }).finally(() => {
+          profileLoadingRef.current = false;
+          setIsLoading(false);
+          console.log("[AuthContext] Background loadProfile finally completed. isLoading set to false.");
+        });
+      } else {
+        console.log("[AuthContext] No data.user returned from Supabase sign in");
         profileLoadingRef.current = false;
         setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
-    }
+      }
 
-    return { success: true };
+      console.log("[AuthContext] signIn returning success: true");
+      return { success: true };
+    } catch (err: any) {
+      console.error("[AuthContext] signIn encountered unexpected error:", err);
+      profileLoadingRef.current = false;
+      setIsLoading(false);
+      return { error: err?.message || "An unexpected error occurred." };
+    }
   };
 
   const signUp = async (name: string, email: string, password: string) => {

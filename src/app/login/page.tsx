@@ -62,6 +62,7 @@ function LoginForm() {
         } else {
           setSuccessMsg("Account Created Successfully!");
           setShowSuccess(true);
+          setLoading(false);
           setTimeout(() => {
             window.location.href = redirectTo;
           }, 1800);
@@ -74,6 +75,7 @@ function LoginForm() {
         } else {
           setSuccessMsg("Welcome Back!");
           setShowSuccess(true);
+          setLoading(false);
           setTimeout(() => {
             window.location.href = redirectTo;
           }, 500);

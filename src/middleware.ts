@@ -106,6 +106,11 @@ export async function middleware(request: NextRequest) {
   const isHomePage = pathname === "/";
   const isInformationalPage = ["/about", "/contact", "/privacy", "/terms", "/cookie-policy"].includes(pathname);
 
+  // Skip page redirect logic for Server Actions and non-GET requests
+  if (request.method !== "GET" || request.headers.has("next-action")) {
+    return addSecurityHeaders(supabaseResponse);
+  }
+
   if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";

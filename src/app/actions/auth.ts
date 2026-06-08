@@ -341,66 +341,83 @@ export async function purchaseEbookAction(ebookId: string) {
 }
 
 export async function createLocalSessionForSupabaseUser(id: string, email: string, name: string, role: string = 'Student') {
-  const db = getDB();
-  const emailResult = validateAndNormalizeEmail(email);
-  const cleanEmail = emailResult.email || email.trim().toLowerCase();
-  
-  let user = db.users.find(u => u.email.toLowerCase() === cleanEmail || u.id === id);
-  
-  if (!user) {
-    user = {
-      id: id,
-      name,
-      email: cleanEmail,
-      password_hash: '', // oauth/supabase users don't need a local password hash
-      role: (role.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
-      enrolled_videos: [],
-      purchased_ebooks: []
-    };
-    db.users.push(user);
-    saveDB(db);
-  } else {
-    let changed = false;
-    if (user.id !== id) {
-      user.id = id;
-      changed = true;
-    }
-    const finalRole = (role.toLowerCase() === 'admin' ? 'Admin' : 'Student');
-    if (user.role !== finalRole) {
-      user.role = finalRole;
-      changed = true;
-    }
-    if (name && user.name !== name) {
-      user.name = name;
-      changed = true;
-    }
-    if (user.email !== cleanEmail) {
-      user.email = cleanEmail;
-      changed = true;
-    }
-    if (changed) {
+  console.log("[authServerAction] createLocalSessionForSupabaseUser started. id:", id, "email:", email);
+  try {
+    const db = getDB();
+    const emailResult = validateAndNormalizeEmail(email);
+    const cleanEmail = emailResult.email || email.trim().toLowerCase();
+    
+    console.log("[authServerAction] Looking up user in JSON DB with cleanEmail:", cleanEmail);
+    let user = db.users.find(u => u.email.toLowerCase() === cleanEmail || u.id === id);
+    
+    if (!user) {
+      console.log("[authServerAction] User not found. Creating user in JSON DB...");
+      user = {
+        id: id,
+        name,
+        email: cleanEmail,
+        password_hash: '', // oauth/supabase users don't need a local password hash
+        role: (role.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
+        enrolled_videos: [],
+        purchased_ebooks: []
+      };
+      db.users.push(user);
       saveDB(db);
+      console.log("[authServerAction] User created and saved to JSON DB.");
+    } else {
+      console.log("[authServerAction] User found in JSON DB. Checking for changes...");
+      let changed = false;
+      if (user.id !== id) {
+        user.id = id;
+        changed = true;
+      }
+      const finalRole = (role.toLowerCase() === 'admin' ? 'Admin' : 'Student');
+      if (user.role !== finalRole) {
+        user.role = finalRole;
+        changed = true;
+      }
+      if (name && user.name !== name) {
+        user.name = name;
+        changed = true;
+      }
+      if (user.email !== cleanEmail) {
+        user.email = cleanEmail;
+        changed = true;
+      }
+      if (changed) {
+        saveDB(db);
+        console.log("[authServerAction] User updated and saved to JSON DB.");
+      } else {
+        console.log("[authServerAction] No changes detected for user.");
+      }
     }
+
+    console.log("[authServerAction] Signing JWT token...");
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    console.log("[authServerAction] Accessing cookie store...");
+    const cookieStore = await getCookieStore();
+    console.log("[authServerAction] Setting session cookie...");
+    cookieStore.set('session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/'
+    });
+    console.log("[authServerAction] Session cookie set successfully.");
+
+    const { password_hash: _, ...userWithoutPassword } = user;
+    console.log("[authServerAction] createLocalSessionForSupabaseUser returning success: true");
+    return { success: true, user: userWithoutPassword };
+  } catch (err: any) {
+    console.error("[authServerAction] createLocalSessionForSupabaseUser encountered unexpected error:", err);
+    throw err;
   }
-
-  // Create JWT Token
-  const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  const cookieStore = await getCookieStore();
-  cookieStore.set('session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/'
-  });
-
-  const { password_hash: _, ...userWithoutPassword } = user;
-  return { success: true, user: userWithoutPassword };
 }
 
 export async function syncUserByEmailFromSupabase(email: string) {
@@ -671,8 +688,7 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
         return { error: `Supabase password reset failed: ${adminError.message}` };
       }
     } else {
-      console.error("Supabase Service Role Key missing. Cannot update Supabase password.");
-      return { error: "Supabase Service Role Key is missing. Password reset cannot be completed." };
+      console.warn("Supabase Service Role Key missing. Password updated locally only.");
     }
   }
 

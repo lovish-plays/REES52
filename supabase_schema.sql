@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Ensure email column exists on profiles table (Migration/Update for existing tables)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+
 -- Automate profile generation when a new user registers via Supabase Auth
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
@@ -40,9 +43,6 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- Ensure email column exists on profiles table (Migration/Update)
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- Sync emails for existing profiles from auth.users table
 UPDATE public.profiles p

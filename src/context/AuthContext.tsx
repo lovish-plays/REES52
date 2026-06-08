@@ -60,17 +60,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
     console.log("[AuthContext] loadProfile started for authUserId:", authUserId);
     try {
-      console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
-      let { data, error } = await supabase
-        .from("profiles")
-        .select("id,name,role,enrolled_videos,purchased_ebooks")
-        .eq("id", authUserId)
-        .maybeSingle<ProfileRow>();
+      let data: ProfileRow | null = null;
+      let error = null;
 
-      if (error) {
-        console.error("[AuthContext] Supabase profile read failed:", error.message);
-      } else {
-        console.log("[AuthContext] Supabase profile read succeeded. Data:", data);
+      try {
+        console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
+        const queryPromise = supabase
+          .from("profiles")
+          .select("id,name,role,enrolled_videos,purchased_ebooks")
+          .eq("id", authUserId)
+          .maybeSingle<ProfileRow>();
+          
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error("Supabase profile query timed out after 3 seconds")), 3000)
+        );
+
+        const response = await Promise.race([queryPromise, timeoutPromise]);
+        data = response.data;
+        error = response.error;
+        console.log("[AuthContext] Supabase profile query finished. data:", data, "error:", error);
+      } catch (err: any) {
+        console.warn("[AuthContext] Supabase profile query failed or timed out:", err.message || err);
+        error = err;
+      }
+
+      // If client query failed/timed out or returned no profile, fallback to the server action
+      if (error || !data) {
+        console.log("[AuthContext] Client profile query failed/empty. Trying server action fallback...");
+        try {
+          const serverUser = await getCurrentUser();
+          if (serverUser && serverUser.id === authUserId) {
+            console.log("[AuthContext] Profile retrieved via server action fallback:", serverUser);
+            setUser(serverUser);
+            return;
+          }
+        } catch (serverErr) {
+          console.error("[AuthContext] Server action fallback failed:", serverErr);
+        }
       }
 
       if (!data && !error) {

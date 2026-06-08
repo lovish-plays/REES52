@@ -143,6 +143,11 @@ export async function loginUser(formData: any) {
     return { error: 'Invalid email or password.' };
   }
 
+  // Intercept Google-only users attempting password login (Scenario B)
+  if (!user.password_hash && user.provider === 'google') {
+    return { error: 'This account uses Google sign-in. Please click "Continue with Google" to log in.' };
+  }
+
   // Match password
   let isMatch = false;
   if (user.password_hash) {

@@ -59,14 +59,23 @@ export async function GET(request: Request) {
 
     const user = data.user;
     const session = data.session;
-    console.log(`[OAuth Callback] Exchange successful. User ID: ${user.id}, Email: ${user.email}`);
+    const cleanEmail = user.email?.trim().toLowerCase();
+    
+    console.log(`[OAuth Callback] Google email detected: ${cleanEmail}`);
+    console.log(`[OAuth Callback] Exchange successful. User ID: ${user.id}`);
     console.log(`[OAuth Callback] Session details - Access Token: ${session?.access_token ? 'Present' : 'Missing'}, Refresh Token: ${session?.refresh_token ? 'Present' : 'Missing'}`);
 
-    // Query profiles table to see if user has already onboarded
+    if (!cleanEmail) {
+      console.error("[OAuth Callback] User does not have an email address associated with their account");
+      return NextResponse.redirect(`${origin}/login?error=Email address is required`);
+    }
+
+    // Query profiles table by email instead of auth.uid() to find existing account for linking
+    console.log(`[OAuth Callback] Querying profiles table by email: ${cleanEmail}`);
     let { data: profile, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, name, role, avatar_url, provider')
-      .eq('id', user.id)
+      .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+      .eq('email', cleanEmail)
       .maybeSingle();
 
     if (profileErr && (profileErr.message.includes("column") || profileErr.message.includes("avatar_url"))) {
@@ -74,25 +83,71 @@ export async function GET(request: Request) {
       const { data: retryProfile } = await supabase
         .from('profiles')
         .select('id, name, role')
-        .eq('id', user.id)
+        .eq('email', cleanEmail)
         .maybeSingle();
       profile = retryProfile as any;
     }
 
-    console.log(`[OAuth Callback] Profile lookup result: profile exists = ${!!profile}`);
+    console.log(`[OAuth Callback] Existing profile found: ${profile ? 'Yes' : 'No'}`);
+
+    const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
 
     if (profile) {
-      // User profile already exists. Complete login flow by creating the local session.
+      console.log(`[OAuth Callback] Existing profile details - ID: ${profile.id}, Provider: ${profile.provider}`);
+      
+      // If the existing profile has a different ID, link them!
+      if (profile.id !== user.id) {
+        console.log(`[OAuth Callback] Linking Google account ${user.id} to existing profile ${profile.id} with email ${cleanEmail}`);
+        
+        // 1. Insert/upsert new profile row with the new user.id, copying all data
+        const { error: linkError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            name: profile.name,
+            email: cleanEmail,
+            role: profile.role || 'Student',
+            enrolled_videos: profile.enrolled_videos || [],
+            purchased_ebooks: profile.purchased_ebooks || [],
+            avatar_url: avatarUrl || profile.avatar_url,
+            provider: 'google'
+          });
+
+        if (linkError) {
+          console.error("[OAuth Callback] Failed to insert/upsert linked profile:", linkError.message);
+        } else {
+          console.log("[OAuth Callback] Linked profile created successfully. Deleting old profile: " + profile.id);
+          
+          // 2. Delete the old profile row to prevent duplicate profile rows
+          const { error: deleteError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', profile.id);
+          
+          if (deleteError) {
+            console.error("[OAuth Callback] Failed to delete old profile:", deleteError.message);
+          } else {
+            console.log("[OAuth Callback] Account linked successfully and old profile deleted.");
+          }
+        }
+      } else {
+        // If IDs match, just make sure the provider is set to google/linked (or update details)
+        console.log(`[OAuth Callback] Profiles IDs match. Updating provider to google.`);
+        await supabase
+          .from('profiles')
+          .update({ provider: 'google', avatar_url: avatarUrl || profile.avatar_url })
+          .eq('id', user.id);
+      }
+
+      // Complete login flow by creating/updating the local session
       const role = profile.role || 'Student';
       const name = profile.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
-      const avatarUrl = profile.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture;
-      const provider = profile.provider || user.app_metadata?.provider || 'google';
+      const provider = 'google'; // Linked to google now
 
-      console.log(`[OAuth Callback] Profile exists. Creating local session for user: ${user.id}`);
-      await createLocalSessionForSupabaseUser(user.id, user.email ?? '', name, role, avatarUrl, provider);
+      console.log(`[OAuth Callback] Creating local session. User ID: ${user.id}`);
+      await createLocalSessionForSupabaseUser(user.id, cleanEmail, name, role, avatarUrl || profile.avatar_url, provider);
       
-      // Since createLocalSessionForSupabaseUser sets 'session' in the Next.js cookies() store,
-      // we must copy it to our redirectResponse.
+      // Copy the local session token to redirectResponse
       const cookieStore = await cookies();
       const localSessionToken = cookieStore.get('session')?.value;
       if (localSessionToken) {

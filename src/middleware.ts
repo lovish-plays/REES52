@@ -43,6 +43,19 @@ function addSecurityHeaders(response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get("host") || "";
+  if (
+    host.includes("rees-52.vercel.app") ||
+    (host.endsWith(".vercel.app") && 
+     !host.includes("localhost") && 
+     !host.includes("127.0.0.1") && 
+     !host.includes("192.168."))
+  ) {
+    console.log(`[Middleware] Legacy/subdomain host detected: ${host}. Redirecting to rees52.tech`);
+    const targetUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://rees52.tech");
+    return addSecurityHeaders(NextResponse.redirect(targetUrl, { status: 301 }));
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -125,6 +138,17 @@ export async function middleware(request: NextRequest) {
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);
     
+    // Normalize domain for production redirect
+    const redirectHost = redirectUrl.hostname;
+    if (
+      !redirectHost.includes("localhost") &&
+      !redirectHost.includes("127.0.0.1") &&
+      !redirectHost.includes("192.168.")
+    ) {
+      redirectUrl.protocol = "https:";
+      redirectUrl.host = "rees52.tech";
+    }
+    
     const redirectResponse = NextResponse.redirect(redirectUrl);
     // Copy updated cookies to the redirect response
     supabaseResponse.cookies.getAll().forEach((cookie) => {
@@ -137,6 +161,17 @@ export async function middleware(request: NextRequest) {
     const redirectTo = request.nextUrl.searchParams.get("redirect_to") || "/";
     console.log(`[Middleware] Redirecting authenticated user from /login to: ${redirectTo}`);
     const redirectUrl = new URL(redirectTo, request.url);
+    
+    // Normalize domain for production redirect
+    const redirectHost = redirectUrl.hostname;
+    if (
+      !redirectHost.includes("localhost") &&
+      !redirectHost.includes("127.0.0.1") &&
+      !redirectHost.includes("192.168.")
+    ) {
+      redirectUrl.protocol = "https:";
+      redirectUrl.host = "rees52.tech";
+    }
     
     const redirectResponse = NextResponse.redirect(redirectUrl);
     // Copy updated cookies to the redirect response

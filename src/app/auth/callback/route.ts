@@ -3,15 +3,28 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { createLocalSessionForSupabaseUser } from '@/app/actions/auth';
 
+function getRedirectOrigin(requestUrl: string) {
+  const urlObj = new URL(requestUrl);
+  if (
+    urlObj.hostname.includes("localhost") || 
+    urlObj.hostname.includes("127.0.0.1") || 
+    urlObj.hostname.includes("192.168.")
+  ) {
+    return urlObj.origin;
+  }
+  return "https://rees52.tech";
+}
+
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const redirectOrigin = getRedirectOrigin(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
   console.log(`[OAuth Callback] GET request received with code: ${code ? 'present' : 'missing'}, next: ${next}`);
 
   // Create a placeholder redirect response first
-  const redirectResponse = NextResponse.redirect(`${origin}${next}`);
+  const redirectResponse = NextResponse.redirect(`${redirectOrigin}${next}`);
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -49,12 +62,12 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error("[OAuth Callback] exchangeCodeForSession failed:", error.message);
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
+      return NextResponse.redirect(`${redirectOrigin}/login?error=${encodeURIComponent(error.message)}`);
     }
 
     if (!data?.user) {
       console.error("[OAuth Callback] No user returned after code exchange");
-      return NextResponse.redirect(`${origin}/login?error=No user found`);
+      return NextResponse.redirect(`${redirectOrigin}/login?error=No user found`);
     }
 
     const user = data.user;
@@ -67,7 +80,7 @@ export async function GET(request: Request) {
 
     if (!cleanEmail) {
       console.error("[OAuth Callback] User does not have an email address associated with their account");
-      return NextResponse.redirect(`${origin}/login?error=Email address is required`);
+      return NextResponse.redirect(`${redirectOrigin}/login?error=Email address is required`);
     }
 
     // Query profiles table by email instead of auth.uid() to find existing account for linking
@@ -190,12 +203,12 @@ export async function GET(request: Request) {
         console.warn("[OAuth Callback] Local session token was not returned by createLocalSessionForSupabaseUser!");
       }
       
-      console.log(`[OAuth Callback] Redirecting to: ${origin}${next}`);
+      console.log(`[OAuth Callback] Redirecting to: ${redirectOrigin}${next}`);
       return redirectResponse;
     } else {
       // User profile does not exist yet. Redirect to onboarding!
       console.log("[OAuth Callback] Profile does not exist. Redirecting to onboarding");
-      const onboardingResponse = NextResponse.redirect(`${origin}/onboarding`);
+      const onboardingResponse = NextResponse.redirect(`${redirectOrigin}/onboarding`);
       
       // Copy the Supabase session cookies that were set on redirectResponse to onboardingResponse
       redirectResponse.cookies.getAll().forEach(c => {
@@ -214,5 +227,5 @@ export async function GET(request: Request) {
   }
 
   console.error("[OAuth Callback] No code provided in query parameters");
-  return NextResponse.redirect(`${origin}/login?error=Authentication failed`);
+  return NextResponse.redirect(`${redirectOrigin}/login?error=Authentication failed`);
 }

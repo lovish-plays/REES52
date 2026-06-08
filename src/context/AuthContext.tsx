@@ -608,10 +608,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const getURL = () => {
+        if (typeof window !== 'undefined') {
+          const hostname = window.location.hostname;
+          if (
+            hostname.includes("localhost") ||
+            hostname.includes("127.0.0.1") ||
+            hostname.includes("192.168.")
+          ) {
+            return window.location.origin + "/";
+          }
+        }
         let url =
           process.env.NEXT_PUBLIC_SITE_URL ??
-          process.env.NEXT_PUBLIC_VERCEL_URL ??
-          'http://localhost:3000/';
+          'https://rees52.tech/';
         url = url.startsWith('http') ? url : `https://${url}`;
         url = url.endsWith('/') ? url : `${url}/`;
         return url;
@@ -620,7 +629,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const redirectTo = `${getURL()}auth/callback`;
       console.log("[AuthContext] signInWithGoogle starting. Redirecting to:", redirectTo);
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,

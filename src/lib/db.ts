@@ -173,40 +173,7 @@ export function getDB(): DatabaseStore {
     cachedDb = initDB();
   }
   if (!cachedDb.reviews) {
-    cachedDb.reviews = [
-      {
-        id: 'rev-1',
-        name: 'Jane Doe',
-        rating: 5,
-        comment: 'The 4WD Smart Car chassis guide was incredibly clear. Interfacing the ultrasonic sensor bracket was super simple with the step-by-step checklist!',
-        created_at: '2026-06-01T12:00:00.000Z',
-        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120'
-      },
-      {
-        id: 'rev-2',
-        name: 'Arjun Mehta',
-        rating: 5,
-        comment: 'REES52 starter kits are of amazing quality, and this platform makes learning so easy. Getting a digital certificate instantly is a huge motivator.',
-        created_at: '2026-06-03T10:30:00.000Z',
-        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
-      },
-      {
-        id: 'rev-3',
-        name: 'Emma Watson',
-        rating: 4,
-        comment: 'The sensor kit guides are comprehensive. I built the DHT11 temperature logger in under an hour. Great companion tutorials!',
-        created_at: '2026-06-05T15:45:00.000Z',
-        avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120'
-      },
-      {
-        id: 'rev-4',
-        name: 'Rajesh Kumar',
-        rating: 5,
-        comment: 'Highly recommend the ESP32 guides! The multi-threading explanation using FreeRTOS is the best I\'ve found on the web.',
-        created_at: '2026-06-07T09:15:00.000Z',
-        avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120'
-      }
-    ];
+    cachedDb.reviews = [];
     saveDB(cachedDb);
   }
   return cachedDb;

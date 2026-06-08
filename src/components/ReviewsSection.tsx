@@ -142,22 +142,26 @@ export default function ReviewsSection() {
     );
   };
 
-  // Fallback initial generator for avatars
-  const getInitials = (nameStr: string) => {
-    return nameStr.trim().charAt(0).toUpperCase() || "U";
-  };
-
-  // Get dynamic background gradients for profile fallbacks
-  const getAvatarBg = (nameStr: string) => {
-    const charCode = nameStr.charCodeAt(0) || 65;
-    const colors = [
-      "from-cyan-500 to-blue-500",
-      "from-purple-500 to-indigo-500",
-      "from-emerald-500 to-teal-500",
-      "from-orange-500 to-amber-500",
-      "from-rose-500 to-pink-500"
+  // Fallback avatar generator
+  const getRandomAvatar = (seed: string) => {
+    const avatars = [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=120",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120"
     ];
-    return colors[charCode % colors.length];
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % avatars.length;
+    return avatars[index];
   };
 
   if (loading && reviews.length === 0) {
@@ -203,17 +207,11 @@ export default function ReviewsSection() {
             
             {/* User profile image or badge */}
             <div className="flex-shrink-0">
-              {reviews[currentIndex].avatar_url ? (
-                <img
-                  src={reviews[currentIndex].avatar_url}
-                  alt={reviews[currentIndex].name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-cyan-500 shadow-md"
-                />
-              ) : (
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${getAvatarBg(reviews[currentIndex].name)} text-white flex items-center justify-center text-xl font-black shadow-md border-2 border-white`}>
-                  {getInitials(reviews[currentIndex].name)}
-                </div>
-              )}
+              <img
+                src={reviews[currentIndex].avatar_url || getRandomAvatar(reviews[currentIndex].id || reviews[currentIndex].name)}
+                alt={reviews[currentIndex].name}
+                className="w-16 h-16 rounded-full object-cover border-2 border-cyan-500 shadow-md"
+              />
             </div>
 
             {/* Review content details */}

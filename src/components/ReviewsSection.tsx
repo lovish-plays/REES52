@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getReviewsAction, submitReviewAction } from "@/app/actions/reviews";
 import { Review } from "@/lib/db";
@@ -206,11 +207,13 @@ export default function ReviewsSection() {
           <div className="glassmorphism p-6 md:p-10 rounded-3xl border border-slate-200/50 bg-white/70 shadow-lg relative flex flex-col md:flex-row items-center md:items-start gap-6 transition-all duration-500 animate-fade-in">
             
             {/* User profile image or badge */}
-            <div className="flex-shrink-0">
-              <img
+            <div className="flex-shrink-0 relative w-16 h-16">
+              <Image
                 src={reviews[currentIndex].avatar_url || getRandomAvatar(reviews[currentIndex].id || reviews[currentIndex].name)}
                 alt={reviews[currentIndex].name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-cyan-500 shadow-md"
+                fill
+                sizes="64px"
+                className="rounded-full object-cover border-2 border-cyan-500 shadow-md"
               />
             </div>
 

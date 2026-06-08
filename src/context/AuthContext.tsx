@@ -278,7 +278,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               purchased_ebooks: localUser.purchased_ebooks,
               avatar_url: localUser.avatar_url,
               provider: localUser.provider,
-              hasProfile: localUser.hasProfile
+              hasProfile: true
             });
           } else if (isSubscribed) {
             setUser(null);

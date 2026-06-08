@@ -1,153 +1,151 @@
-"use client";
-
-import { useEffect, useState, use } from "react";
+import { Metadata } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { 
   ArrowLeft, 
-  Play, 
   ExternalLink, 
   ShoppingCart, 
-  Award, 
-  CheckCircle, 
   Download, 
-  Cpu, 
-  Layers, 
   Clock, 
-  Heart,
-  Bookmark,
-  Share2,
-  ListChecks,
-  Compass
+  Compass,
+  Play
 } from "lucide-react";
 import { getVideoById, getProductById, getUnifiedFeed } from "@/app/actions/content";
-import { getItemMetadata, ProjectMetadata } from "@/lib/projectMetadata";
-import { useAuth } from "@/context/AuthContext";
+import { getItemMetadata } from "@/lib/projectMetadata";
+import VideoProgressChecklist from "@/components/VideoProgressChecklist";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function VideoDetailPage({ params }: PageProps) {
-  const resolvedParams = use(params);
+/**
+ * Generate SEO Metadata Server-Side
+ */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
   const id = resolvedParams.id;
-  const router = useRouter();
-  const { user, saveProgress, addRecentlyViewed } = useAuth();
+  const video = await getVideoById(id);
+  if (!video) return {};
 
-  const [video, setVideo] = useState<any>(null);
-  const [product, setProduct] = useState<any>(null);
-  const [meta, setMeta] = useState<ProjectMetadata | null>(null);
-  const [related, setRelated] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Curriculum states
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false, false]);
-  const stepsText = [
-    "Introduction & Circuit Core Theory",
-    "Hardware Wiring & Layout Assembly",
-    "Code Upload & Parameter Calibration",
-    "Full Circuit Debugging & Validation"
-  ];
-
-  // Fetch details on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const v = await getVideoById(id);
-        if (!v) {
-          router.push("/456"); // Trigger standard routing error
-          return;
-        }
-        setVideo(v);
-
-        // Fetch companion product
-        if (v.parent_product_id) {
-          const p = await getProductById(v.parent_product_id);
-          setProduct(p);
-        }
-
-        // Fetch meta details
-        const metadata = getItemMetadata({ ...v, type: "video" });
-        setMeta(metadata);
-
-        // Track recently viewed
-        if (user) {
-          await addRecentlyViewed(v.id);
-        }
-
-        // Fetch related projects (same category)
-        const feedData = await getUnifiedFeed();
-        const relatedList = feedData.feed
-          .filter(it => it.categoryId === v.category_id && it.id !== v.id)
-          .slice(0, 3);
-        setRelated(relatedList);
-
-        // Load existing progress steps
-        const userProgress = user?.progress?.[v.id]?.percentage || 0;
-        const stepsState = [
-          userProgress >= 25,
-          userProgress >= 50,
-          userProgress >= 75,
-          userProgress === 100
-        ];
-        setCompletedSteps(stepsState);
-      } catch (err) {
-        console.error("Error loading video details:", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [id, user?.progress, router]);
-
-  // Handle step completion change
-  const handleStepToggle = async (index: number) => {
-    if (!user) {
-      router.push("/login");
-      return;
+  const meta = getItemMetadata({ ...video, type: "video" });
+  
+  return {
+    title: `${video.title} Video Guide`,
+    description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}. Complete hardware code, blueprints, and assembly guides.`,
+    alternates: {
+      canonical: `https://rees52.tech/videos/${id}`,
+    },
+    openGraph: {
+      title: `${video.title} Video Guide | REES52 Learning Hub`,
+      description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}.`,
+      url: `https://rees52.tech/videos/${id}`,
+      type: "video.other",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${video.title} Video Guide`,
+      description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}.`,
     }
-    const nextSteps = [...completedSteps];
-    nextSteps[index] = !nextSteps[index];
-
-    // Enforce sequence logic (previous steps must be completed)
-    if (nextSteps[index]) {
-      for (let i = 0; i < index; i++) nextSteps[i] = true;
-    } else {
-      for (let i = index; i < nextSteps.length; i++) nextSteps[i] = false;
-    }
-
-    setCompletedSteps(nextSteps);
-
-    // Calculate completion percentage
-    const completedCount = nextSteps.filter(Boolean).length;
-    const percentage = completedCount * 25;
-
-    await saveProgress(video.id, percentage, stepsText[Math.max(0, completedCount - 1)]);
   };
+}
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 min-h-[70vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600 mb-4"></div>
-        <p className="text-xs uppercase tracking-widest text-slate-500 font-black">Loading Project Workshop...</p>
-      </div>
-    );
+export default async function VideoDetailPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+
+  const video = await getVideoById(id);
+  if (!video) {
+    redirect("/");
   }
 
-  const embedId = video?.youtube_url ? video.youtube_url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1] : null;
+  // Fetch companion product
+  let product = null;
+  if (video.parent_product_id) {
+    product = await getProductById(video.parent_product_id);
+  }
+
+  // Fetch meta details
+  const meta = getItemMetadata({ ...video, type: "video" });
+
+  // Fetch related projects (same category)
+  let related: any[] = [];
+  try {
+    const feedData = await getUnifiedFeed();
+    related = feedData.feed
+      .filter(it => it.categoryId === video.category_id && it.id !== video.id)
+      .slice(0, 3);
+  } catch (err) {
+    console.error("Error loading related feeds:", err);
+  }
+
+  // Process YouTube video details
+  const embedId = video.youtube_url ? video.youtube_url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1] : null;
   const embedUrl = embedId ? `https://www.youtube.com/embed/${embedId}` : null;
-  const progressPct = user?.progress?.[video?.id]?.percentage || 0;
+
+  // Define structured JSON-LD schemas
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": video.title,
+    "description": meta?.overview || `Video tutorial for ${video.title}`,
+    "thumbnailUrl": embedId ? `https://img.youtube.com/vi/${embedId}/0.jpg` : "https://rees52.tech/icon.png",
+    "uploadDate": video.created_at || new Date().toISOString(),
+    "embedUrl": embedUrl || video.youtube_url,
+    "publisher": {
+      "@type": "Organization",
+      "name": "REES52",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://rees52.tech/icon.png"
+      }
+    }
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://rees52.tech"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Videos",
+        "item": "https://rees52.tech/?type=videos"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": video.title,
+        "item": `https://rees52.tech/videos/${video.id}`
+      }
+    ]
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-8 flex flex-col gap-6 text-slate-800 animate-fade-in">
       
+      {/* Structured SEO Schema Injection */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+
       {/* Back Button */}
-      <Link href="/" className="flex items-center gap-2 text-slate-600 hover:text-cyan-600 transition-colors w-fit text-xs font-bold uppercase tracking-wider">
+      <Link href="/" className="flex items-center gap-2 text-slate-650 hover:text-cyan-600 transition-colors w-fit text-xs font-bold uppercase tracking-wider">
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Explorer</span>
       </Link>
 
-      {/* Main Grid: Detail + Sidebar */}
+      {/* Main Grid Layout: Detail + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* LEFT COLUMN: Video Player & Context */}
@@ -166,7 +164,7 @@ export default function VideoDetailPage({ params }: PageProps) {
                 }`}>
                   {meta?.difficulty}
                 </span>
-                <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-600 text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-md border border-slate-200 bg-slate-50 text-slate-650 text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
                   <Clock className="w-3 h-3" /> {meta?.duration}
                 </span>
               </div>
@@ -184,13 +182,13 @@ export default function VideoDetailPage({ params }: PageProps) {
                 ></iframe>
               </div>
             ) : (
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex flex-col items-center justify-center text-slate-600 text-center p-6">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-105 flex flex-col items-center justify-center text-slate-600 text-center p-6">
                 <Play className="w-12 h-12 text-slate-400 mb-2" />
                 <p className="text-xs uppercase tracking-wider font-semibold">Video preview unavailable</p>
               </div>
             )}
 
-            {/* Stylized YouTube CTA */}
+            {/* Watch Full screen link */}
             <a
               href={video.youtube_url}
               target="_blank"
@@ -202,56 +200,8 @@ export default function VideoDetailPage({ params }: PageProps) {
             </a>
           </div>
 
-          {/* Interactive Progress Checklist */}
-          <div className="glassmorphism p-6 rounded-2xl border border-slate-200/50 bg-white/60 space-y-4">
-            <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-800 flex items-center gap-2">
-              <ListChecks className="w-4 h-4 text-cyan-600" /> Module Progress checklist
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {stepsText.map((step, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => handleStepToggle(idx)}
-                  className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
-                    completedSteps[idx] 
-                      ? "bg-cyan-50/30 border-cyan-300 text-cyan-900" 
-                      : "bg-slate-50/50 border-slate-200 text-slate-650 hover:bg-slate-100"
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                    completedSteps[idx] 
-                      ? "bg-cyan-600 border-cyan-600 text-white" 
-                      : "border-slate-300 bg-white"
-                  }`}>
-                    {completedSteps[idx] && <CheckCircle className="w-3 h-3 fill-cyan-600 text-white" />}
-                  </div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider">{step}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Progress status card */}
-            <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Completion:</span>
-                <div className="w-24 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5">
-                  <div className="h-full bg-cyan-600 rounded-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
-                </div>
-                <span className="text-[11px] font-black text-cyan-800">{progressPct}%</span>
-              </div>
-
-              {progressPct === 100 && (
-                <Link
-                  href={`/certificate/${video.id}`}
-                  className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black uppercase text-[9px] tracking-widest rounded-lg flex items-center justify-center gap-1 transition-all"
-                >
-                  <Award className="w-3.5 h-3.5 animate-bounce" />
-                  <span>Claim Completion Certificate</span>
-                </Link>
-              )}
-            </div>
-          </div>
+          {/* Interactive Progress Checklist Subcomponent */}
+          <VideoProgressChecklist courseId={video.id} courseName={video.title} />
 
           {/* Overview & Objectives */}
           <div className="glassmorphism p-6 rounded-2xl border border-slate-200/50 bg-white/60 space-y-4 text-slate-700">
@@ -264,16 +214,18 @@ export default function VideoDetailPage({ params }: PageProps) {
               </p>
             </div>
 
-            <div className="space-y-2 pt-2">
-              <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-2">
-                Learning Objectives
-              </h3>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-655 font-medium leading-relaxed list-disc list-inside">
-                {meta?.learningObjectives.map((obj, i) => (
-                  <li key={i} className="marker:text-cyan-600">{obj}</li>
-                ))}
-              </ul>
-            </div>
+            {meta?.learningObjectives && meta.learningObjectives.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-900 border-b border-slate-200 pb-2">
+                  Learning Objectives
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-655 font-medium leading-relaxed list-disc list-inside">
+                  {meta.learningObjectives.map((obj, i) => (
+                    <li key={i} className="marker:text-cyan-600">{obj}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Downloads Block */}
@@ -317,24 +269,26 @@ export default function VideoDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="space-y-2.5">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Required Parts List</p>
-              
-              <div className="flex flex-col gap-2">
-                {meta?.components.map((c, i) => (
-                  <a
-                    key={i}
-                    href={c.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-cyan-50/30 border border-slate-200 hover:border-cyan-300 rounded-xl transition-all group cursor-pointer text-left"
-                  >
-                    <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800 group-hover:text-cyan-800">{c.name}</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-600" />
-                  </a>
-                ))}
+            {meta?.components && meta.components.length > 0 && (
+              <div className="space-y-2.5">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Required Parts List</p>
+                
+                <div className="flex flex-col gap-2">
+                  {meta.components.map((c, i) => (
+                    <a
+                      key={i}
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2.5 bg-slate-50 hover:bg-cyan-50/30 border border-slate-200 hover:border-cyan-300 rounded-xl transition-all group cursor-pointer text-left"
+                    >
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-800 group-hover:text-cyan-800">{c.name}</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-600" />
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {product && (
               <a
@@ -352,7 +306,7 @@ export default function VideoDetailPage({ params }: PageProps) {
           {/* Related Projects */}
           {related.length > 0 && (
             <div className="glassmorphism p-6 rounded-2xl border border-slate-200/50 bg-white/60 space-y-4">
-              <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-800 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <h3 className="font-extrabold text-xs uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
                 <Compass className="w-4 h-4 text-cyan-600" /> Related Workshops
               </h3>
               

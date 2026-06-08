@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play, BookOpen, Clock, Layers, Eye } from "lucide-react";
 
 interface FeaturedProject {
@@ -161,12 +162,12 @@ export default function FeaturedCarousel({ onQuickPreview, onStartLearning, prod
             >
               {/* Left Column: Image with Play overlay */}
               <div className="relative w-full sm:w-2/5 h-[130px] sm:h-full rounded-xl overflow-hidden border border-slate-200/50 shadow-sm flex-shrink-0 group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 40vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors duration-300 flex items-center justify-center">
                   <div className="p-3 bg-white/95 text-cyan-600 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">

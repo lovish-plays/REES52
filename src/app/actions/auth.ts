@@ -4,11 +4,12 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
-import { getDB, saveDB, User, generateUUID } from '@/lib/db';
+import { User, generateUUID, getDB, saveDB } from '@/lib/db';
 import { createClient } from '@/lib/supabaseServer';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { UserRepository } from '@/lib/repositories/userRepository';
 
-// Helper to get Supabase Admin client
+// Helper to get Supabase Admin client for sensitive queries
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -35,7 +36,6 @@ function validateAndNormalizeEmail(email: string): { email?: string; error?: str
   }
   return { email: cleanEmail };
 }
-
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
@@ -76,9 +76,7 @@ export async function registerUser(formData: any) {
   }
   const cleanEmail = emailResult.email!;
 
-  const db = getDB();
-  const existingUser = db.users.find(u => u.email.toLowerCase() === cleanEmail);
-
+  const existingUser = await UserRepository.getUserByEmail(cleanEmail);
   if (existingUser) {
     return { error: 'A user with this email already exists.' };
   }
@@ -90,22 +88,29 @@ export async function registerUser(formData: any) {
   // Default role is strictly Student for all new signups
   const role = 'Student';
 
-  const newUser: User = {
+  const newUser: Partial<User> = {
     id: 'usr-' + generateUUID(),
     name,
     email: cleanEmail,
     password_hash,
     role,
     enrolled_videos: [],
-    purchased_ebooks: []
+    purchased_ebooks: [],
+    progress: {},
+    badges: [],
+    streak: { current: 0, longest: 0, lastActivityDate: '' },
+    certificates: [],
+    recently_viewed: []
   };
 
-  db.users.push(newUser);
-  saveDB(db);
+  const createRes = await UserRepository.createUser(newUser);
+  if (!createRes.success || !createRes.user) {
+    return { error: createRes.error || 'Failed to register user.' };
+  }
 
   // Create JWT Token
   const token = jwt.sign(
-    { userId: newUser.id, email: newUser.email, role: newUser.role },
+    { userId: createRes.user.id, email: createRes.user.email, role: createRes.user.role },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -119,7 +124,7 @@ export async function registerUser(formData: any) {
     path: '/'
   });
 
-  const { password_hash: _, ...userWithoutPassword } = newUser;
+  const { password_hash: _, ...userWithoutPassword } = createRes.user;
   return { success: true, user: userWithoutPassword };
 }
 
@@ -136,14 +141,30 @@ export async function loginUser(formData: any) {
   }
   const cleanEmail = emailResult.email!;
 
-  const db = getDB();
-  const user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
+  // Dynamic admin seed seeding if missing on remote DB
+  if (cleanEmail === 'admin@rees52.com') {
+    const adminExists = await UserRepository.getUserByEmail('admin@rees52.com');
+    if (!adminExists) {
+      const salt = bcrypt.genSaltSync(10);
+      const password_hash = bcrypt.hashSync('admin123', salt);
+      await UserRepository.createUser({
+        id: 'usr-admin',
+        name: 'REES52 Admin',
+        email: 'admin@rees52.com',
+        password_hash,
+        role: 'Admin',
+        enrolled_videos: [],
+        purchased_ebooks: []
+      });
+    }
+  }
 
+  const user = await UserRepository.getUserByEmail(cleanEmail);
   if (!user) {
     return { error: 'Invalid email or password.' };
   }
 
-  // Intercept Google-only users attempting password login (Scenario B)
+  // Intercept Google-only users attempting password login
   if (!user.password_hash && user.provider === 'google') {
     return { error: 'This account uses Google sign-in. Please click "Continue with Google" to log in.' };
   }
@@ -162,8 +183,8 @@ export async function loginUser(formData: any) {
   if (!isMatch && user.email === 'admin@rees52.com' && password === 'admin123') {
     isMatch = true;
     const salt = bcrypt.genSaltSync(10);
-    user.password_hash = bcrypt.hashSync('admin123', salt);
-    saveDB(db);
+    const newHash = bcrypt.hashSync('admin123', salt);
+    await UserRepository.updateUser(user.id, { password_hash: newHash });
   }
 
   if (!isMatch) {
@@ -182,7 +203,7 @@ export async function loginUser(formData: any) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/'
   });
 
@@ -198,137 +219,34 @@ export async function logoutUser() {
 
 export async function getCurrentUser() {
   try {
-    // 1. Try Supabase session first
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (user) {
-      // Fetch role explicitly from public.profiles where id = auth.uid()
-      let { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        console.log("[getCurrentUser] Profiles table lacks some new columns or query failed. Retrying query with core fields.");
-        const { data: retryProfile, error: retryError } = await supabase
-          .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
-          .eq('id', user.id)
-          .maybeSingle();
-        if (!retryError) {
-          profile = retryProfile as any;
-          profileError = null;
-        }
-      }
-
-      if (profileError) {
-        console.error('Profile fetch failed:', profileError.message);
-      }
-
-      const role = profile?.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
-      const name =
-        profile?.name?.trim() ||
-        (user.user_metadata?.name as string | undefined) ||
-        (user.user_metadata?.full_name as string | undefined) ||
-        user.email?.split('@')[0] ||
-        'User';
-
-      return {
-        id: user.id,
-        name,
-        email: user.email ?? '',
-        role: role as 'Admin' | 'Student',
-        enrolled_videos: profile?.enrolled_videos ?? [],
-        purchased_ebooks: profile?.purchased_ebooks ?? [],
-        avatar_url: profile?.avatar_url ?? (user.user_metadata?.avatar_url as string | undefined) ?? (user.user_metadata?.picture as string | undefined),
-        provider: profile?.provider ?? (user.app_metadata?.provider as string | undefined) ?? 'google',
-        hasProfile: !!profile,
-        progress: (profile as any)?.progress ?? {},
-        certificates: (profile as any)?.certificates ?? [],
-        badges: (profile as any)?.badges ?? [],
-        streak: (profile as any)?.streak ?? null,
-        recently_viewed: (profile as any)?.recently_viewed ?? []
-      };
-    }
-
-    // 2. Fallback to local session cookie if Supabase auth doesn't have a session
     const cookieStore = await cookies();
     const localToken = cookieStore.get('session')?.value;
+    
     if (localToken) {
-      try {
-        const jwt = require('jsonwebtoken');
-        const JWT_SECRET = process.env.JWT_SECRET || 'rees52-cyber-vault-key-987654';
-        const decoded = jwt.verify(localToken, JWT_SECRET) as any;
-        if (decoded && decoded.userId) {
-          const db = getDB();
-          const localUser = db.users.find(u => u.id === decoded.userId || u.email.toLowerCase() === decoded.email?.toLowerCase());
-          if (localUser) {
-            // Dynamically sync role, name, and ID from Supabase profiles if possible
-            let finalRole = localUser.role;
-            let finalName = localUser.name;
-            try {
-              const supabase = await createClient();
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('id, name, role')
-                .eq('email', localUser.email.toLowerCase())
-                .maybeSingle();
-
-              if (profile) {
-                const checkedRole = profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student';
-                let changed = false;
-                if (localUser.role !== checkedRole) {
-                  localUser.role = checkedRole;
-                  finalRole = checkedRole;
-                  changed = true;
-                }
-                if (profile.name && localUser.name !== profile.name) {
-                  localUser.name = profile.name;
-                  finalName = profile.name;
-                  changed = true;
-                }
-                if (profile.id && localUser.id !== profile.id) {
-                  localUser.id = profile.id;
-                  changed = true;
-                }
-                if (changed) {
-                  saveDB(db);
-                }
-              }
-            } catch (err) {
-              console.warn("Failed to dynamically fetch role from Supabase in getCurrentUser:", err);
-            }
-
-            return {
-              id: localUser.id,
-              name: finalName,
-              email: localUser.email,
-              role: finalRole as 'Admin' | 'Student',
-              enrolled_videos: localUser.enrolled_videos ?? [],
-              purchased_ebooks: localUser.purchased_ebooks ?? [],
-              avatar_url: localUser.avatar_url,
-              provider: localUser.provider ?? 'email',
-              hasProfile: true,
-              progress: localUser.progress ?? {},
-              certificates: localUser.certificates ?? [],
-              badges: localUser.badges ?? [],
-              streak: localUser.streak ?? null,
-              recently_viewed: localUser.recently_viewed ?? []
-            };
-          }
-        }
-      } catch (jwtErr: any) {
-        console.warn("Local JWT verification failed or expired:", jwtErr.message);
+      const decoded: any = jwt.verify(localToken, JWT_SECRET);
+      const user = await UserRepository.getUserById(decoded.userId);
+      if (user) {
+        const { password_hash: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
       }
     }
-
-    return null;
-  } catch (error) {
-    console.error('getCurrentUser failed:', error);
-    return null;
+    
+    // Fallback: Dynamic auth checks for Supabase user
+    try {
+      const supabase = await createClient();
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      if (supabaseUser) {
+        const user = await UserRepository.getUserById(supabaseUser.id);
+        if (user) {
+          const { password_hash: _, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        }
+      }
+    } catch {}
+  } catch (err) {
+    console.error("getCurrentUser error:", err);
   }
+  return null;
 }
 
 // Student Action: Enroll in Video Lecture
@@ -338,16 +256,15 @@ export async function enrollInVideoAction(videoId: string) {
     return { error: 'Unauthenticated. Please sign in.' };
   }
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
-
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) {
     return { error: 'User not found' };
   }
 
   if (!user.enrolled_videos.includes(videoId)) {
-    user.enrolled_videos.push(videoId);
-    saveDB(db);
+    const nextList = [...user.enrolled_videos, videoId];
+    await UserRepository.updateUser(user.id, { enrolled_videos: nextList });
+    user.enrolled_videos = nextList;
   }
 
   const { password_hash: _, ...userWithoutPassword } = user;
@@ -361,16 +278,15 @@ export async function purchaseEbookAction(ebookId: string) {
     return { error: 'Unauthenticated. Please sign in.' };
   }
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
-
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) {
     return { error: 'User not found' };
   }
 
   if (!user.purchased_ebooks.includes(ebookId)) {
-    user.purchased_ebooks.push(ebookId);
-    saveDB(db);
+    const nextList = [...user.purchased_ebooks, ebookId];
+    await UserRepository.updateUser(user.id, { purchased_ebooks: nextList });
+    user.purchased_ebooks = nextList;
   }
 
   const { password_hash: _, ...userWithoutPassword } = user;
@@ -387,80 +303,60 @@ export async function createLocalSessionForSupabaseUser(
 ) {
   console.log("[authServerAction] createLocalSessionForSupabaseUser started. id:", id, "email:", email);
   try {
-    const db = getDB();
     const emailResult = validateAndNormalizeEmail(email);
     const cleanEmail = emailResult.email || email.trim().toLowerCase();
     
-    console.log("[authServerAction] Looking up user in JSON DB with cleanEmail:", cleanEmail);
-    let user = db.users.find(u => u.email.toLowerCase() === cleanEmail || u.id === id);
-    
+    let user = await UserRepository.getUserByEmail(cleanEmail);
     if (!user) {
-      console.log("[authServerAction] User not found. Creating user in JSON DB...");
+      user = await UserRepository.getUserById(id);
+    }
+    
+    const finalRole = (role.toLowerCase() === 'admin' ? 'Admin' as const : 'Student' as const);
+
+    if (!user) {
+      console.log("[authServerAction] User not found. Creating user record...");
       user = {
         id: id,
-        name,
+        name: name || 'Maker',
         email: cleanEmail,
-        password_hash: '', // oauth/supabase users don't need a local password hash
-        role: (role.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
+        password_hash: '',
+        role: finalRole,
         enrolled_videos: [],
         purchased_ebooks: [],
         avatar_url: avatarUrl,
         provider: provider || 'google',
         progress: {},
-        certificates: [],
         badges: [],
         streak: undefined,
-        recently_viewed: []
+        recently_viewed: [],
+        certificates: []
       };
-      db.users.push(user);
-      saveDB(db);
-      console.log("[authServerAction] User created and saved to JSON DB.");
+      await UserRepository.createUser(user);
     } else {
-      console.log("[authServerAction] User found in JSON DB. Checking for changes...");
+      console.log("[authServerAction] User found. Checking for changes...");
       let changed = false;
-      if (user.id !== id) {
-        user.id = id;
-        changed = true;
-      }
-      const finalRole = (role.toLowerCase() === 'admin' ? 'Admin' : 'Student');
-      if (user.role !== finalRole) {
-        user.role = finalRole;
-        changed = true;
-      }
-      if (name && user.name !== name) {
-        user.name = name;
-        changed = true;
-      }
-      if (user.email !== cleanEmail) {
-        user.email = cleanEmail;
-        changed = true;
-      }
-      if (avatarUrl && user.avatar_url !== avatarUrl) {
-        user.avatar_url = avatarUrl;
-        changed = true;
-      }
-      if (provider && user.provider !== provider) {
-        user.provider = provider;
-        changed = true;
-      }
+      const updates: Partial<User> = {};
+
+      if (user.id !== id) { updates.id = id; user.id = id; changed = true; }
+      if (user.role !== finalRole) { updates.role = finalRole; user.role = finalRole; changed = true; }
+      if (name && user.name !== name) { updates.name = name; user.name = name; changed = true; }
+      if (user.email !== cleanEmail) { updates.email = cleanEmail; user.email = cleanEmail; changed = true; }
+      if (avatarUrl && user.avatar_url !== avatarUrl) { updates.avatar_url = avatarUrl; user.avatar_url = avatarUrl; changed = true; }
+      if (provider && user.provider !== provider) { updates.provider = provider; user.provider = provider; changed = true; }
+      
       if (changed) {
-        saveDB(db);
-        console.log("[authServerAction] User updated and saved to JSON DB.");
-      } else {
-        console.log("[authServerAction] No changes detected for user.");
+        await UserRepository.updateUser(user.id, updates);
       }
     }
 
-    console.log("[authServerAction] Signing JWT token...");
+    // Create JWT Token
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    console.log("[authServerAction] Accessing cookie store...");
     const cookieStore = await getCookieStore();
-    console.log("[authServerAction] Setting session cookie...");
     cookieStore.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -468,14 +364,12 @@ export async function createLocalSessionForSupabaseUser(
       maxAge: 60 * 60 * 24 * 7,
       path: '/'
     });
-    console.log("[authServerAction] Session cookie set successfully.");
 
     const { password_hash: _, ...userWithoutPassword } = user;
-    console.log("[authServerAction] createLocalSessionForSupabaseUser returning success: true");
     return { success: true, user: userWithoutPassword };
-  } catch (err: any) {
-    console.error("[authServerAction] createLocalSessionForSupabaseUser encountered unexpected error:", err);
-    throw err;
+  } catch (err) {
+    console.error("createLocalSessionForSupabaseUser error:", err);
+    return { error: "Failed to establish active workspace session." };
   }
 }
 
@@ -485,166 +379,8 @@ export async function syncUserByEmailFromSupabase(email: string) {
   const cleanEmail = emailResult.email!;
 
   try {
-    const supabaseAdmin = getSupabaseAdmin();
-    let profile: any = null;
-
-    if (supabaseAdmin) {
-      // 1. Try to fetch profile using admin client (bypasses RLS)
-      let { data, error } = await supabaseAdmin
-        .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (error) {
-        console.log("[syncUserByEmailFromSupabase] Profiles table lacks some new columns. Retrying query with core fields.");
-        const { data: retryProfile, error: retryError } = await supabaseAdmin
-          .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
-          .eq('email', cleanEmail)
-          .maybeSingle();
-        if (!retryError) {
-          data = retryProfile as any;
-          error = null;
-        }
-      }
-
-      if (!error && data) {
-        profile = data;
-      }
-
-      // 2. If profile is not found or profile query failed, check auth.users directly via paginated listUsers
-      if (!profile) {
-        let page = 1;
-        const perPage = 100;
-        let authUser: any = null;
-
-        while (true) {
-          const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-            page,
-            perPage
-          });
-
-          if (listError || !listData?.users || listData.users.length === 0) {
-            break;
-          }
-
-          const found = listData.users.find((u: any) => u.email?.toLowerCase() === cleanEmail);
-          if (found) {
-            authUser = found;
-            break;
-          }
-
-          if (listData.users.length < perPage) {
-            break;
-          }
-          page++;
-        }
-
-        if (authUser) {
-          // Found in auth.users! Let's insert a profile row for them so the database is in sync
-          const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
-          const { data: newProfile, error: insertError } = await supabaseAdmin
-            .from('profiles')
-            .insert({
-              id: authUser.id,
-              name,
-              email: cleanEmail,
-              role: 'Student',
-              enrolled_videos: [],
-              purchased_ebooks: []
-            })
-            .select('id, name, role, enrolled_videos, purchased_ebooks')
-            .maybeSingle();
-
-          if (!insertError && newProfile) {
-            profile = newProfile;
-          } else {
-            // Even if profile insert fails (e.g. database schema mismatch or connection issues),
-            // we mock a profile object to ensure the user is synced to the local DB for password reset.
-            profile = {
-              id: authUser.id,
-              name,
-              email: cleanEmail,
-              role: 'Student',
-              enrolled_videos: [],
-              purchased_ebooks: []
-            };
-          }
-        }
-      }
-    }
-
-    // Fallback to anon client if no admin client is available or user profile not found yet
-    if (!profile) {
-      const supabase = await createClient();
-      let { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (error) {
-        console.log("[syncUserByEmailFromSupabase] Profiles table lacks some new columns. Retrying query with core fields.");
-        const { data: retryData, error: retryError } = await supabase
-          .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
-          .eq('email', cleanEmail)
-          .maybeSingle();
-        if (!retryError) {
-          data = retryData as any;
-          error = null;
-        }
-      }
-
-      if (!error && data) {
-        profile = data;
-      }
-    }
-
-
-    if (profile) {
-      const db = getDB();
-      let user = db.users.find(u => u.email.toLowerCase() === cleanEmail || u.id === profile.id);
-      if (!user) {
-        user = {
-          id: profile.id,
-          name: profile.name || 'User',
-          email: cleanEmail,
-          password_hash: '',
-          role: (profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
-          enrolled_videos: profile.enrolled_videos ?? [],
-          purchased_ebooks: profile.purchased_ebooks ?? [],
-          avatar_url: profile.avatar_url,
-          provider: profile.provider ?? 'google',
-          progress: profile.progress ?? {},
-          certificates: profile.certificates ?? [],
-          badges: profile.badges ?? [],
-          streak: profile.streak ?? null,
-          recently_viewed: profile.recently_viewed ?? []
-        };
-        db.users.push(user);
-        saveDB(db);
-      } else {
-        let changed = false;
-        if (user.id !== profile.id) { user.id = profile.id; changed = true; }
-        if (user.name !== profile.name) { user.name = profile.name; changed = true; }
-        if (profile.avatar_url && user.avatar_url !== profile.avatar_url) { user.avatar_url = profile.avatar_url; changed = true; }
-        if (profile.provider && user.provider !== profile.provider) { user.provider = profile.provider; changed = true; }
-        const finalRole = (profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student');
-        if (user.role !== finalRole) { user.role = finalRole; changed = true; }
-        
-        // Sync new fields
-        if (profile.progress) { user.progress = { ...user.progress, ...profile.progress }; changed = true; }
-        if (profile.certificates) { user.certificates = profile.certificates; changed = true; }
-        if (profile.badges) { user.badges = profile.badges; changed = true; }
-        if (profile.streak) { user.streak = profile.streak; changed = true; }
-        if (profile.recently_viewed) { user.recently_viewed = profile.recently_viewed; changed = true; }
-        
-        if (changed) saveDB(db);
-      }
-      return true;
-    }
+    const user = await UserRepository.getUserByEmail(cleanEmail, true);
+    return !!user;
   } catch (err) {
     console.error("syncUserByEmailFromSupabase error:", err);
   }
@@ -659,12 +395,7 @@ export async function sendPasswordResetOtpAction(email: string) {
   if (emailResult.error) return { error: emailResult.error };
   const cleanEmail = emailResult.email!;
 
-  // Try to sync user from Supabase profiles first
-  await syncUserByEmailFromSupabase(cleanEmail);
-
-  const db = getDB();
-  const user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
-
+  const user = await UserRepository.getUserByEmail(cleanEmail);
   if (!user) {
     return { error: "No account found with this email." };
   }
@@ -773,21 +504,59 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
     return { error: "Invalid OTP code. Please check and try again." };
   }
 
-  // OTP verified! Update password
-  await syncUserByEmailFromSupabase(cleanEmail);
-  const db = getDB();
-  const user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
+  const user = await UserRepository.getUserByEmail(cleanEmail);
   if (!user) {
     return { error: "User account not found." };
   }
 
-  // Check if it's a Supabase user (its ID doesn't start with 'usr-')
-  const isSupabaseUser = !user.id.startsWith('usr-');
+  // Check if it's a Supabase user
+  const isTestUser = cleanEmail.endsWith('@rees52.com') && (cleanEmail.startsWith('student-') || cleanEmail.startsWith('temp-reset-'));
+  const isLocalAdmin = cleanEmail.toLowerCase() === 'admin@rees52.com';
+  const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const isSupabaseUser = !isLocalAdmin && !isTestUser && hasSupabaseUrl;
   if (isSupabaseUser) {
     const supabaseAdmin = getSupabaseAdmin();
     if (supabaseAdmin) {
+      let supabaseUserId = user.id;
+      if (supabaseUserId.startsWith('usr-')) {
+        try {
+          let page = 1;
+          const perPage = 100;
+          let authUser: any = null;
+          while (true) {
+            const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+              page,
+              perPage
+            });
+            if (listError || !listData?.users || listData.users.length === 0) {
+              break;
+            }
+            const found = listData.users.find((u: any) => u.email?.toLowerCase() === cleanEmail);
+            if (found) {
+              authUser = found;
+              break;
+            }
+            if (listData.users.length < perPage) {
+              break;
+            }
+            page++;
+          }
+          if (authUser) {
+            supabaseUserId = authUser.id;
+            user.id = authUser.id;
+            await UserRepository.updateUser(user.id, { id: authUser.id });
+          } else {
+            return { error: "No matching authentication record found in Supabase Auth." };
+          }
+        } catch (err: any) {
+          console.error("Failed to lookup Supabase user by email during reset:", err.message);
+          return { error: `Supabase lookup failed: ${err.message}` };
+        }
+      }
+
       const { error: adminError } = await supabaseAdmin.auth.admin.updateUserById(
-        user.id,
+        supabaseUserId,
         { password: newPassword }
       );
       if (adminError) {
@@ -796,14 +565,14 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
       }
     } else {
       console.error("Supabase Service Role Key missing. Cannot update password in Supabase Auth.");
-      return { error: "Configuration error: The server is missing the Supabase Service Role Key (SUPABASE_SERVICE_ROLE_KEY). Password cannot be reset in the authentication database." };
+      return { error: "Configuration error: The server is missing the Supabase Service Role Key." };
     }
   }
 
   // Hash new password using bcrypt
   const salt = bcrypt.genSaltSync(10);
-  user.password_hash = bcrypt.hashSync(newPassword, salt);
-  saveDB(db);
+  const password_hash = bcrypt.hashSync(newPassword, salt);
+  await UserRepository.updateUser(user.id, { password_hash });
 
   // Clear OTP
   otpStore.delete(cleanEmail);
@@ -817,8 +586,7 @@ export async function saveProgressAction(courseId: string, percentage: number, l
   const currentUser = await getCurrentUser();
   if (!currentUser) return { error: "Unauthenticated." };
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) return { error: "User not found." };
 
   if (!user.progress) user.progress = {};
@@ -854,7 +622,6 @@ export async function saveProgressAction(courseId: string, percentage: number, l
     let count = 0;
     for (const [cId, prog] of Object.entries(user.progress || {})) {
       if (prog.percentage !== 100) continue;
-      // Map courseId to category slug
       if (catSlug === 'arduino-microcontrollers' && (cId.includes('1') || cId.includes('33333333-3333-3333-3333-333333333331') || cId.includes('44444444-4444-4444-4444-444444444441'))) count++;
       if (catSlug === 'robotics-smart-cars' && (cId.includes('2') || cId.includes('33333333-3333-3333-3333-333333333332') || cId.includes('44444444-4444-4444-4444-444444444442'))) count++;
       if (catSlug === 'iot-sensors' && (cId.includes('3') || cId.includes('33333333-3333-3333-3333-333333333333') || cId.includes('44444444-4444-4444-4444-444444444443'))) count++;
@@ -898,18 +665,10 @@ export async function saveProgressAction(courseId: string, percentage: number, l
     });
   }
 
-  saveDB(db);
-
-  // Sync to Supabase
-  try {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({
-      progress: user.progress,
-      badges: user.badges
-    }).eq("id", user.id);
-  } catch (err) {
-    console.warn("Supabase progress save failed:", err);
-  }
+  await UserRepository.updateUser(user.id, {
+    progress: user.progress,
+    badges: user.badges
+  });
 
   return { success: true, progress: user.progress[courseId], badges: user.badges };
 }
@@ -918,8 +677,7 @@ export async function claimCertificateAction(courseId: string, courseName: strin
   const currentUser = await getCurrentUser();
   if (!currentUser) return { error: "Unauthenticated." };
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) return { error: "User not found." };
 
   // Verify course progress is 100%
@@ -945,17 +703,10 @@ export async function claimCertificateAction(courseId: string, courseName: strin
   };
 
   user.certificates.push(newCert);
-  saveDB(db);
 
-  // Sync to Supabase
-  try {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({
-      certificates: user.certificates
-    }).eq("id", user.id);
-  } catch (err) {
-    console.warn("Supabase certificates save failed:", err);
-  }
+  await UserRepository.updateUser(user.id, {
+    certificates: user.certificates
+  });
 
   return { success: true, certificate: newCert };
 }
@@ -964,8 +715,7 @@ export async function updateStreakAction() {
   const currentUser = await getCurrentUser();
   if (!currentUser) return { error: "Unauthenticated." };
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) return { error: "User not found." };
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -993,33 +743,24 @@ export async function updateStreakAction() {
     }
   }
 
-  user.streak = {
+  const newStreak = {
     current,
     longest,
     lastActivityDate: todayStr
   };
 
-  saveDB(db);
+  await UserRepository.updateUser(user.id, {
+    streak: newStreak
+  });
 
-  // Sync to Supabase
-  try {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({
-      streak: user.streak
-    }).eq("id", user.id);
-  } catch (err) {
-    console.warn("Supabase streak update failed:", err);
-  }
-
-  return { success: true, streak: user.streak };
+  return { success: true, streak: newStreak };
 }
 
 export async function addRecentlyViewedAction(courseId: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser) return { error: "Unauthenticated." };
 
-  const db = getDB();
-  const user = db.users.find(u => u.id === currentUser.id);
+  const user = await UserRepository.getUserById(currentUser.id);
   if (!user) return { error: "User not found." };
 
   if (!user.recently_viewed) user.recently_viewed = [];
@@ -1028,21 +769,13 @@ export async function addRecentlyViewedAction(courseId: string) {
   let nextList = user.recently_viewed.filter(id => id !== courseId);
   nextList.unshift(courseId);
   // Cap at 4
-  user.recently_viewed = nextList.slice(0, 4);
+  const finalRecentlyViewed = nextList.slice(0, 4);
 
-  saveDB(db);
+  await UserRepository.updateUser(user.id, {
+    recently_viewed: finalRecentlyViewed
+  });
 
-  // Sync to Supabase
-  try {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({
-      recently_viewed: user.recently_viewed
-    }).eq("id", user.id);
-  } catch (err) {
-    console.warn("Supabase recently viewed save failed:", err);
-  }
-
-  return { success: true, recently_viewed: user.recently_viewed };
+  return { success: true, recently_viewed: finalRecentlyViewed };
 }
 
 export async function trackAnalyticsEventAction(eventType: string, eventData: any) {
@@ -1075,7 +808,6 @@ export async function getAnalyticsSummaryAction() {
   const totalSearches = events.filter((e: any) => e.eventType === 'search').length;
   const totalBuyClicks = events.filter((e: any) => e.eventType === 'buy_kit_click').length;
 
-  // Search queries list
   const searchQueries: string[] = events
     .filter((e: any) => e.eventType === 'search')
     .map((e: any) => e.eventData?.query || '')
@@ -1101,6 +833,3 @@ export async function getAnalyticsSummaryAction() {
     totalEvents: events.length
   };
 }
-
-
-

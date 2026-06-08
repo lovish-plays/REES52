@@ -6,10 +6,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AelosChatbot from "@/components/AelosChatbot";
 import CyberBackground from "@/components/CyberBackground";
-import SplashLoader from "@/components/SplashLoader";
 import RobotPeeker from "@/components/RobotPeeker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SchemaMarkup from "@/components/SchemaMarkup";
+import StoreTransitionModal from "@/components/StoreTransitionModal";
 import { Suspense } from "react";
 import Script from "next/script";
 
@@ -97,8 +97,6 @@ export const viewport: Viewport = {
   themeColor: "#0D0E12",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover"
 };
 
@@ -126,7 +124,6 @@ export default function RootLayout({
             <GoogleAnalytics />
           </Suspense>
           <SchemaMarkup />
-          <SplashLoader />
           <RobotPeeker />
           <CyberBackground />
           <Header />
@@ -135,6 +132,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <AelosChatbot />
+          <StoreTransitionModal />
         </AuthProvider>
       </body>
     </html>

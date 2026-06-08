@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdSensePlaceholder from "@/components/AdSensePlaceholder";
 import HeroSection from "@/components/HeroSection";
@@ -964,13 +965,12 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                         {/* Image Frame */}
                         {p.image_url ? (
                           <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <Image
                               src={p.image_url}
                               alt={p.name}
-                              className="w-full h-full object-cover premium-card-image"
-                              loading="lazy"
-                              decoding="async"
+                              fill
+                              sizes="(max-width: 768px) 100vw, 300px"
+                              className="object-cover premium-card-image"
                             />
                             {/* Interactive Share button inside image overlay */}
                             <div className="absolute top-2 right-2 flex gap-1.5">
@@ -1074,13 +1074,12 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                       {/* Image Thumbnail Overlay */}
                       {it.type === "video" && it.rawUrl && getYouTubeId(it.rawUrl) && (
                         <div className="mt-2 relative w-full h-[125px] rounded-xl overflow-hidden border border-slate-200/60 bg-slate-100 flex items-center justify-center shadow-sm">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={`https://img.youtube.com/vi/${getYouTubeId(it.rawUrl)}/0.jpg`}
                             alt={it.title}
-                            className="w-full h-full object-cover premium-card-image"
-                            loading="lazy"
-                            decoding="async"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 300px"
+                            className="object-cover premium-card-image"
                           />
                           {/* Quick overlays */}
                           <div className="absolute top-2 right-2 flex gap-1.5 z-25">
@@ -1276,13 +1275,12 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                 {selectedItem.type === "video" ? (
                   <>
                     {selectedItem.rawUrl && getYouTubeId(selectedItem.rawUrl) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={`https://img.youtube.com/vi/${getYouTubeId(selectedItem.rawUrl)}/0.jpg`}
                         alt={selectedItem.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover/media:scale-102"
-                        loading="lazy"
-                        decoding="async"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        className="object-cover transition-transform duration-500 group-hover/media:scale-102"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">
@@ -1349,11 +1347,12 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                   <div className="flex items-center justify-between p-3 border border-slate-200/80 rounded-xl bg-white/60">
                     <div className="flex items-center gap-3">
                       {mappedProduct.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={mappedProduct.image_url}
                           alt={mappedProduct.name}
-                          className="w-12 h-12 object-cover rounded-lg border border-slate-200"
+                          width={48}
+                          height={48}
+                          className="object-cover rounded-lg border border-slate-200"
                         />
                       ) : (
                         <div className="w-12 h-12 bg-cyan-150 rounded-lg flex items-center justify-center border border-slate-200">
@@ -1478,13 +1477,12 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               {/* Product Image */}
               <div className="mt-3.5 relative w-full aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shadow-sm">
                 {selectedProduct.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={selectedProduct.image_url}
                     alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-cyan-900/10 to-blue-900/10 flex items-center justify-center">

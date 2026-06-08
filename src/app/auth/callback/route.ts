@@ -74,15 +74,15 @@ export async function GET(request: Request) {
     console.log(`[OAuth Callback] Querying profiles table by email: ${cleanEmail}`);
     let { data: profile, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+      .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
       .eq('email', cleanEmail)
       .maybeSingle();
 
-    if (profileErr && (profileErr.message.includes("column") || profileErr.message.includes("avatar_url"))) {
-      console.log("[OAuth Callback] Profiles table lacks avatar_url/provider. Retrying query without them.");
+    if (profileErr) {
+      console.log("[OAuth Callback] Profiles table lacks some new columns or query failed. Retrying query with core fields.");
       const { data: retryProfile } = await supabase
         .from('profiles')
-        .select('id, name, role')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
         .eq('email', cleanEmail)
         .maybeSingle();
       profile = retryProfile as any;
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
         console.log(`[OAuth Callback] Linking Google account ${user.id} to existing profile ${profile.id} with email ${cleanEmail}`);
         
         // 1. Insert/upsert new profile row with the new user.id, copying all data
-        const { error: linkError } = await supabase
+        let { error: linkError } = await supabase
           .from('profiles')
           .upsert({
             id: user.id,
@@ -110,8 +110,30 @@ export async function GET(request: Request) {
             enrolled_videos: profile.enrolled_videos || [],
             purchased_ebooks: profile.purchased_ebooks || [],
             avatar_url: avatarUrl || profile.avatar_url,
-            provider: 'google'
+            provider: 'google',
+            progress: (profile as any).progress || {},
+            certificates: (profile as any).certificates || [],
+            badges: (profile as any).badges || [],
+            streak: (profile as any).streak || null,
+            recently_viewed: (profile as any).recently_viewed || []
           });
+
+        if (linkError) {
+          console.error("[OAuth Callback] Upsert failed with new columns. Retrying link with core fields.");
+          const { error: coreLinkError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              name: profile.name,
+              email: cleanEmail,
+              role: profile.role || 'Student',
+              enrolled_videos: profile.enrolled_videos || [],
+              purchased_ebooks: profile.purchased_ebooks || [],
+              avatar_url: avatarUrl || profile.avatar_url,
+              provider: 'google'
+            });
+          linkError = coreLinkError;
+        }
 
         if (linkError) {
           console.error("[OAuth Callback] Failed to insert/upsert linked profile:", linkError.message);

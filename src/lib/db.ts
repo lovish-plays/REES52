@@ -44,6 +44,35 @@ export interface Webinar {
   is_live: boolean;
 }
 
+export interface UserProgress {
+  percentage: number;
+  lastViewedLesson?: string;
+  updated_at: string;
+  completed_at?: string;
+}
+
+export interface UserCertificate {
+  id: string;
+  courseId: string;
+  courseName: string;
+  completionDate: string;
+  userName: string;
+}
+
+export interface UserBadge {
+  id: string;
+  name: string;
+  description: string;
+  awardedAt: string;
+  badgeId: string; // 'first-project', 'arduino-beginner', 'iot-explorer', 'robotics-builder'
+}
+
+export interface UserStreak {
+  current: number;
+  longest: number;
+  lastActivityDate: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -54,6 +83,20 @@ export interface User {
   purchased_ebooks: string[]; // Ebook IDs
   avatar_url?: string;
   provider?: string;
+  progress?: { [courseId: string]: UserProgress };
+  certificates?: UserCertificate[];
+  badges?: UserBadge[];
+  streak?: UserStreak;
+  recently_viewed?: string[]; // Course/Project IDs
+}
+
+export interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  avatar_url?: string;
 }
 
 export interface DatabaseStore {
@@ -63,6 +106,7 @@ export interface DatabaseStore {
   videos: Video[];
   webinars: Webinar[];
   users: User[];
+  reviews?: Review[];
 }
 
 const DB_FILE_PATH = path.join(process.cwd(), 'src/lib/db-store.json');
@@ -113,7 +157,8 @@ function initDB(): DatabaseStore {
     ebooks: defaultEbooks,
     videos: defaultVideos,
     webinars: defaultWebinars,
-    users: defaultUsers
+    users: defaultUsers,
+    reviews: []
   };
 
   fs.writeFileSync(DB_FILE_PATH, JSON.stringify(db, null, 2), 'utf-8');
@@ -126,6 +171,43 @@ let cachedDb: DatabaseStore | null = null;
 export function getDB(): DatabaseStore {
   if (!cachedDb) {
     cachedDb = initDB();
+  }
+  if (!cachedDb.reviews) {
+    cachedDb.reviews = [
+      {
+        id: 'rev-1',
+        name: 'Jane Doe',
+        rating: 5,
+        comment: 'The 4WD Smart Car chassis guide was incredibly clear. Interfacing the ultrasonic sensor bracket was super simple with the step-by-step checklist!',
+        created_at: '2026-06-01T12:00:00.000Z',
+        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120'
+      },
+      {
+        id: 'rev-2',
+        name: 'Arjun Mehta',
+        rating: 5,
+        comment: 'REES52 starter kits are of amazing quality, and this platform makes learning so easy. Getting a digital certificate instantly is a huge motivator.',
+        created_at: '2026-06-03T10:30:00.000Z',
+        avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
+      },
+      {
+        id: 'rev-3',
+        name: 'Emma Watson',
+        rating: 4,
+        comment: 'The sensor kit guides are comprehensive. I built the DHT11 temperature logger in under an hour. Great companion tutorials!',
+        created_at: '2026-06-05T15:45:00.000Z',
+        avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120'
+      },
+      {
+        id: 'rev-4',
+        name: 'Rajesh Kumar',
+        rating: 5,
+        comment: 'Highly recommend the ESP32 guides! The multi-threading explanation using FreeRTOS is the best I\'ve found on the web.',
+        created_at: '2026-06-07T09:15:00.000Z',
+        avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120'
+      }
+    ];
+    saveDB(cachedDb);
   }
   return cachedDb;
 }

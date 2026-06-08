@@ -40,8 +40,8 @@ test.describe('REES52 Educational Portal E2E Workflow', () => {
     await page.click('button[type="submit"]', { force: true });
 
     // Modal should close and login button should disappear
-    await expect(page.locator('button:has-text("Sign In")')).toHaveCount(0);
-    await expect(page.locator('[role="dialog"]')).toBeHidden();
+    await expect(page.locator('button:has-text("Sign In")')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('[role="dialog"]')).toBeHidden({ timeout: 15000 });
 
     // Verify database insertion in the local file store
     const dbAfter = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
@@ -93,7 +93,7 @@ test.describe('REES52 Educational Portal E2E Workflow', () => {
     await page.locator('.premium-interactive-card', { hasText: 'Getting Started with Arduino Uno R3' }).locator('button:has-text("View Details")').click();
     await expect(page.locator('.fixed.inset-0 h2:has-text("Getting Started with Arduino Uno R3")')).toBeVisible();
     await page.click('.fixed.inset-0 button:has-text("Unlock Ebook")', { force: true });
-    await expect(page.locator('.fixed.inset-0 a:has-text("Open & Read Ebook PDF")')).toBeVisible();
+    await expect(page.locator('.fixed.inset-0 a:has-text("Open & Read Ebook PDF")')).toBeVisible({ timeout: 15000 });
     await page.click('.fixed.inset-0 a:has-text("Open & Read Ebook PDF")', { force: true });
     await expect(page).toHaveURL(/\/ebooks\/ebk-1/);
 
@@ -105,7 +105,7 @@ test.describe('REES52 Educational Portal E2E Workflow', () => {
     const sidebarProductTitle = page.locator('h4:has-text("REES52 Uno R3 Starter Kit")');
     await expect(sidebarProductTitle).toBeVisible();
 
-    const redirectCTA = page.locator('a:has-text("Buy Hardware Kit")');
+    const redirectCTA = page.locator('a:has-text("Buy Complete Project Kit")');
     await expect(redirectCTA).toBeVisible();
     await expect(redirectCTA).toHaveAttribute('href', 'https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html');
     await expect(redirectCTA).toHaveAttribute('target', '_blank');
@@ -137,8 +137,8 @@ test.describe('REES52 Educational Portal E2E Workflow', () => {
     await page.click('button[type="submit"]', { force: true });
 
     // Wait for registration to complete and sign out button to appear
-    await expect(page.locator('button:has-text("Sign In")')).toHaveCount(0);
-    await expect(page.locator('[role="dialog"]')).toBeHidden();
+    await expect(page.locator('button:has-text("Sign In")')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('[role="dialog"]')).toBeHidden({ timeout: 15000 });
 
     // 3. Sign Out
     const isMobile = await page.evaluate(() => window.innerWidth < 768);

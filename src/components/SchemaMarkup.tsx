@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 export default function SchemaMarkup() {
@@ -76,6 +77,107 @@ export default function SchemaMarkup() {
     "itemListElement": breadcrumbItems
   };
 
+  // State for dynamic Course Schema
+  const [courseSchema, setCourseSchema] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchCourseDetails() {
+      setCourseSchema(null);
+      
+      const isVideo = pathname.startsWith("/videos/");
+      const isEbook = pathname.startsWith("/ebooks/");
+      
+      if (!isVideo && !isEbook) return;
+      
+      const id = pathname.split("/").pop();
+      if (!id) return;
+      
+      try {
+        const { getVideoById, getEbookById } = await import("@/app/actions/content");
+        const { getItemMetadata } = await import("@/lib/projectMetadata");
+        
+        let item: any = null;
+        if (isVideo) {
+          item = await getVideoById(id);
+        } else if (isEbook) {
+          item = await getEbookById(id);
+        }
+        
+        if (item) {
+          const meta = getItemMetadata(item);
+          // Convert duration format (e.g., "30 Mins" or "2.5 Hours") to ISO 8601 duration
+          let durationISO = "PT1H";
+          if (meta.duration.toLowerCase().includes("min")) {
+            durationISO = `PT${meta.durationMins}M`;
+          } else if (meta.duration.toLowerCase().includes("hour")) {
+            durationISO = `PT${meta.durationMins}M`;
+          }
+          
+          setCourseSchema({
+            "@context": "https://schema.org",
+            "@type": "Course",
+            "name": item.title,
+            "description": meta.overview,
+            "provider": {
+              "@type": "Organization",
+              "name": "REES52",
+              "sameAs": baseUrl
+            },
+            "hasCourseInstance": {
+              "@type": "CourseInstance",
+              "courseMode": "Online",
+              "courseWorkload": durationISO
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load schema details:", err);
+      }
+    }
+    
+    fetchCourseDetails();
+  }, [pathname]);
+
+  // Static FAQ Schema for the homepage
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is REES52 Infinity Learning Hub?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "REES52 Infinity Learning Hub is a premium educational platform for robotics, embedded systems, Arduino, IoT, and STEM learning, featuring ebooks, video lectures, and live webinars."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are the code files and schematics free to download?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, all source code files (.ino sketches) and circuit connection schematics (PDFs) associated with our projects are 100% free to download for registered users."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I claim my project completion certificate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Once you complete 100% of the steps in any project's learning curriculum checklist, a 'Claim Certificate' button will unlock, allowing you to instantly generate and download a printable PNG certificate of completion."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need physical hardware kits to complete these projects?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "While you can read and watch the guides without hardware, we link each project to its companion REES52 kit and parts lists so you can buy the components and build along in real life."
+        }
+      }
+    ]
+  };
+
   return (
     <>
       <script
@@ -90,6 +192,18 @@ export default function SchemaMarkup() {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      {pathname === "/" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      {courseSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
         />
       )}
     </>

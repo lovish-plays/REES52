@@ -11,7 +11,12 @@ import {
   enrollInVideoAction,
   purchaseEbookAction,
   getCurrentUser,
-  createLocalSessionForSupabaseUser
+  createLocalSessionForSupabaseUser,
+  saveProgressAction,
+  claimCertificateAction,
+  updateStreakAction,
+  addRecentlyViewedAction,
+  trackAnalyticsEventAction
 } from "@/app/actions/auth";
 
 interface AuthUser {
@@ -24,6 +29,11 @@ interface AuthUser {
   avatar_url?: string;
   provider?: string;
   hasProfile?: boolean;
+  progress?: Record<string, any>;
+  certificates?: any[];
+  badges?: any[];
+  streak?: any;
+  recently_viewed?: string[];
 }
 
 interface AuthContextType {
@@ -44,6 +54,11 @@ interface AuthContextType {
   enrollInVideo: (videoId: string) => Promise<{ success?: boolean; error?: string }>;
   purchaseEbook: (ebookId: string) => Promise<{ success?: boolean; error?: string }>;
   refreshUser: () => Promise<void>;
+  saveProgress: (courseId: string, percentage: number, lastViewedLesson?: string) => Promise<any>;
+  claimCertificate: (courseId: string, courseName: string) => Promise<any>;
+  updateStreak: () => Promise<any>;
+  addRecentlyViewed: (courseId: string) => Promise<any>;
+  trackAnalyticsEvent: (eventType: string, eventData: any) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -179,9 +194,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         purchased_ebooks: data?.purchased_ebooks ?? [],
         avatar_url: data?.avatar_url ?? (sessionData?.session?.user?.user_metadata?.avatar_url as string | undefined) ?? (sessionData?.session?.user?.user_metadata?.picture as string | undefined),
         provider: data?.provider ?? authProvider,
-        hasProfile: !!data
+        hasProfile: !!data,
+        progress: (data as any)?.progress ?? {},
+        certificates: (data as any)?.certificates ?? [],
+        badges: (data as any)?.badges ?? [],
+        streak: (data as any)?.streak ?? null,
+        recently_viewed: (data as any)?.recently_viewed ?? []
       });
-      console.log("[AuthContext] User state set successfully in loadProfile.");
+      console.log("[AuthContext] User state set successfully in loadProfile. Triggering streak update...");
+      
+      // Auto-update learning streak
+      updateStreakAction().then(res => {
+        if (res.success && res.streak) {
+          setUser(prev => prev ? { ...prev, streak: res.streak } : null);
+        }
+      }).catch(err => console.warn("Streak auto-update error:", err));
+
     } catch (e: any) {
       console.error("[AuthContext] loadProfile encountered unexpected error:", e);
     }
@@ -634,6 +662,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       enrollInVideo,
       purchaseEbook,
       refreshUser,
+      saveProgress: async (cId, pct, lsn) => {
+        const res = await saveProgressAction(cId, pct, lsn);
+        if (res.success && !res.error) {
+          setUser(prev => prev ? { ...prev, progress: res.progress, badges: res.badges } : null);
+        }
+        return res;
+      },
+      claimCertificate: async (cId, cName) => {
+        const res = await claimCertificateAction(cId, cName);
+        if (res.success && !res.error) {
+          setUser(prev => prev ? { 
+            ...prev, 
+            certificates: Array.from(new Set([...(prev.certificates || []), res.certificate])) 
+          } : null);
+        }
+        return res;
+      },
+      updateStreak: async () => {
+        const res = await updateStreakAction();
+        if (res.success && !res.error) {
+          setUser(prev => prev ? { ...prev, streak: res.streak } : null);
+        }
+        return res;
+      },
+      addRecentlyViewed: async (cId) => {
+        const res = await addRecentlyViewedAction(cId);
+        if (res.success && !res.error) {
+          setUser(prev => prev ? { ...prev, recently_viewed: res.recently_viewed } : null);
+        }
+        return res;
+      },
+      trackAnalyticsEvent: trackAnalyticsEventAction,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, session, isLoading]

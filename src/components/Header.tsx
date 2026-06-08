@@ -339,7 +339,7 @@ export default function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
+ 
                 {/* Global directory explorer (3-dot menu) */}
                 <Button
                   size="icon"
@@ -355,7 +355,7 @@ export default function Header() {
           </div>
         </div>
       </header>
-
+ 
       {/* 3-dot overlay */}
       {directoryOpen && (
         <div className="fixed inset-0 z-50 bg-[#F7F4EB]/95 backdrop-blur-2xl animate-in fade-in duration-200">
@@ -366,7 +366,7 @@ export default function Header() {
           >
             <X className="h-6 w-6" />
           </button>
-
+ 
           <div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center px-6">
             <h3 className="mb-2 text-center text-xl font-black tracking-wider text-slate-900">
               Explore Content
@@ -374,7 +374,7 @@ export default function Header() {
             <p className="mb-8 text-center text-sm text-slate-600">
               Jump into Ebooks, Video Lectures, or Live Webinars.
             </p>
-
+ 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               <Link
                 href="/?type=ebooks"
@@ -395,7 +395,7 @@ export default function Header() {
                   </div>
                 </div>
               </Link>
-
+ 
               <Link
                 href="/?type=videos"
                 onClick={() => setDirectoryOpen(false)}
@@ -415,7 +415,7 @@ export default function Header() {
                   </div>
                 </div>
               </Link>
-
+ 
               <Link
                 href="/?type=live"
                 onClick={() => setDirectoryOpen(false)}

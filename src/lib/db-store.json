@@ -1642,6 +1642,250 @@
       "role": "Student",
       "enrolled_videos": [],
       "purchased_ebooks": []
+    },
+    {
+      "id": "eb69bcfa-4d18-49cd-aa43-c15230f94a45",
+      "name": "Lovish Mittal",
+      "email": "lovishmittal90@gmail.com",
+      "password_hash": "",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "provider": "google",
+      "progress": {},
+      "certificates": [],
+      "badges": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": []
+    },
+    {
+      "id": "f6c6e4e8-2b60-45fd-8ddf-f9bf47088a2c",
+      "name": "Robo Student",
+      "email": "student-1780922090346@rees52.com",
+      "password_hash": "$2b$10$Zd02s/K31vWZJnS/eeESv.h4iOsOKf1HTAH9RrKW5YlFEwg8xRslG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "46189a2a-b9cb-4539-aa7d-8b32e155606c",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922120893@rees52.com",
+      "password_hash": "$2b$10$o.XiLvk5OTehHIMXG1A3xOeBc7h5mSquABtVKgriZ55e6cS0TG.wi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "be4ea5cb-2428-4952-969d-52ed067184f2",
+      "name": "Robo Student",
+      "email": "student-1780922145111@rees52.com",
+      "password_hash": "$2b$10$WP9mH1OGC9LlmjnZlL8s9ug/kpGB5u2WQAmigLt4qliWy8Al.RWS.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "50b63c95-0c94-4b03-bc9d-abdba4746d54",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922175628@rees52.com",
+      "password_hash": "$2b$10$DgP4BEMdknZ.Ox5XOqWxa.9LDBDGAaexV8W8tQNGwWhetMK4AEeWW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "99aff2cc-84ea-42da-a01a-e6bce91ef9d1",
+      "name": "Robo Student",
+      "email": "student-1780922195141@rees52.com",
+      "password_hash": "$2b$10$cnOqxw4.9wQF7l6CSQmTyeYlf7JBpzzzahAfEq7o5PRfoo9K3im7a",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "c8e7ce98-4cea-4273-9a18-205edb9b8e38",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922214306@rees52.com",
+      "password_hash": "$2b$10$wRwZKQOWBtKKss1UNy4WrOhq7AWohb36Ody7/VRJebmMsz5V4/7e.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "84d3a47c-177b-434f-9923-ed17ccadc7de",
+      "name": "Robo Student",
+      "email": "student-1780922242486@rees52.com",
+      "password_hash": "$2b$10$Qi7Zq4bJC2weTswqFtEXvudwgGr0XSAJhpFnWqcAdz469hazLmnNi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "4f11febc-b78a-4b53-9ca3-1e25705fc2fc",
+      "name": "Robo Student",
+      "email": "student-1780922270909@rees52.com",
+      "password_hash": "$2b$10$fEX4gIs9T4CzvmZ5bC5vIOFrq.6Acnp22OvhXuZaw0kGrcJvlkv3y",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "feca135f-1d16-42b3-87f4-e1d5f4757fe6",
+      "name": "Robo Student",
+      "email": "student-1780922448814@rees52.com",
+      "password_hash": "$2b$10$Lk/DXqpJ.jK78Sv9Clsd6uywcPPMAhOn/67Wicay/ggWK3JrKTnQa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "a6baa156-4442-4096-9879-0e414221d335",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922488510@rees52.com",
+      "password_hash": "$2b$10$h4nBKY3eIx/YrUEzjI21fOxgUfRkshEzTho6kkZve9xyLLRKutgJG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "11726b30-5693-4cb3-821f-abbf9c1a1d19",
+      "name": "Robo Student",
+      "email": "student-1780922506222@rees52.com",
+      "password_hash": "$2b$10$LkiVIyKrluTjmbYX31ykU.gP44eOTvjEb6.h3FYFRAVVzhTTlJpne",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "58fb33e4-723e-4e2f-a506-5d3c65228de4",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922544720@rees52.com",
+      "password_hash": "$2b$10$bjl9JR8F6T4kUd35us5kGOLna/a5N5fncHdEHn0w4NSPFJ1j3lCce",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "1f4bad9d-75d9-4e53-b8ea-b8699e08033a",
+      "name": "Robo Student",
+      "email": "student-1780922574485@rees52.com",
+      "password_hash": "$2b$10$WP3Rqgh1/0paSY63zBA/Gu1W5l5wpvGgxhngqqKFqoPMIwRMwFyya",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "usr-63729105-f32c-4787-8192-f3f2d3ab5ba7",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780922590129@rees52.com",
+      "password_hash": "$2b$10$TZGgfmEnQQo7zF65aT4qtuYG5Ejygqx18EBkOV6Ujh1ScTZQh/d02",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev-1",
+      "name": "Jane Doe",
+      "rating": 5,
+      "comment": "The 4WD Smart Car chassis guide was incredibly clear. Interfacing the ultrasonic sensor bracket was super simple with the step-by-step checklist!",
+      "created_at": "2026-06-01T12:00:00.000Z",
+      "avatar_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120"
+    },
+    {
+      "id": "rev-2",
+      "name": "Arjun Mehta",
+      "rating": 5,
+      "comment": "REES52 starter kits are of amazing quality, and this platform makes learning so easy. Getting a digital certificate instantly is a huge motivator.",
+      "created_at": "2026-06-03T10:30:00.000Z",
+      "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120"
+    },
+    {
+      "id": "rev-3",
+      "name": "Emma Watson",
+      "rating": 4,
+      "comment": "The sensor kit guides are comprehensive. I built the DHT11 temperature logger in under an hour. Great companion tutorials!",
+      "created_at": "2026-06-05T15:45:00.000Z",
+      "avatar_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120"
+    },
+    {
+      "id": "rev-4",
+      "name": "Rajesh Kumar",
+      "rating": 5,
+      "comment": "Highly recommend the ESP32 guides! The multi-threading explanation using FreeRTOS is the best I've found on the web.",
+      "created_at": "2026-06-07T09:15:00.000Z",
+      "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120"
     }
   ]
 }

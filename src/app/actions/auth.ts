@@ -206,15 +206,15 @@ export async function getCurrentUser() {
       // Fetch role explicitly from public.profiles where id = auth.uid()
       let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
         .eq('id', user.id)
         .maybeSingle();
 
-      if (profileError && (profileError.message.includes("column") || profileError.message.includes("avatar_url"))) {
-        console.log("[getCurrentUser] Profiles table lacks avatar_url/provider. Retrying query without them.");
+      if (profileError) {
+        console.log("[getCurrentUser] Profiles table lacks some new columns or query failed. Retrying query with core fields.");
         const { data: retryProfile, error: retryError } = await supabase
           .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
           .eq('id', user.id)
           .maybeSingle();
         if (!retryError) {
@@ -244,7 +244,12 @@ export async function getCurrentUser() {
         purchased_ebooks: profile?.purchased_ebooks ?? [],
         avatar_url: profile?.avatar_url ?? (user.user_metadata?.avatar_url as string | undefined) ?? (user.user_metadata?.picture as string | undefined),
         provider: profile?.provider ?? (user.app_metadata?.provider as string | undefined) ?? 'google',
-        hasProfile: !!profile
+        hasProfile: !!profile,
+        progress: (profile as any)?.progress ?? {},
+        certificates: (profile as any)?.certificates ?? [],
+        badges: (profile as any)?.badges ?? [],
+        streak: (profile as any)?.streak ?? null,
+        recently_viewed: (profile as any)?.recently_viewed ?? []
       };
     }
 
@@ -305,7 +310,12 @@ export async function getCurrentUser() {
               purchased_ebooks: localUser.purchased_ebooks ?? [],
               avatar_url: localUser.avatar_url,
               provider: localUser.provider ?? 'email',
-              hasProfile: true
+              hasProfile: true,
+              progress: localUser.progress ?? {},
+              certificates: localUser.certificates ?? [],
+              badges: localUser.badges ?? [],
+              streak: localUser.streak ?? null,
+              recently_viewed: localUser.recently_viewed ?? []
             };
           }
         }
@@ -395,7 +405,12 @@ export async function createLocalSessionForSupabaseUser(
         enrolled_videos: [],
         purchased_ebooks: [],
         avatar_url: avatarUrl,
-        provider: provider || 'google'
+        provider: provider || 'google',
+        progress: {},
+        certificates: [],
+        badges: [],
+        streak: undefined,
+        recently_viewed: []
       };
       db.users.push(user);
       saveDB(db);
@@ -477,15 +492,15 @@ export async function syncUserByEmailFromSupabase(email: string) {
       // 1. Try to fetch profile using admin client (bypasses RLS)
       let { data, error } = await supabaseAdmin
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
         .eq('email', cleanEmail)
         .maybeSingle();
 
-      if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
-        console.log("[syncUserByEmailFromSupabase] Profiles table lacks avatar_url/provider. Retrying query without them.");
+      if (error) {
+        console.log("[syncUserByEmailFromSupabase] Profiles table lacks some new columns. Retrying query with core fields.");
         const { data: retryProfile, error: retryError } = await supabaseAdmin
           .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
           .eq('email', cleanEmail)
           .maybeSingle();
         if (!retryError) {
@@ -565,15 +580,15 @@ export async function syncUserByEmailFromSupabase(email: string) {
       const supabase = await createClient();
       let { data, error } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
         .eq('email', cleanEmail)
         .maybeSingle();
 
-      if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
-        console.log("[syncUserByEmailFromSupabase] Profiles table lacks avatar_url/provider. Retrying query without them.");
+      if (error) {
+        console.log("[syncUserByEmailFromSupabase] Profiles table lacks some new columns. Retrying query with core fields.");
         const { data: retryData, error: retryError } = await supabase
           .from('profiles')
-          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
           .eq('email', cleanEmail)
           .maybeSingle();
         if (!retryError) {
@@ -601,7 +616,12 @@ export async function syncUserByEmailFromSupabase(email: string) {
           enrolled_videos: profile.enrolled_videos ?? [],
           purchased_ebooks: profile.purchased_ebooks ?? [],
           avatar_url: profile.avatar_url,
-          provider: profile.provider ?? 'google'
+          provider: profile.provider ?? 'google',
+          progress: profile.progress ?? {},
+          certificates: profile.certificates ?? [],
+          badges: profile.badges ?? [],
+          streak: profile.streak ?? null,
+          recently_viewed: profile.recently_viewed ?? []
         };
         db.users.push(user);
         saveDB(db);
@@ -613,6 +633,14 @@ export async function syncUserByEmailFromSupabase(email: string) {
         if (profile.provider && user.provider !== profile.provider) { user.provider = profile.provider; changed = true; }
         const finalRole = (profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student');
         if (user.role !== finalRole) { user.role = finalRole; changed = true; }
+        
+        // Sync new fields
+        if (profile.progress) { user.progress = { ...user.progress, ...profile.progress }; changed = true; }
+        if (profile.certificates) { user.certificates = profile.certificates; changed = true; }
+        if (profile.badges) { user.badges = profile.badges; changed = true; }
+        if (profile.streak) { user.streak = profile.streak; changed = true; }
+        if (profile.recently_viewed) { user.recently_viewed = profile.recently_viewed; changed = true; }
+        
         if (changed) saveDB(db);
       }
       return true;
@@ -767,7 +795,8 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
         return { error: `Supabase password reset failed: ${adminError.message}` };
       }
     } else {
-      console.warn("Supabase Service Role Key missing. Password updated locally only.");
+      console.error("Supabase Service Role Key missing. Cannot update password in Supabase Auth.");
+      return { error: "Configuration error: The server is missing the Supabase Service Role Key (SUPABASE_SERVICE_ROLE_KEY). Password cannot be reset in the authentication database." };
     }
   }
 
@@ -783,5 +812,295 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
   
   return { success: true, message: "Password updated successfully." };
 }
+
+export async function saveProgressAction(courseId: string, percentage: number, lastViewedLesson?: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return { error: "Unauthenticated." };
+
+  const db = getDB();
+  const user = db.users.find(u => u.id === currentUser.id);
+  if (!user) return { error: "User not found." };
+
+  if (!user.progress) user.progress = {};
+
+  const existing = user.progress[courseId] || { percentage: 0, updated_at: new Date().toISOString() };
+  const newPercentage = Math.max(existing.percentage, percentage);
+
+  user.progress[courseId] = {
+    percentage: newPercentage,
+    lastViewedLesson: lastViewedLesson || existing.lastViewedLesson || "Introduction",
+    updated_at: new Date().toISOString(),
+    completed_at: newPercentage === 100 ? (existing.completed_at || new Date().toISOString()) : existing.completed_at
+  };
+
+  // Check achievements logic
+  if (!user.badges) user.badges = [];
+  
+  // 1. Check "First Project" badge (first completion)
+  const completedCount = Object.values(user.progress).filter(p => p.percentage === 100).length;
+  const hasFirstProject = user.badges.some(b => b.badgeId === 'first-project');
+  if (completedCount >= 1 && !hasFirstProject) {
+    user.badges.push({
+      id: 'badge-' + generateUUID(),
+      badgeId: 'first-project',
+      name: 'First Project',
+      description: 'Completed your first learning module on REES52!',
+      awardedAt: new Date().toISOString()
+    });
+  }
+
+  // Helper function to count completions by category
+  const countCompletionsByCategory = (catSlug: string) => {
+    let count = 0;
+    for (const [cId, prog] of Object.entries(user.progress || {})) {
+      if (prog.percentage !== 100) continue;
+      // Map courseId to category slug
+      if (catSlug === 'arduino-microcontrollers' && (cId.includes('1') || cId.includes('33333333-3333-3333-3333-333333333331') || cId.includes('44444444-4444-4444-4444-444444444441'))) count++;
+      if (catSlug === 'robotics-smart-cars' && (cId.includes('2') || cId.includes('33333333-3333-3333-3333-333333333332') || cId.includes('44444444-4444-4444-4444-444444444442'))) count++;
+      if (catSlug === 'iot-sensors' && (cId.includes('3') || cId.includes('33333333-3333-3333-3333-333333333333') || cId.includes('44444444-4444-4444-4444-444444444443'))) count++;
+    }
+    return count;
+  };
+
+  // 2. Arduino Beginner
+  const hasArduinoBeginner = user.badges.some(b => b.badgeId === 'arduino-beginner');
+  if (countCompletionsByCategory('arduino-microcontrollers') >= 1 && !hasArduinoBeginner) {
+    user.badges.push({
+      id: 'badge-' + generateUUID(),
+      badgeId: 'arduino-beginner',
+      name: 'Arduino Beginner',
+      description: 'Completed your first Arduino microcontroller project!',
+      awardedAt: new Date().toISOString()
+    });
+  }
+
+  // 3. IoT Explorer
+  const hasIotExplorer = user.badges.some(b => b.badgeId === 'iot-explorer');
+  if (countCompletionsByCategory('iot-sensors') >= 1 && !hasIotExplorer) {
+    user.badges.push({
+      id: 'badge-' + generateUUID(),
+      badgeId: 'iot-explorer',
+      name: 'IoT Explorer',
+      description: 'Completed your first IoT and sensor telemetry project!',
+      awardedAt: new Date().toISOString()
+    });
+  }
+
+  // 4. Robotics Builder
+  const hasRoboticsBuilder = user.badges.some(b => b.badgeId === 'robotics-builder');
+  if (countCompletionsByCategory('robotics-smart-cars') >= 1 && !hasRoboticsBuilder) {
+    user.badges.push({
+      id: 'badge-' + generateUUID(),
+      badgeId: 'robotics-builder',
+      name: 'Robotics Builder',
+      description: 'Completed your first Robotics mechanical assembly project!',
+      awardedAt: new Date().toISOString()
+    });
+  }
+
+  saveDB(db);
+
+  // Sync to Supabase
+  try {
+    const supabase = await createClient();
+    await supabase.from("profiles").update({
+      progress: user.progress,
+      badges: user.badges
+    }).eq("id", user.id);
+  } catch (err) {
+    console.warn("Supabase progress save failed:", err);
+  }
+
+  return { success: true, progress: user.progress[courseId], badges: user.badges };
+}
+
+export async function claimCertificateAction(courseId: string, courseName: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return { error: "Unauthenticated." };
+
+  const db = getDB();
+  const user = db.users.find(u => u.id === currentUser.id);
+  if (!user) return { error: "User not found." };
+
+  // Verify course progress is 100%
+  const prog = user.progress?.[courseId];
+  if (!prog || prog.percentage !== 100) {
+    return { error: "Course progress must be 100% to claim a certificate." };
+  }
+
+  if (!user.certificates) user.certificates = [];
+
+  // Check if certificate already exists
+  const existingCert = user.certificates.find(c => c.courseId === courseId);
+  if (existingCert) {
+    return { success: true, certificate: existingCert };
+  }
+
+  const newCert = {
+    id: 'cert-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+    courseId,
+    courseName,
+    completionDate: prog.completed_at || new Date().toISOString(),
+    userName: user.name
+  };
+
+  user.certificates.push(newCert);
+  saveDB(db);
+
+  // Sync to Supabase
+  try {
+    const supabase = await createClient();
+    await supabase.from("profiles").update({
+      certificates: user.certificates
+    }).eq("id", user.id);
+  } catch (err) {
+    console.warn("Supabase certificates save failed:", err);
+  }
+
+  return { success: true, certificate: newCert };
+}
+
+export async function updateStreakAction() {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return { error: "Unauthenticated." };
+
+  const db = getDB();
+  const user = db.users.find(u => u.id === currentUser.id);
+  if (!user) return { error: "User not found." };
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const lastActive = user.streak?.lastActivityDate;
+
+  let current = 1;
+  let longest = user.streak?.longest || 1;
+
+  if (lastActive) {
+    const lastActiveDate = new Date(lastActive);
+    const todayDate = new Date(todayStr);
+    const diffTime = Math.abs(todayDate.getTime() - lastActiveDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      // Consecutive day
+      current = (user.streak?.current || 0) + 1;
+      longest = Math.max(longest, current);
+    } else if (diffDays === 0) {
+      // Same day, no update to count, just preserve
+      current = user.streak?.current || 1;
+    } else {
+      // Broken streak
+      current = 1;
+    }
+  }
+
+  user.streak = {
+    current,
+    longest,
+    lastActivityDate: todayStr
+  };
+
+  saveDB(db);
+
+  // Sync to Supabase
+  try {
+    const supabase = await createClient();
+    await supabase.from("profiles").update({
+      streak: user.streak
+    }).eq("id", user.id);
+  } catch (err) {
+    console.warn("Supabase streak update failed:", err);
+  }
+
+  return { success: true, streak: user.streak };
+}
+
+export async function addRecentlyViewedAction(courseId: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return { error: "Unauthenticated." };
+
+  const db = getDB();
+  const user = db.users.find(u => u.id === currentUser.id);
+  if (!user) return { error: "User not found." };
+
+  if (!user.recently_viewed) user.recently_viewed = [];
+
+  // Remove existing to push to front
+  let nextList = user.recently_viewed.filter(id => id !== courseId);
+  nextList.unshift(courseId);
+  // Cap at 4
+  user.recently_viewed = nextList.slice(0, 4);
+
+  saveDB(db);
+
+  // Sync to Supabase
+  try {
+    const supabase = await createClient();
+    await supabase.from("profiles").update({
+      recently_viewed: user.recently_viewed
+    }).eq("id", user.id);
+  } catch (err) {
+    console.warn("Supabase recently viewed save failed:", err);
+  }
+
+  return { success: true, recently_viewed: user.recently_viewed };
+}
+
+export async function trackAnalyticsEventAction(eventType: string, eventData: any) {
+  const currentUser = await getCurrentUser();
+  const db = getDB();
+
+  if (!(db as any).analytics_events) {
+    (db as any).analytics_events = [];
+  }
+
+  (db as any).analytics_events.push({
+    id: generateUUID(),
+    userId: currentUser?.id || 'anonymous',
+    eventType,
+    eventData,
+    timestamp: new Date().toISOString()
+  });
+
+  saveDB(db);
+  return { success: true };
+}
+
+export async function getAnalyticsSummaryAction() {
+  const db = getDB();
+  const events = (db as any).analytics_events || [];
+
+  const totalViews = events.filter((e: any) => e.eventType === 'project_view').length;
+  const totalStarts = events.filter((e: any) => e.eventType === 'course_start').length;
+  const totalCompletions = events.filter((e: any) => e.eventType === 'course_complete').length;
+  const totalSearches = events.filter((e: any) => e.eventType === 'search').length;
+  const totalBuyClicks = events.filter((e: any) => e.eventType === 'buy_kit_click').length;
+
+  // Search queries list
+  const searchQueries: string[] = events
+    .filter((e: any) => e.eventType === 'search')
+    .map((e: any) => e.eventData?.query || '')
+    .filter(Boolean);
+
+  const queryCounts: Record<string, number> = {};
+  searchQueries.forEach(q => {
+    queryCounts[q] = (queryCounts[q] || 0) + 1;
+  });
+
+  const topSearches = Object.entries(queryCounts)
+    .map(([query, count]) => ({ query, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return {
+    totalViews,
+    totalStarts,
+    totalCompletions,
+    totalSearches,
+    totalBuyClicks,
+    topSearches,
+    totalEvents: events.length
+  };
+}
+
 
 

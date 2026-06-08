@@ -31,13 +31,13 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
-
   // If already logged in, redirect to home/target path
   useEffect(() => {
     if (user && !authLoading) {
-      window.location.href = redirectTo;
+      router.refresh();
+      router.push(redirectTo);
     }
-  }, [user, authLoading, redirectTo]);
+  }, [user, authLoading, redirectTo, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +64,8 @@ function LoginForm() {
           setShowSuccess(true);
           setLoading(false);
           setTimeout(() => {
-            window.location.href = redirectTo;
+            router.refresh();
+            router.push(redirectTo);
           }, 1800);
         }
       } else if (mode === "signin") {
@@ -77,7 +78,8 @@ function LoginForm() {
           setShowSuccess(true);
           setLoading(false);
           setTimeout(() => {
-            window.location.href = redirectTo;
+            router.refresh();
+            router.push(redirectTo);
           }, 500);
         }
       } else if (mode === "forgot") {

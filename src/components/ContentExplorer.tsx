@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdSensePlaceholder from "@/components/AdSensePlaceholder";
 import HeroSection from "@/components/HeroSection";
+import MetricsSection from "@/components/MetricsSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import LearnerDashboard from "@/components/LearnerDashboard";
 import QuickPreviewModal from "@/components/QuickPreviewModal";
+import { getItemMetadata } from "@/lib/projectMetadata";
 import {
   BookOpen,
   Calendar,
@@ -111,6 +113,9 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [difficultyFilter, setDifficultyFilter] = useState("");
+  const [durationFilter, setDurationFilter] = useState("");
+  const [sortBy, setSortBy] = useState("popular");
 
   // Interactive local states (Syncs with LocalStorage for zero-latency)
   const [likes, setLikes] = useState<string[]>([]);
@@ -328,13 +333,41 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return items.filter((it) => {
+    
+    // Map items with metadata first
+    let list = items.map((it) => {
+      const meta = getItemMetadata(it);
+      return { ...it, ...meta };
+    });
+
+    // Filter
+    list = list.filter((it) => {
       if (categoryId && it.categoryId !== categoryId) return false;
+      if (difficultyFilter && it.difficulty !== difficultyFilter) return false;
+      
+      if (durationFilter) {
+        if (durationFilter === "short" && it.durationMins >= 60) return false; // < 1 hour
+        if (durationFilter === "medium" && (it.durationMins < 60 || it.durationMins > 180)) return false; // 1 to 3 hours
+        if (durationFilter === "long" && it.durationMins <= 180) return false; // > 3 hours
+      }
+
       if (!q) return true;
       const catName = categories.find((c) => c.id === it.categoryId)?.name ?? "";
       return it.title.toLowerCase().includes(q) || catName.toLowerCase().includes(q);
     });
-  }, [items, search, categoryId, categories]);
+
+    // Sort
+    if (sortBy === "newest") {
+      list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else if (sortBy === "beginner") {
+      const order = { Beginner: 1, Intermediate: 2, Advanced: 3 };
+      list.sort((a, b) => order[a.difficulty] - order[b.difficulty]);
+    } else if (sortBy === "popular") {
+      list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    }
+
+    return list;
+  }, [items, search, categoryId, categories, difficultyFilter, durationFilter, sortBy]);
 
   // ── AI Recommendation Engine Logic ──
   const recommendedItems = useMemo(() => {
@@ -557,6 +590,9 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         }}
       />
 
+      {/* ── Social Proof Metrics Section ── */}
+      {tab !== "dashboard" && <MetricsSection />}
+
       {/* Anchor identifier for jumps */}
       <div id="explorer-anchor" className="scroll-mt-4" />
 
@@ -703,13 +739,59 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               className={`rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-[1.03] hover:translate-y-[-0.5px] cursor-pointer ${
                 tab === t.id
                   ? "bg-cyan-600/15 text-slate-900 border border-cyan-500/40 shadow-sm font-black"
-                  : "border border-slate-200 bg-white/70 text-slate-600 hover:bg-white hover:border-cyan-500/20 hover:shadow-sm"
+                  : "border border-slate-200 bg-white/70 text-slate-650 hover:bg-white hover:border-cyan-500/20 hover:shadow-sm"
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
+
+        {/* Discovery Filter Controls */}
+        {tab !== "dashboard" && tab !== "products" && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-slate-100 pt-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Difficulty</label>
+              <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-xs font-semibold outline-none text-slate-800 cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value="">All Difficulties</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Duration</label>
+              <select
+                value={durationFilter}
+                onChange={(e) => setDurationFilter(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-xs font-semibold outline-none text-slate-800 cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value="">All Durations</option>
+                <option value="short">Short (&lt; 1 Hour)</option>
+                <option value="medium">Medium (1 - 3 Hours)</option>
+                <option value="long">Long (&gt; 3 Hours)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5 text-xs font-semibold outline-none text-slate-800 cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value="popular">Most Popular</option>
+                <option value="newest">Newest</option>
+                <option value="beginner">Beginner Friendly</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── 5. Main Space Dashboard Tabs Routing ── */}
@@ -1052,6 +1134,33 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                           </span>
                         </div>
                       )}
+
+                      {/* Difficulty, Duration and Progress status badges */}
+                      <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-slate-100/60">
+                        <div className="flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-wider">
+                          <span className={`px-1.5 py-0.5 rounded-md border ${
+                            it.difficulty === "Beginner" ? "border-emerald-200 bg-emerald-50 text-emerald-800" :
+                            it.difficulty === "Intermediate" ? "border-amber-200 bg-amber-50 text-amber-800" :
+                            "border-rose-200 bg-rose-50 text-rose-800"
+                          }`}>
+                            {it.difficulty}
+                          </span>
+                          <span className="text-slate-500">{it.duration}</span>
+                        </div>
+                        {(() => {
+                          const progressPct = user?.progress?.[it.id]?.percentage || 0;
+                          if (progressPct > 0) {
+                            return (
+                              <span className={`text-[8.5px] font-black uppercase tracking-widest ${
+                                progressPct === 100 ? "text-emerald-600" : "text-cyan-600"
+                              }`}>
+                                {progressPct === 100 ? "✓ Done" : `${progressPct}%`}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
 
                     {/* Bottom Details Section */}

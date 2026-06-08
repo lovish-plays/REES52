@@ -1852,6 +1852,86 @@
       "role": "Student",
       "enrolled_videos": [],
       "purchased_ebooks": []
+    },
+    {
+      "id": "de9fc9a5-4a87-4d05-a04f-b4d58e157054",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780923127180@rees52.com",
+      "password_hash": "$2b$10$W4KrbE72wh8bmeEj.ohtt.NOQovTleslqJ4ZaD8MFTQuPwt39ovRO",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "550ef0a7-a35a-4043-8d14-1acb9e806072",
+      "name": "Robo Student",
+      "email": "student-1780923152832@rees52.com",
+      "password_hash": "$2b$10$ya3i3tJNp7nQ1YLHI5rK7uo32mQOqw5Rjf4JBxGXbnPlAf9YZwFhm",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "4f979e6e-3e39-48b3-b91a-3563e204302f",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780923184947@rees52.com",
+      "password_hash": "$2b$10$6f3uWDIuRGLuP941vj0iUetgrGo/wG0hBp7TKmEmrp5xZWPPEB0hy",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
+    },
+    {
+      "id": "b51231e6-5ef4-4f1e-96c5-6207520fcc58",
+      "name": "Robo Student",
+      "email": "student-1780923208981@rees52.com",
+      "password_hash": "$2b$10$/XMbRfGLo2NuzNAkIOyT7e.Ie.muQfMTKEbGZMJmAQt3H6A4EnjeW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      },
+      "recently_viewed": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "0e541947-e510-4a73-a0ab-ee72c9dcfaeb",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780923243022@rees52.com",
+      "password_hash": "$2b$10$/HAQMQT6WL/zNzbUTg.je.VMBYpNtjqf.8E1EI4lH3HQ9F3teu1V.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "streak": {
+        "current": 1,
+        "longest": 1,
+        "lastActivityDate": "2026-06-08"
+      }
     }
   ],
   "reviews": [

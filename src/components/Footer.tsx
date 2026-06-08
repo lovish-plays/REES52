@@ -18,7 +18,7 @@ export default function Footer() {
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
             <span className="font-extrabold text-md tracking-wider text-slate-900 premium-logo-text">
-              REES<span className="text-cyan-600">52</span> <span className="text-[10px] font-bold text-slate-500 uppercase ml-1">Infinity Learning</span>
+              REES<span className="text-cyan-600">52</span> <span className="text-[10px] font-bold text-slate-500 uppercase ml-1">Learning</span>
             </span>
           </Link>
           <p className="text-xs text-slate-600 leading-relaxed">

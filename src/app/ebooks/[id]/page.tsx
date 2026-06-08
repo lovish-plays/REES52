@@ -83,7 +83,7 @@ export default async function EbookDetailPage({ params }: PageProps) {
               </span>
               
               <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide leading-snug">
-                Infinity Companion Hardware Kit
+                Companion Hardware Kit
               </h3>
 
               <div>

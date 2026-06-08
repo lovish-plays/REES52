@@ -10,7 +10,8 @@ import {
   logoutUser,
   enrollInVideoAction,
   purchaseEbookAction,
-  getCurrentUser
+  getCurrentUser,
+  createLocalSessionForSupabaseUser
 } from "@/app/actions/auth";
 
 interface AuthUser {
@@ -208,6 +209,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(data.session ?? null);
 
     if (data.user) {
+      try {
+        const role = data.user.user_metadata?.role || 'Student';
+        const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
+        await createLocalSessionForSupabaseUser(data.user.id, data.user.email ?? '', name, role);
+      } catch (syncErr) {
+        console.error("Local JSON db sync failed on signIn:", syncErr);
+      }
+
       // Signal to the listener that we are already loading the profile
       profileLoadingRef.current = true;
       // Load profile in the background — do NOT await here
@@ -271,6 +280,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.from("profiles").upsert({
           id: data.user.id,
           name,
+          email: email.trim().toLowerCase(),
           role: "Student",
           enrolled_videos: [],
           purchased_ebooks: [],
@@ -278,11 +288,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error("Supabase profiles write failed (can be skipped for dev/E2E):", err);
       }
+
+      try {
+        await createLocalSessionForSupabaseUser(data.user.id, email, name, "Student");
+      } catch (syncErr) {
+        console.error("Local JSON db sync failed on signUp:", syncErr);
+      }
       
       // If email confirmation is required, login automatically via the local user state
       if (!data.session && localUser) {
         setUser({
-          id: localUser.id,
+          id: data.user.id,
           email: localUser.email,
           name: localUser.name,
           role: localUser.role as "Student" | "Admin",

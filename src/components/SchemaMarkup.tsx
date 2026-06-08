@@ -36,7 +36,7 @@ export default function SchemaMarkup() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "REES52 Infinity Learning Hub",
+    "name": "REES52 Learning Hub",
     "url": baseUrl,
     "potentialAction": {
       "@type": "SearchAction",

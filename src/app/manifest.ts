@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'REES52 Infinity Learning Hub',
-    short_name: 'Infinity Learning',
+    name: 'REES52 Learning Hub',
+    short_name: 'REES52 Learning',
     description: 'Premium robotics, embedded systems, and STEM learning portal by REES52.',
     start_url: '/',
     display: 'standalone',

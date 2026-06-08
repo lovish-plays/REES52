@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabaseServer';
+import { toUUID, fromUUID } from '@/lib/uuidHelper';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +20,11 @@ export async function getCategories() {
       .select('id,name,slug')
       .order('name', { ascending: true });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((c) => ({
+      id: fromUUID(c.id),
+      name: c.name,
+      slug: c.slug,
+    }));
   } catch (e) {
     console.error('getCategories:', e);
     return [];
@@ -35,11 +40,11 @@ export async function getProducts() {
       .order('name', { ascending: true });
     if (error) throw error;
     return (data ?? []).map((p) => ({
-      id: p.id,
+      id: fromUUID(p.id),
       name: p.name,
       external_purchase_url: p.external_url,
       image_url: p.image_url,
-      category_id: p.category_id,
+      category_id: fromUUID(p.category_id),
     }));
   } catch (e) {
     console.error('getProducts:', e);
@@ -56,11 +61,11 @@ export async function getEbooks() {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return (data ?? []).map((e) => ({
-      id: e.id,
+      id: fromUUID(e.id),
       title: e.title,
       pdf_url: e.pdf_url,
-      category_id: e.category_id,
-      parent_product_id: e.product_id,
+      category_id: fromUUID(e.category_id),
+      parent_product_id: fromUUID(e.product_id),
       created_at: e.created_at,
     }));
   } catch (e) {
@@ -78,11 +83,11 @@ export async function getVideos() {
       .order('created_at', { ascending: false });
     if (error) throw error;
     return (data ?? []).map((v) => ({
-      id: v.id,
+      id: fromUUID(v.id),
       title: v.title,
       youtube_url: v.youtube_url,
-      category_id: v.category_id,
-      parent_product_id: v.product_id,
+      category_id: fromUUID(v.category_id),
+      parent_product_id: fromUUID(v.product_id),
       created_at: v.created_at,
     }));
   } catch (e) {
@@ -99,7 +104,14 @@ export async function getWebinars() {
       .select('id,title,description,meeting_url,schedule_date,is_live')
       .order('schedule_date', { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((w) => ({
+      id: fromUUID(w.id),
+      title: w.title,
+      description: w.description,
+      meeting_url: w.meeting_url,
+      schedule_date: w.schedule_date,
+      is_live: w.is_live,
+    }));
   } catch (e) {
     console.error('getWebinars:', e);
     return [];
@@ -114,10 +126,14 @@ export async function getCategoryById(id: string) {
     const { data, error } = await supabase
       .from('categories')
       .select('id,name,slug')
-      .eq('id', id)
+      .eq('id', toUUID(id))
       .maybeSingle();
     if (error || !data) return null;
-    return data;
+    return {
+      id: fromUUID(data.id),
+      name: data.name,
+      slug: data.slug,
+    };
   } catch {
     return null;
   }
@@ -129,15 +145,15 @@ export async function getProductById(id: string) {
     const { data, error } = await supabase
       .from('products')
       .select('id,name,external_url,image_url,category_id')
-      .eq('id', id)
+      .eq('id', toUUID(id))
       .maybeSingle();
     if (error || !data) return null;
     return {
-      id: data.id,
+      id: fromUUID(data.id),
       name: data.name,
       external_purchase_url: data.external_url,
       image_url: data.image_url,
-      category_id: data.category_id,
+      category_id: fromUUID(data.category_id),
     };
   } catch {
     return null;
@@ -150,15 +166,15 @@ export async function getEbookById(id: string) {
     const { data, error } = await supabase
       .from('ebooks')
       .select('id,title,pdf_url,category_id,product_id,created_at')
-      .eq('id', id)
+      .eq('id', toUUID(id))
       .maybeSingle();
     if (error || !data) return null;
     return {
-      id: data.id,
+      id: fromUUID(data.id),
       title: data.title,
       pdf_url: data.pdf_url,
-      category_id: data.category_id,
-      parent_product_id: data.product_id,
+      category_id: fromUUID(data.category_id),
+      parent_product_id: fromUUID(data.product_id),
       created_at: data.created_at,
     };
   } catch {
@@ -172,15 +188,15 @@ export async function getVideoById(id: string) {
     const { data, error } = await supabase
       .from('videos')
       .select('id,title,youtube_url,category_id,product_id,created_at')
-      .eq('id', id)
+      .eq('id', toUUID(id))
       .maybeSingle();
     if (error || !data) return null;
     return {
-      id: data.id,
+      id: fromUUID(data.id),
       title: data.title,
       youtube_url: data.youtube_url,
-      category_id: data.category_id,
-      parent_product_id: data.product_id,
+      category_id: fromUUID(data.category_id),
+      parent_product_id: fromUUID(data.product_id),
       created_at: data.created_at,
     };
   } catch {
@@ -244,7 +260,12 @@ export async function getNotifications() {
       .select('id,message,link,created_at')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((n) => ({
+      id: fromUUID(n.id),
+      message: n.message,
+      link: n.link,
+      created_at: n.created_at,
+    }));
   } catch (e) {
     console.error('getNotifications:', e);
     return [];

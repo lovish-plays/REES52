@@ -20,14 +20,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "REES52 Infinity Learning Hub | Premium Robotics & STEM Education",
-    template: "%s | REES52 Infinity Learning Hub"
+    default: "REES52 Learning Hub | Premium Robotics & STEM Education",
+    template: "%s | REES52 Learning Hub"
   },
   description:
-    "REES52 Infinity Learning Hub is a premium educational Progressive Web App (PWA) for robotics, embedded systems, Arduino, IoT, sensors, and STEM learning — featuring ebooks, video lectures, and live webinars.",
+    "REES52 Learning Hub is a premium educational Progressive Web App (PWA) for robotics, embedded systems, Arduino, IoT, sensors, and STEM learning — featuring ebooks, video lectures, and live webinars.",
   keywords: [
     "REES52",
-    "Infinity Learning Hub",
+    "Learning Hub",
     "robotics education",
     "embedded systems",
     "Arduino",
@@ -46,30 +46,30 @@ export const metadata: Metadata = {
     "DIY electronics",
     "robotics kits"
   ],
-  authors: [{ name: "REES52 Infinity Learning Team" }],
+  authors: [{ name: "REES52 Learning Team" }],
   creator: "REES52",
   publisher: "REES52",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Infinity Learning",
+    title: "REES52 Learning",
   },
   icons: {
     apple: "/icon-192.png",
   },
   openGraph: {
-    title: "REES52 Infinity Learning Hub | Premium Robotics & STEM Education",
+    title: "REES52 Learning Hub | Premium Robotics & STEM Education",
     description:
       "Master robotics, embedded systems, Arduino, IoT, and drone building with hands-on ebooks, video lectures, and live webinars.",
     url: "https://rees52.com",
-    siteName: "REES52 Infinity Learning Hub",
+    siteName: "REES52 Learning Hub",
     locale: "en_US",
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "REES52 Infinity Learning Hub | Robotics & STEM Education",
+    title: "REES52 Learning Hub | Robotics & STEM Education",
     description:
       "Explore ebooks, videos, and webinars to build robotics, embedded systems, and drone hardware projects.",
     creator: "@rees52"

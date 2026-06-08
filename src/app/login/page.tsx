@@ -7,9 +7,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sendPasswordResetOtpAction, resetPasswordWithOtpAction } from "@/app/actions/auth";
+import { sendPasswordResetOtpAction, verifyOtpAction, resetPasswordWithOtpAction } from "@/app/actions/auth";
 
-type AuthMode = "signin" | "signup" | "forgot" | "otp";
+type AuthMode = "signin" | "signup" | "forgot" | "otp" | "reset";
 
 function LoginForm() {
   const { signIn, signUp, user, isLoading: authLoading } = useAuth();
@@ -45,9 +45,17 @@ function LoginForm() {
     setInfoMessage(null);
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
     try {
       if (mode === "signup") {
-        const res = await signUp(name.trim(), email.trim(), password);
+        const res = await signUp(name.trim(), cleanEmail, password);
         if (res.error) {
           setError(res.error);
           setLoading(false);
@@ -59,7 +67,7 @@ function LoginForm() {
           }, 1800);
         }
       } else if (mode === "signin") {
-        const res = await signIn(email.trim(), password);
+        const res = await signIn(cleanEmail, password);
         if (res.error) {
           setError(res.error);
           setLoading(false);
@@ -71,7 +79,7 @@ function LoginForm() {
           }, 500);
         }
       } else if (mode === "forgot") {
-        const res = await sendPasswordResetOtpAction(email.trim());
+        const res = await sendPasswordResetOtpAction(cleanEmail);
         if (res.error) {
           setError(res.error);
         } else {
@@ -83,7 +91,17 @@ function LoginForm() {
         }
         setLoading(false);
       } else if (mode === "otp") {
-        const res = await resetPasswordWithOtpAction(email.trim(), otp.trim(), newPassword);
+        const res = await verifyOtpAction(cleanEmail, otp.trim());
+        if (res.error) {
+          setError(res.error);
+          setLoading(false);
+        } else {
+          setInfoMessage("OTP Code Verified! Please enter your new password.");
+          setMode("reset");
+          setLoading(false);
+        }
+      } else if (mode === "reset") {
+        const res = await resetPasswordWithOtpAction(cleanEmail, otp.trim(), newPassword);
         if (res.error) {
           setError(res.error);
           setLoading(false);
@@ -181,6 +199,7 @@ function LoginForm() {
                     setError(null);
                     setInfoMessage(null);
                     if (mode === "otp") setMode("forgot");
+                    else if (mode === "reset") setMode("otp");
                     else setMode("signin");
                   }}
                   className="p-1 rounded-lg hover:bg-slate-200/50 text-slate-600 hover:text-slate-800 transition-colors cursor-pointer animate-fade-in"
@@ -195,13 +214,15 @@ function LoginForm() {
                 {mode === "signin" && "WELCOME BACK"}
                 {mode === "forgot" && "RESET PASSWORD"}
                 {mode === "otp" && "ENTER OTP"}
+                {mode === "reset" && "SET NEW PASSWORD"}
               </h2>
             </div>
             <p className="text-slate-600 font-semibold text-xs">
-              {mode === "signup" && "Join REES52 Infinity Learning Hub in seconds."}
+              {mode === "signup" && "Join REES52 Learning Hub in seconds."}
               {mode === "signin" && "Sign in to access your learning dashboard."}
               {mode === "forgot" && "Receive a secure code to reset your account password."}
-              {mode === "otp" && `Enter the OTP sent to ${email} to set a new password.`}
+              {mode === "otp" && `Enter the OTP sent to ${email}.`}
+              {mode === "reset" && "Enter a new secure password for your account."}
             </p>
           </div>
 
@@ -304,31 +325,32 @@ function LoginForm() {
             )}
 
             {mode === "otp" && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="space-y-1.5">
-                  <Label htmlFor="otp" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Verification OTP Code</Label>
-                  <Input
-                    id="otp"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="Enter 6-digit OTP"
-                    required
-                    maxLength={6}
-                    className="glass-input rounded-xl text-xs py-2.5 font-bold tracking-widest text-center bg-white/70"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="newPassword" className="text-[10px] font-black uppercase tracking-widest text-slate-500">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="glass-input rounded-xl text-xs py-2.5 bg-white/70"
-                  />
-                </div>
+              <div className="space-y-1.5 animate-fade-in">
+                <Label htmlFor="otp" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Verification OTP Code</Label>
+                <Input
+                  id="otp"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter 6-digit OTP"
+                  required
+                  maxLength={6}
+                  className="glass-input rounded-xl text-xs py-2.5 font-bold tracking-widest text-center bg-white/70"
+                />
+              </div>
+            )}
+
+            {mode === "reset" && (
+              <div className="space-y-1.5 animate-fade-in">
+                <Label htmlFor="newPassword" className="text-[10px] font-black uppercase tracking-widest text-slate-500">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="glass-input rounded-xl text-xs py-2.5 bg-white/70"
+                />
               </div>
             )}
 
@@ -343,10 +365,11 @@ function LoginForm() {
                mode === "signup" ? "SIGN UP" : 
                mode === "signin" ? "SIGN IN" : 
                mode === "forgot" ? "SEND RESET OTP" :
+               mode === "otp" ? "VERIFY OTP" :
                "RESET PASSWORD"}
             </Button>
 
-            {mode !== "otp" && (
+            {mode !== "otp" && mode !== "reset" && (
               <button
                 type="button"
                 onClick={() => {

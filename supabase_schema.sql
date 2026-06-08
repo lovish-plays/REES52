@@ -11,6 +11,7 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT,
+    email TEXT,
     role TEXT DEFAULT 'Student',
     enrolled_videos TEXT[] DEFAULT '{}',
     purchased_ebooks TEXT[] DEFAULT '{}',
@@ -21,10 +22,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, role, enrolled_videos, purchased_ebooks)
+  INSERT INTO public.profiles (id, name, email, role, enrolled_videos, purchased_ebooks)
   VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    new.email,
     'Student',
     ARRAY[]::TEXT[],
     ARRAY[]::TEXT[]
@@ -38,6 +40,28 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Ensure email column exists on profiles table (Migration/Update)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+
+-- Sync emails for existing profiles from auth.users table
+UPDATE public.profiles p
+SET email = u.email
+FROM auth.users u
+WHERE p.id = u.id AND p.email IS NULL;
+
+-- Insert missing profiles for existing users in auth.users table
+INSERT INTO public.profiles (id, name, email, role, enrolled_videos, purchased_ebooks)
+SELECT 
+  u.id,
+  COALESCE(u.raw_user_meta_data->>'name', split_part(u.email, '@', 1)),
+  u.email,
+  'Student',
+  ARRAY[]::TEXT[],
+  ARRAY[]::TEXT[]
+FROM auth.users u
+LEFT JOIN public.profiles p ON u.id = p.id
+WHERE p.id IS NULL;
 
 -- Create notifications table
 CREATE TABLE IF NOT EXISTS public.notifications (

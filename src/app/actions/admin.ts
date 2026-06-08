@@ -3,6 +3,7 @@
 import { getCurrentUser } from './auth';
 import { createClient } from '@/lib/supabaseServer';
 import { randomUUID } from 'crypto';
+import { toUUID, fromUUID } from '@/lib/uuidHelper';
 
 // Run auth check and DB client creation in parallel
 async function getAdminClient() {
@@ -32,7 +33,7 @@ export async function addCategory(name: string, slug: string) {
       .single();
 
     if (error) return { error: error.message };
-    return { success: true, category: data };
+    return { success: true, category: { ...data, id: fromUUID(data.id) } };
   } catch (e: any) {
     return { error: e.message };
   }
@@ -41,7 +42,7 @@ export async function addCategory(name: string, slug: string) {
 export async function deleteCategory(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('categories').delete().eq('id', id);
+    const { error } = await supabase.from('categories').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {
@@ -69,7 +70,7 @@ export async function addProduct(formData: {
         name,
         external_url: external_purchase_url,
         image_url,
-        category_id,
+        category_id: toUUID(category_id),
       })
       .select('id,name,external_url,image_url,category_id')
       .single();
@@ -78,11 +79,11 @@ export async function addProduct(formData: {
     return {
       success: true,
       product: {
-        id: data.id,
+        id: fromUUID(data.id),
         name: data.name,
         external_purchase_url: data.external_url,
         image_url: data.image_url,
-        category_id: data.category_id,
+        category_id: fromUUID(data.category_id),
       },
     };
   } catch (e: any) {
@@ -93,7 +94,7 @@ export async function addProduct(formData: {
 export async function deleteProduct(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('products').delete().eq('id', id);
+    const { error } = await supabase.from('products').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {
@@ -121,8 +122,8 @@ export async function addEbook(formData: {
         id: randomUUID(),
         title,
         pdf_url,
-        category_id,
-        product_id: parent_product_id,
+        category_id: toUUID(category_id),
+        product_id: toUUID(parent_product_id),
         created_at: now,
       })
       .select('id,title,pdf_url,category_id,product_id,created_at')
@@ -132,11 +133,11 @@ export async function addEbook(formData: {
     return {
       success: true,
       ebook: {
-        id: data.id,
+        id: fromUUID(data.id),
         title: data.title,
         pdf_url: data.pdf_url,
-        category_id: data.category_id,
-        parent_product_id: data.product_id,
+        category_id: fromUUID(data.category_id),
+        parent_product_id: fromUUID(data.product_id),
         created_at: data.created_at,
       },
     };
@@ -148,7 +149,7 @@ export async function addEbook(formData: {
 export async function deleteEbook(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('ebooks').delete().eq('id', id);
+    const { error } = await supabase.from('ebooks').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {
@@ -176,8 +177,8 @@ export async function addVideo(formData: {
         id: randomUUID(),
         title,
         youtube_url,
-        category_id,
-        product_id: parent_product_id,
+        category_id: toUUID(category_id),
+        product_id: toUUID(parent_product_id),
         created_at: now,
       })
       .select('id,title,youtube_url,category_id,product_id,created_at')
@@ -187,11 +188,11 @@ export async function addVideo(formData: {
     return {
       success: true,
       video: {
-        id: data.id,
+        id: fromUUID(data.id),
         title: data.title,
         youtube_url: data.youtube_url,
-        category_id: data.category_id,
-        parent_product_id: data.product_id,
+        category_id: fromUUID(data.category_id),
+        parent_product_id: fromUUID(data.product_id),
         created_at: data.created_at,
       },
     };
@@ -203,7 +204,7 @@ export async function addVideo(formData: {
 export async function deleteVideo(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('videos').delete().eq('id', id);
+    const { error } = await supabase.from('videos').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {
@@ -239,7 +240,17 @@ export async function addWebinar(formData: {
       .single();
 
     if (error) return { error: error.message };
-    return { success: true, webinar: data };
+    return {
+      success: true,
+      webinar: {
+        id: fromUUID(data.id),
+        title: data.title,
+        description: data.description,
+        meeting_url: data.meeting_url,
+        schedule_date: data.schedule_date,
+        is_live: data.is_live,
+      },
+    };
   } catch (e: any) {
     return { error: e.message };
   }
@@ -248,7 +259,7 @@ export async function addWebinar(formData: {
 export async function deleteWebinar(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('webinars').delete().eq('id', id);
+    const { error } = await supabase.from('webinars').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {
@@ -270,7 +281,15 @@ export async function addNotification(message: string, link?: string) {
       .single();
 
     if (error) return { error: error.message };
-    return { success: true, notification: data };
+    return {
+      success: true,
+      notification: {
+        id: fromUUID(data.id),
+        message: data.message,
+        link: data.link,
+        created_at: data.created_at,
+      },
+    };
   } catch (e: any) {
     return { error: e.message };
   }
@@ -279,7 +298,7 @@ export async function addNotification(message: string, link?: string) {
 export async function deleteNotification(id: string) {
   try {
     const supabase = await getAdminClient();
-    const { error } = await supabase.from('notifications').delete().eq('id', id);
+    const { error } = await supabase.from('notifications').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
   } catch (e: any) {

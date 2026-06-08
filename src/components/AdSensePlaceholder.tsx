@@ -79,7 +79,7 @@ export default function AdSensePlaceholder({
           </p>
 
           <a
-            href="mailto:info@rees52.in?subject=Sponsorship%20Inquiry%20-%20REES52%20Infinity"
+            href="mailto:info@rees52.in?subject=Sponsorship%20Inquiry%20-%20REES52%20Learning"
             className="mt-3.5 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[7.5px] tracking-widest rounded transition-colors shadow-md pointer-events-auto"
           >
             Advertise With Us

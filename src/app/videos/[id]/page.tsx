@@ -101,7 +101,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
               </span>
               
               <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wide leading-snug">
-                Infinity Companion Hardware Kit
+                Companion Hardware Kit
               </h3>
 
               <div>
@@ -110,7 +110,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
               </div>
 
               <p className="text-slate-700 text-xs leading-relaxed">
-                Unlock full course capabilities by building this prototype physically. Purchase the official Infinity robotics set directly to access all sensor modules.
+                Unlock full course capabilities by building this prototype physically. Purchase the official robotics set directly to access all sensor modules.
               </p>
 
               {/* Purchase button redirection */}

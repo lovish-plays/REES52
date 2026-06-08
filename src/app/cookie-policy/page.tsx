@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Cookie, ShieldAlert, CheckCircle2, Info } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | REES52 Infinity Learning Hub",
+  title: "Cookie Policy | REES52 Learning Hub",
   description: "Read the official Cookie Policy of REES52. Learn how we use essential, local storage fallback session cookies, and analytics cookies to deliver a secure learning experience.",
   keywords: ["REES52 Cookie Policy", "robotic portal cookies", "essential cookies", "analytics tracking"],
   alternates: {
@@ -37,7 +37,7 @@ export default function CookiePolicyPage() {
             Cookies are small text files stored on your computer or mobile device when you visit a website. They are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.
           </p>
           <p className="text-xs text-slate-700 leading-relaxed font-semibold mt-3">
-            At Robotics Embedded Education Services Private Limited (REES52), we believe in absolute transparency. This Cookie Policy explains how we use cookies and local storage tokens on our educational Infinity Learning Hub portal to provide secure, high-performance learning workflows.
+            At Robotics Embedded Education Services Private Limited (REES52), we believe in absolute transparency. This Cookie Policy explains how we use cookies and local storage tokens on our educational Learning Hub portal to provide secure, high-performance learning workflows.
           </p>
         </div>
 

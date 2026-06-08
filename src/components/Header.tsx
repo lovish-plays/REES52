@@ -132,7 +132,7 @@ export default function Header() {
                 REES<span className="text-cyan-600">52</span>
               </span>
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                Infinity Learning Hub
+                Learning Hub
               </span>
               {tagline && (
                 <span className="hidden md:inline text-[9px] text-slate-800 font-bold uppercase tracking-wider animate-fade-in-up mt-0.5 max-w-[250px] md:max-w-md truncate">
@@ -305,13 +305,13 @@ export default function Header() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-slate-200" />
                     <DropdownMenuItem asChild className="focus:bg-cyan-50 focus:text-cyan-950">
-                      <Link href="/my-learning" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
+                      <Link href="/?type=videos" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
                         <Video className="h-4 w-4 text-cyan-600" />
                         <span className="font-extrabold text-[10px] uppercase tracking-widest">My Learning</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="focus:bg-cyan-50 focus:text-cyan-950">
-                      <Link href="/my-stuff" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
+                      <Link href="/?type=ebooks" className="flex items-center gap-2 w-full px-2 py-1.5 text-slate-800 hover:text-cyan-900 hover:translate-x-1.5 transition-transform duration-200">
                         <BookOpen className="h-4 w-4 text-cyan-600" />
                         <span className="font-extrabold text-[10px] uppercase tracking-widest">My Stuff</span>
                       </Link>
@@ -374,7 +374,7 @@ export default function Header() {
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               <Link
-                href="/my-stuff"
+                href="/?type=ebooks"
                 onClick={() => setDirectoryOpen(false)}
                 className={overlayLinkClass}
               >
@@ -394,7 +394,7 @@ export default function Header() {
               </Link>
 
               <Link
-                href="/my-learning"
+                href="/?type=videos"
                 onClick={() => setDirectoryOpen(false)}
                 className={overlayLinkClass}
               >

@@ -59,7 +59,7 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
         
         {/* Floating live tag */}
         <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-cyan-700 animate-pulse shadow-[0_0_12px_rgba(6,182,212,0.15)]">
-          <Rocket className="h-3 w-3" /> INFINITY LEARNING HUB v2.0
+          <Rocket className="h-3 w-3" /> REES52 LEARNING HUB v2.0
         </span>
 
         {/* Dynamic Bold Typography Headline */}

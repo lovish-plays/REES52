@@ -1,9 +1,126 @@
 {
-  "categories": [],
-  "products": [],
-  "ebooks": [],
-  "videos": [],
-  "webinars": [],
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Robotics & Smart Cars",
+      "slug": "robotics-smart-cars"
+    },
+    {
+      "id": "cat-2",
+      "name": "Arduino & Microcontrollers",
+      "slug": "arduino-microcontrollers"
+    },
+    {
+      "id": "cat-3",
+      "name": "IoT & Sensors",
+      "slug": "iot-sensors"
+    },
+    {
+      "id": "cat-4",
+      "name": "Drones & Quadcopters",
+      "slug": "drones-quadcopters"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "REES52 Uno R3 Starter Kit",
+      "external_purchase_url": "https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-2"
+    },
+    {
+      "id": "prod-2",
+      "name": "REES52 4WD Smart Robot Car Kit v2.0",
+      "external_purchase_url": "https://rees52.com/robotics/456-rees52-4wd-smart-robot-car-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-1"
+    },
+    {
+      "id": "prod-3",
+      "name": "REES52 Ultimate Sensor Kit (37 in 1)",
+      "external_purchase_url": "https://rees52.com/sensors/789-rees52-ultimate-sensor-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-3"
+    },
+    {
+      "id": "prod-4",
+      "name": "REES52 F450 Drone DIY Builder Kit",
+      "external_purchase_url": "https://rees52.com/drones/101-rees52-f450-drone-diy-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-4"
+    }
+  ],
+  "ebooks": [
+    {
+      "id": "ebk-1",
+      "title": "Getting Started with Arduino Uno R3",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-2",
+      "parent_product_id": "prod-1",
+      "created_at": "2026-05-10T10:00:00Z"
+    },
+    {
+      "id": "ebk-2",
+      "title": "DIY 4WD Smart Car Building Guide",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-1",
+      "parent_product_id": "prod-2",
+      "created_at": "2026-05-12T12:00:00Z"
+    },
+    {
+      "id": "ebk-3",
+      "title": "Comprehensive Sensors Handbook (37-in-1)",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-3",
+      "parent_product_id": "prod-3",
+      "created_at": "2026-05-15T08:30:00Z"
+    }
+  ],
+  "videos": [
+    {
+      "id": "vid-1",
+      "title": "Arduino Uno Setup and Blink Tutorial",
+      "youtube_url": "https://www.youtube.com/watch?v=d8_xXNcGYgo",
+      "category_id": "cat-2",
+      "parent_product_id": "prod-1",
+      "created_at": "2026-05-11T09:00:00Z"
+    },
+    {
+      "id": "vid-2",
+      "title": "Assembling your 4WD Smart Robot Car Step-by-Step",
+      "youtube_url": "https://www.youtube.com/watch?v=hBwslH_Wn4I",
+      "category_id": "cat-1",
+      "parent_product_id": "prod-2",
+      "created_at": "2026-05-13T14:20:00Z"
+    },
+    {
+      "id": "vid-3",
+      "title": "Interfacing Temperature Sensor (DHT11) with Arduino",
+      "youtube_url": "https://www.youtube.com/watch?v=yG0-nle3rO8",
+      "category_id": "cat-3",
+      "parent_product_id": "prod-3",
+      "created_at": "2026-05-16T11:00:00Z"
+    }
+  ],
+  "webinars": [
+    {
+      "id": "web-1",
+      "title": "Live Masterclass: Building Autonomous Drones at Home",
+      "description": "Learn the principles of aeronautics, flight controllers, and assembling drone parts from scratch with REES52 engineers.",
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "schedule_date": "2026-06-15T15:00:00Z",
+      "is_live": true
+    },
+    {
+      "id": "web-2",
+      "title": "IoT Sensors Integration with Dashboard Apps",
+      "description": "A deep-dive workshop on piping sensor readings from ESP8266/ESP32 into Next.js applications and web databases.",
+      "meeting_url": "https://meet.google.com/xyz-pdqr-lmn",
+      "schedule_date": "2026-06-20T17:00:00Z",
+      "is_live": false
+    }
+  ],
   "users": [
     {
       "id": "usr-admin",
@@ -70,6 +187,1276 @@
       "name": "Robo Student",
       "email": "student-1779960258056@rees52.com",
       "password_hash": "",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-2836c926-dcbb-409e-a06f-bc6f7a5cbaa4",
+      "name": "Robo Student",
+      "email": "student-1780650049175@rees52.com",
+      "password_hash": "$2b$10$ybNJIg9oHOeyJi6xpYTM0uWEczcJHwQoKTlyupjojG8kWW8qtBbvK",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-19c9880c-9189-4bff-b15d-e6e36073892d",
+      "name": "Robo Student",
+      "email": "student-1780650069445@rees52.com",
+      "password_hash": "$2b$10$cdtGeSql.qJDAZ4Bf.hWO.9r5Qs3Ph5V4vlLCL5M4iMnm/eH.nPxu",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a49e754a-a931-4094-8aa0-8712002a2515",
+      "name": "Robo Student",
+      "email": "student-1780650099856@rees52.com",
+      "password_hash": "$2b$10$xaxuY6xO8BcRX7uuuIsEseEHdWYULokH5hJ6iXyHiLseTW1ZS4pZ6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-183f9ba2-2bd1-4241-a02f-0d0cf66feef9",
+      "name": "Robo Student",
+      "email": "student-1780650130686@rees52.com",
+      "password_hash": "$2b$10$TXbfriTNhvZxnsD0BiqfG.UVuvWid/xcVbp/FfvLzX7vVFcVCe4YC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-fe856a78-181b-4bef-a3f2-36e887b1811b",
+      "name": "Robo Student",
+      "email": "student-1780650180293@rees52.com",
+      "password_hash": "$2b$10$kqsTu.NpiIHk2hV6BAAE5.hSofLXOKxxJ6MXNF/BfBbwffirwOjJa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a1535c4f-5c93-4f82-801e-15e863f0d602",
+      "name": "Robo Student",
+      "email": "student-1780650215488@rees52.com",
+      "password_hash": "$2b$10$d1zTVSBw1/3AHbV6/DcuJOH6D/elLB4ELKRlCqf9yiRpSAgDC1GQ6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-1a97fbb7-4a4e-4731-b557-c54710267e70",
+      "name": "Robo Student",
+      "email": "student-1780650244097@rees52.com",
+      "password_hash": "$2b$10$/ZetLHNpdxQyijClh1F0A.JWCAYwdE62cbiYBt5C.Hc18VL8Twq5W",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-7ebf39ed-99e5-4cc3-a3c6-3d9f8dc7532a",
+      "name": "Robo Student",
+      "email": "student-1780650294085@rees52.com",
+      "password_hash": "$2b$10$tD4XcPb7IqxdTxOrIM/77O4lbl8oVtcJonusotfcLpJNxzVoMR9Lm",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-661165ca-e71a-41fd-a89c-a3f8a9667475",
+      "name": "Robo Student",
+      "email": "student-1780650326692@rees52.com",
+      "password_hash": "$2b$10$reTtC9c9nfpHPrE/gY9atOmx4nLnLOc/c10jf77gnQOoMCmLEkJkG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-1051f9fa-80df-4de7-a792-d471538a4672",
+      "name": "Robo Student",
+      "email": "student-1780650357217@rees52.com",
+      "password_hash": "$2b$10$kKajv8aXHPvCTMA0ZfWbbeblOIn.NFjrK9ai/2QmW18wvc7.IMWra",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-fbb06bc2-360b-48cb-8b51-89e2fedf313d",
+      "name": "Robo Student",
+      "email": "student-1780650401746@rees52.com",
+      "password_hash": "$2b$10$UF4f/jlxvQV1SEEzJtfFO.2QBBecr4h/Bbh41loGZ9nOBKLeDHRwS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e844308c-f518-4d4e-9189-ef5d82ca499b",
+      "name": "Robo Student",
+      "email": "student-1780650425158@rees52.com",
+      "password_hash": "$2b$10$/5N9.KxjkwI/5rGIJFOGeOsRO97fW/9v8Yn1aff263ad4NxLsRXQq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-b8623b14-f45e-4bd2-b337-3b65620fe6ca",
+      "name": "Robo Student",
+      "email": "student-1780650445293@rees52.com",
+      "password_hash": "$2b$10$bum7ftXLqlag1yRO5zVpA.XIS5ZOzuMu4QUALZwgbRPbmlBpG9a/K",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-b9854090-9fcd-4558-aed5-9ae13d90092b",
+      "name": "Robo Student",
+      "email": "student-1780754008508@rees52.com",
+      "password_hash": "$2b$10$6j073NI.D3Lxbua/6w8Ejux.ehhZtFTxPziGte9/WrVDHS7b6mjje",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-f573a6a0-7154-4316-9547-3aa633613dd7",
+      "name": "Robo Student",
+      "email": "student-1780754029852@rees52.com",
+      "password_hash": "$2b$10$LjxKi5WVSliS7BrjLTcaWeqzpLephWYb7eLMjEYJrRQdZGCJaJEnS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-6830ae95-3c9d-4b72-938e-0bead6b2ac5d",
+      "name": "Robo Student",
+      "email": "student-1780754050858@rees52.com",
+      "password_hash": "$2b$10$usiidjnk0tqIWanUzqR0.Onl22vrlRokLF9qYKahhyf2FLn4ZeAiW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-57fe9901-4422-4531-86d2-04821d0d4e7a",
+      "name": "Robo Student",
+      "email": "student-1780754127374@rees52.com",
+      "password_hash": "$2b$10$5bdvKTCRepFzn2xYrNS6kucUFsQJjGrBIT3om5cHJaDmdBfeZB6ke",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-4162dae4-9499-48a1-bf99-9732f4178e19",
+      "name": "Robo Student",
+      "email": "student-1780754143638@rees52.com",
+      "password_hash": "$2b$10$EsG1OlXtnWhjgkP7hcuD7.NZlqKdJ0QcAfBY2pEef3lANhN6b1mFq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-1a062295-4b90-4192-b33e-9b42259c6b72",
+      "name": "Robo Student",
+      "email": "student-1780754160200@rees52.com",
+      "password_hash": "$2b$10$/STmBYylrUE4tsGsvPkG6OpWoBBSy5xZP6kd6XwskHyamDF4UKVXO",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-1d6c1eb1-4a6e-489e-91a9-f10d25153348",
+      "name": "Robo Student",
+      "email": "student-1780754234120@rees52.com",
+      "password_hash": "$2b$10$aTp6cwjE63MkvHhKUBd16O8OUYKiXqwWPzZXJbHxHzVXmCLrAnzPG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-cd751bb0-6fed-4a8e-bd2d-3f7eb9bc9be5",
+      "name": "Robo Student",
+      "email": "student-1780754257310@rees52.com",
+      "password_hash": "$2b$10$0Q/HfPPZiqBjUXB0GbXclOEff635Onc1VGRM2Vh1hQyCJaZ.ksN5i",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-27de5a45-1d5d-429d-b3d2-70f0c0278451",
+      "name": "Robo Student",
+      "email": "student-1780754278418@rees52.com",
+      "password_hash": "$2b$10$cFj55SjbLlTsxtlTPXi82uohi3UEuIO6uGMCALxsniuILSpANdJq.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e2336ec8-a8a0-4d07-aa66-ef58cbadfec0",
+      "name": "Robo Student",
+      "email": "student-1780754322430@rees52.com",
+      "password_hash": "$2b$10$fJw7v6aY5OSfGYj0kOZcb.Hn1TjMCDrgL5Vm8/dMXFNAmy9KTXJ/a",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-9a2f96b1-d694-4cfc-8b89-53d8fcd0a9bf",
+      "name": "Robo Student",
+      "email": "student-1780754346339@rees52.com",
+      "password_hash": "$2b$10$6o3QN74T65wg9jJVBW506.4SUQmSaQGoKx.rsqCnLtye4fC8F/vam",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-3a96f0e2-7d5f-4e88-84d5-081cb33420aa",
+      "name": "Robo Student",
+      "email": "student-1780754368561@rees52.com",
+      "password_hash": "$2b$10$uW9NRBPNUkvKavtKrgAiFOV0VnfoQaOjtNuojeBfHmEn99eEaAxfa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-225bf855-2850-45b1-99f7-026534b26633",
+      "name": "Robo Student",
+      "email": "student-1780754484374@rees52.com",
+      "password_hash": "$2b$10$n9ecNeDVyQN9crc.o7wKBOMSbQAjcRLDkociUgKjn6GkOFSwMX4my",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-51bda5e3-1200-4426-9dfe-08e59716c2ac",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754505245@rees52.com",
+      "password_hash": "$2b$10$ioPDz4whwJDYV8wgcNI3AeZPyrWgC.s9QeAu7jb2WbzgE1t/210FC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-d2c8e039-0bc7-4a68-8f4e-d0be8f64e320",
+      "name": "Robo Student",
+      "email": "student-1780754522819@rees52.com",
+      "password_hash": "$2b$10$ULLvHPKPGy8kY20MLoC7AeylDOBL0oLegxBkY4n8oOgPrTwml.I0S",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-692ec88c-30ca-43a0-8b15-4327d55c8e6d",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754552162@rees52.com",
+      "password_hash": "$2b$10$Hpj65J.h28oz8HgXjYS0ye7ePNOGT7hrHlT9D.cSHbQWlP2P9E47y",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-6666f269-a8ec-4ad9-8d80-bdd49203082c",
+      "name": "Robo Student",
+      "email": "student-1780754567687@rees52.com",
+      "password_hash": "$2b$10$Y5rvLvSH1quNt3ZjDddm9eGU0lDiDVFbKvcMTGxuRUO8r.Xov2Shi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-06e0332e-10d1-4650-a1c1-7f4384ddb048",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754598792@rees52.com",
+      "password_hash": "$2b$10$cEjd1hflGtLZOTDOR4WKk..l05LXwYGEs/9D6Ga/TML8Sv99lm2/.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-3a157389-02df-417b-a449-b1bbae337562",
+      "name": "Robo Student",
+      "email": "student-1780754735519@rees52.com",
+      "password_hash": "$2b$10$gvzggu9/pOIJ2EGBNSca3uzC.qXLuPl5RkDYjQSyPUnstybbGm1jG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-82a3d07a-446e-4443-95ad-a4a0aeb29b5b",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754758792@rees52.com",
+      "password_hash": "$2b$10$TMJ4BXPj44zWVrgVGCRrfe8g66cpGoGAW5B0s1AskXZfDNytUrAGy",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-69483e67-8c11-4109-bfaf-9e63ff48cc5f",
+      "name": "Robo Student",
+      "email": "student-1780754774535@rees52.com",
+      "password_hash": "$2b$10$ToP7UnfjbBVzufklDdcPT.39PKpAqfaOq2czI7UtAcFpnt5ukpIqa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-6a0bcabf-1278-4541-a9b8-f3fe7238ebc2",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754794713@rees52.com",
+      "password_hash": "$2b$10$A1UtFrNGdTmpi77vOq04Oe0W9Y3lHVgLtxNEvwwkt3lzQ0cJ36g66",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-dfe5c7e5-de9d-4c5e-bcd0-15dd9d0fc862",
+      "name": "Robo Student",
+      "email": "student-1780754808494@rees52.com",
+      "password_hash": "$2b$10$TWqJ42UZp7KsVyFILM61gutt8vthQ0iyXmQjUYbk8REHGMpdBBqqe",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e8a89db4-0a80-4985-9d91-356bb8266a84",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754827898@rees52.com",
+      "password_hash": "$2b$10$wP5ixmSiBHbXKAmGWomaK.vbOhP0DiEPaQ9Js7XZ6i.jebiCWxS8m",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e9c9253c-e6dc-4a7e-ab14-719c4a611043",
+      "name": "Robo Student",
+      "email": "student-1780754860744@rees52.com",
+      "password_hash": "$2b$10$zRJwFtlpc627ZY6OVAAdfOqf3bt2zQnBhFqc0b1WCQarkIE4xESw6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-5282fde3-b773-49a6-8470-a503bf9abbd9",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754878917@rees52.com",
+      "password_hash": "$2b$10$wtZyz8h/Qo7mfTUJ6bpv7OqZXlEHEU0ykcvwW1B6AC1UAvyjcfiOi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-67bcdc03-618d-4177-b758-77b8a730cd13",
+      "name": "Robo Student",
+      "email": "student-1780754894459@rees52.com",
+      "password_hash": "$2b$10$ls9ejL/mEJa4qYYCHf6WtuHUy07ekHcTg4Pyeq3XPswQAv.ArEvJe",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a0c90af1-a6b6-4e7c-86f4-31eb5b72fc88",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754914586@rees52.com",
+      "password_hash": "$2b$10$VE8rrzXVTuBrpFN4TsPHu.pZCV5.k3HLqUb0NLVP9fu6oV1hHc8Mq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-dee67168-ed18-4378-b615-446e3ccb0c19",
+      "name": "Robo Student",
+      "email": "student-1780754928687@rees52.com",
+      "password_hash": "$2b$10$ayOhONbNssUGEOIp75ovcOTPTVbbjZ36p7mEdo/odm9OREwybaqn6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-179814c5-3816-40ce-9e0d-b6c8814deb4d",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780754948076@rees52.com",
+      "password_hash": "$2b$10$gcbEo7FbL7gdNCvLf9zOIeFHaVDlbT.YOoWJlLgeYWhs60eOWrD7K",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-8f2865b4-b90f-429f-be0c-108f632d8361",
+      "name": "Robo Student",
+      "email": "student-1780754999919@rees52.com",
+      "password_hash": "$2b$10$eI34kNsnCjnaF2vr5hWCX.hvSiSjgDgMRSL2cDW33hdtbmLltzDn.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-935b661a-62c2-4148-8571-1e0d3c9f37a4",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755019312@rees52.com",
+      "password_hash": "$2b$10$In8bBnSrLiEWNa7MBRwEXuugKMX2G2LHos.l.lQmY10.leVoW1uVC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-2ab0820a-f847-4368-95cd-3f542d409cdf",
+      "name": "Robo Student",
+      "email": "student-1780755034811@rees52.com",
+      "password_hash": "$2b$10$wLc0jE.fwbJLbp2rl2zveeKC5iF7BB.i6XPal9ibuD13yHg60K4sK",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e90964c7-83c3-4753-b163-38006299af6a",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755055592@rees52.com",
+      "password_hash": "$2b$10$EQIPA/1CdaoCZPjV6lC.s.3H.ndV1DPyRBt9IJ4GIj5IFbI9nFOpS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-71cd1e95-574c-4285-bdd3-0fc4d8bc84f3",
+      "name": "Robo Student",
+      "email": "student-1780755070095@rees52.com",
+      "password_hash": "$2b$10$ZIIIL2LGo6BQTX4Es.hh8O/WKvzn4t7XQvMR93qMs5sagcdhHpRDq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-25c359d9-f9c6-4121-92dd-2339de387b64",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755088915@rees52.com",
+      "password_hash": "$2b$10$SNbx3UvbVJH8UtKx8qutm.wG8ivcRokyav8SpaN8jz2m0CINCNZOS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-2c561688-ec83-43d5-9814-14217943a900",
+      "name": "Robo Student",
+      "email": "student-1780755118126@rees52.com",
+      "password_hash": "$2b$10$nUv/zFqppjHF5yPx3LyKKOE25fLGJYJHjOb/Vp00M2s/xfkSxanFS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-420de68c-7b12-4601-ac8b-ee2f93caefb9",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755137961@rees52.com",
+      "password_hash": "$2b$10$lPjUG6RNaLX3/Q6zbJ69O.37DRDYStLZW303h/2fkvAanqB6c6rBK",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-cb40ee55-2d1a-4de7-a02c-c91cb2a72c69",
+      "name": "Robo Student",
+      "email": "student-1780755154798@rees52.com",
+      "password_hash": "$2b$10$YY8uA0Q5opBXNSgY1/oDs.pCt5G25dzCKdXJByvlgyuzpsiSFzc8C",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-ee8ffdab-eeb8-4276-815e-b09452e9db0e",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755177463@rees52.com",
+      "password_hash": "$2b$10$qOGdPa6DpFMAQJpe1EhJI..kPa.1sCr0khAHY3f.bAmgeCHfn6wCS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-55badf7b-32ed-4d5b-a11f-5b473a97f124",
+      "name": "Robo Student",
+      "email": "student-1780755191461@rees52.com",
+      "password_hash": "$2b$10$eC68qVuID5jwmSAdHSAei.v5MclIf5VHbX5kG0qxjMsq894CrIjJ.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-f0f27006-5ee1-40a9-b875-bcfe898ad1e8",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755211188@rees52.com",
+      "password_hash": "$2b$10$D1WPJc/RLLZRzh8epzhwZOa4gmVMq9664eRxcChOiJgwAGdDss/Si",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-07886ad5-2de0-48f8-af8f-dd6fbf481e95",
+      "name": "Robo Student",
+      "email": "student-1780755251057@rees52.com",
+      "password_hash": "$2b$10$jenvi6lZLOESnqNTRYS74.vfrEkBgYUDUdgVV1eWsynJGM0.e7S9W",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-573128f6-ddfb-4e1b-adf6-d6ee2152daf1",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755281405@rees52.com",
+      "password_hash": "$2b$10$RFENisluXwGU7a5dzx5ok.LWYm0mpL2Dvsl1hUh1UwOp6vMt.R7nu",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-d4040457-58f3-4309-aa1d-019434742860",
+      "name": "Robo Student",
+      "email": "student-1780755313996@rees52.com",
+      "password_hash": "$2b$10$L9JevrkAOosts9eslq4N6uLNvBZoMcDuzxVK6dMEmpjfnwTGj2MTu",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-ddf2f641-3969-4b73-96e0-f9d23b8721f3",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755323986@rees52.com",
+      "password_hash": "$2b$10$Lr.KT.xR6rLqGJF11S2Dj.aH8NnadUsz9/nib1t2.HK9KhaMgulla",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-1a082810-72d8-465c-b9ec-ae7415a353d5",
+      "name": "Robo Student",
+      "email": "student-1780755334507@rees52.com",
+      "password_hash": "$2b$10$eOuxhcmZXv8wnfPqrsVNF.mwytr.1D112j/kpSmKmhwZQoAvNiqy6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a5b6485d-dddb-4830-adc4-7c4ee9e6486a",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755365973@rees52.com",
+      "password_hash": "$2b$10$Zzm5Wl6qIgsAdaNPsObUbeqnhuMks4hcb5jyRFnp1xta.771cGc7K",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-d78423c7-0c97-45f8-96d7-9d0e1e3eabe2",
+      "name": "Robo Student",
+      "email": "student-1780755414897@rees52.com",
+      "password_hash": "$2b$10$qxEujHGWAOBrx5atIbDwtuJwwz6tldK0tGogY.9TgEVZwpqfo9jX.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-df1d42c0-c0e2-44c6-a874-4670962129db",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755429981@rees52.com",
+      "password_hash": "$2b$10$9kxPsQtl7mlGKZaazXqHrOKHSkUUnH5781aUvfeTU68x3VB53Ja8O",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-32e4e946-c879-4a70-b739-51f93dadc71a",
+      "name": "Robo Student",
+      "email": "student-1780755448609@rees52.com",
+      "password_hash": "$2b$10$nO879pPE3bfOveFL6wjK4.eLHRgXgJyzTIiaNKK7Tm/pGgOD9hC7e",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a56b54e4-d2fe-4172-9873-e56bf693ba39",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755459057@rees52.com",
+      "password_hash": "$2b$10$oV6YINJF2M7wZyU1O94RLurkKz5pH1EX2xH2pZmoaiJMxOa1g1GaW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-e1b71b3f-8ec9-4e58-ba89-4df659d1341a",
+      "name": "Robo Student",
+      "email": "student-1780755468364@rees52.com",
+      "password_hash": "$2b$10$mYGE/Y261sZxY3R2QvAdDOsM9gOUCJj2icgXwC/YOTV5sOxCKGjRS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-aed68a1a-b103-4254-967a-8b41e2fa5252",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755485306@rees52.com",
+      "password_hash": "$2b$10$tKAL6NiipvO5juWeqEiy9elx9nLd0EMeSLYkYyiVuv8vOrKHab/UW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-f0adf8f5-ae93-4c3a-8ec5-f30876404fca",
+      "name": "Robo Student",
+      "email": "student-1780755514462@rees52.com",
+      "password_hash": "$2b$10$H1Yqc1glBjEmL4n25JgXaOlzZZJpVmQbN.38K723qNxZLEBkzkSCG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-44cdb6bb-4c64-4d07-ba14-803441b41415",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755534034@rees52.com",
+      "password_hash": "$2b$10$4c1BxhXsc9BUtcXXMt4RN.y1vO1dmaImLd8Z0.3Ymhe1hAilGsgTe",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-c9553914-ef95-468c-8088-8c21a86db60a",
+      "name": "Robo Student",
+      "email": "student-1780755543893@rees52.com",
+      "password_hash": "$2b$10$KQCWKv/foyX0qxlhYyi.g.7klHxGCerT7jM/vMYTulgs/tGh91q.u",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-530da152-badc-46f7-979f-f7a241d18a2e",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755564359@rees52.com",
+      "password_hash": "$2b$10$4S9bIPkreI.Pq.Zx0A0kNeLH6Fb/XkTtMYbjvTP44UAVyuKBYsXqe",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-5d60fa41-7d0b-4298-93a6-3bba4d1e4aa2",
+      "name": "Robo Student",
+      "email": "student-1780755572796@rees52.com",
+      "password_hash": "$2b$10$/u1PFjXkwXypf5p3pTHdPuiOwy9ec4M//hzF8r8AODLHopIN3ccy2",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-9d1c1841-ae66-4c1f-9c77-1eaf7e8938f6",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755591485@rees52.com",
+      "password_hash": "$2b$10$Chg8fZ6IS.0WQ8NBPVbllerguSHYNEzF3zw5btA5SDtZaAWSeXe1y",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-8f9c8a34-e22e-4661-a243-a3b436501c61",
+      "name": "Robo Student",
+      "email": "student-1780755608877@rees52.com",
+      "password_hash": "$2b$10$IptualwmsEybBY0fv8ju8e1i3dJxMkq9/I97DqMJ4GsM02pPw6SrS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-284c4087-492f-4941-8c85-da7737bfecd9",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755627854@rees52.com",
+      "password_hash": "$2b$10$Z8RZemfVx4pc9kUgi4xKOeZ7.zoRL/MqEv7iil//wSmMeJTjjkyki",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a7115c9b-aaf1-4734-91c7-c638e5c44fad",
+      "name": "Robo Student",
+      "email": "student-1780755643430@rees52.com",
+      "password_hash": "$2b$10$yV/Gn/Le1tJHhuUf/CpUzO52wBMhF0AfcJEEaFAF6EF1yP7ozyWf.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-d91a36ec-236d-449a-adda-d45e25f3b4b5",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755660982@rees52.com",
+      "password_hash": "$2b$10$poIwAnPIEl3kpI2reaZD1eWLZFitnTAPmp4D2Jxr3WT.Pk/5YH5zi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-a96f0ab7-6f30-409a-b102-b4c1657b232d",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780755686175@rees52.com",
+      "password_hash": "$2b$10$2F3aG5hDkfItQ5hvY2z7luDq5Q9fMrCgueZu5NTJ9gpOEBuezHc6i",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "usr-692ea434-b134-4988-8c22-2c61833b2d2d",
+      "name": "Robo Student",
+      "email": "student-1780755707788@rees52.com",
+      "password_hash": "$2b$10$OcYuWetdpf7he.WBQK/VAOscY5JHFELylHsSWbYntGsEJvoGkP5Ye",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "45b96d72-ae0a-493d-bd72-e76e9477bb34",
+      "name": "Robo Student",
+      "email": "student-1780756431037@rees52.com",
+      "password_hash": "$2b$10$TmVSJfqDCLsqJu1jXzlB.O1A1X9ntAMo/AbvcFNKGb8S6DVboF7F2",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "2c9f2941-03e8-44ad-a00f-8c8a2f66e158",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756454205@rees52.com",
+      "password_hash": "$2b$10$N/ZpUo3aa9hg6D9vrzjQXu72LFaXRwju.g.Bf.tkPTnDx4jXWg3Uq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "dd6c0c4f-10d5-4a2c-93cf-858e5d484e36",
+      "name": "Robo Student",
+      "email": "student-1780756468573@rees52.com",
+      "password_hash": "$2b$10$2ZqsW810PqQxHOsOl9pjEuz0TMGaP2TWn4nGbrih4wD6UJ1.d50NG",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "c1ab8426-8615-4944-a88a-11035870ebac",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756491127@rees52.com",
+      "password_hash": "$2b$10$/1rTUvlUixzt5B/k9C0VYORwVW9whOJsbZn/cb7huycx.KCi9K4dS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "a632e931-c18b-4a13-86e0-fd37f5e21f13",
+      "name": "Robo Student",
+      "email": "student-1780756505062@rees52.com",
+      "password_hash": "$2b$10$stYiourRilVRm38rpMPmLO5CMC1jA42WOMfQLFt3isJJj48jA0Frm",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "65704d02-6c10-4772-9087-c547f406db0f",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756536276@rees52.com",
+      "password_hash": "$2b$10$8dPDYvSbQtrz8YyEMXWZ/OUcCuIDj7al.HhSnezl.Nssn8jy6obGy",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "1a194f95-2f8c-401a-a64c-9f13160e4b53",
+      "name": "Robo Student",
+      "email": "student-1780756610041@rees52.com",
+      "password_hash": "$2b$10$fdxxWaZO42NggU2U.fOlJujWltd2wdIuXhvhFFHE4zNwp5719rBLa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "72bd7ef7-cbab-4fec-80b7-4f741402f09f",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756632216@rees52.com",
+      "password_hash": "$2b$10$Jcw9n.b3TWYk3gM3Ce0PDe78X9jikqlBQY1DtpSAcIMnrlHAe0nwy",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "1f49a814-2814-45c8-8dfd-0ec39744ace6",
+      "name": "Robo Student",
+      "email": "student-1780756648201@rees52.com",
+      "password_hash": "$2b$10$3ThQO/PKW8V7mvDJwEQtZuQlvv4zI4Ri.KltAuRCW6E3h75mQincC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "ced92fbd-bc07-4511-864b-2f33c51876d3",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756668485@rees52.com",
+      "password_hash": "$2b$10$24PasTVIFvvYYthseJv1xO4q0TbIssDG.h4CSHEyfbtRyV2kq9cg6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "33966a2b-06a4-4a0a-b4d0-00246290a155",
+      "name": "Robo Student",
+      "email": "student-1780756681504@rees52.com",
+      "password_hash": "$2b$10$HkG8Fhe6UCWq9uPol0z5IeUyLXTlPV9H3h.nR64PwyIM.zR1nHSHa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "4e6c2978-7c2f-4171-a695-53ef5c4d906f",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756742745@rees52.com",
+      "password_hash": "$2b$10$W6s0egUUOZVDmybWkJnfM.bxfYjp/ekGbz8wD3mnCuhHd9SoKlAgi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "b4e3a2cb-ace2-4b72-b24e-ea1eec39545d",
+      "name": "Robo Student",
+      "email": "student-1780756839782@rees52.com",
+      "password_hash": "$2b$10$Nlm5QmFhz21VbtDVYaEMKehpS6lqVO5oQxvvxOOAgCaKtDJICrB06",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "abe01cf3-6cc5-49ee-975e-9772e758bf0c",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756862238@rees52.com",
+      "password_hash": "$2b$10$HTXFLsD/BNyeviNITvg.e.EDNA2AKnM57X9O6LcCWKxdaOGCEEx0W",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "2273c162-beca-4135-b80a-f0ff65836e71",
+      "name": "Robo Student",
+      "email": "student-1780756878609@rees52.com",
+      "password_hash": "$2b$10$38VTuxTlVPH7abR7ZhL3bey/uG5mNpCs/BX7LOg8yrHcVBjNt/FMy",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "40263635-0442-48ad-a3c5-98aba3b8d315",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756900334@rees52.com",
+      "password_hash": "$2b$10$dBw2S5CcM2vkczOc3vTBLePEqVXgYdU7IAYaUZeplkOPcqhsIxegi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "731b49fa-aa3d-42a0-b28d-9253965e419f",
+      "name": "Robo Student",
+      "email": "student-1780756913238@rees52.com",
+      "password_hash": "$2b$10$PhyU05dSjHeqrx3APxpPNOzsipOU4eiSaFtJajlutT0z1z.QRRv6m",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "d5e6c177-83ee-4d67-a229-164ad827769f",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780756934010@rees52.com",
+      "password_hash": "$2b$10$GSKGGDL7HotazjZ4qZf4Su8vYlWoCY3extY2Mms.BqJ.yakLFBBwS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "5034167d-f8bf-448a-9013-1a10317782b1",
+      "name": "Robo Student",
+      "email": "student-1780899981731@rees52.com",
+      "password_hash": "$2b$10$JSYSkbHiuTb54NjTJzFGs.tn3k3kiGQdAk0KVmxfzdQUZ20HYPlga",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "1b163d39-05de-4bf2-860d-632f63ac7a43",
+      "name": "Robo Student",
+      "email": "student-1780900030800@rees52.com",
+      "password_hash": "$2b$10$GaKrQ2UCcuBfDGH1tLcld.n.SjbNjWS50n4PWtEkD2y2nsRjr6972",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "f4fbc5be-bfa7-469a-94fb-6db8573c3627",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900055715@rees52.com",
+      "password_hash": "$2b$10$j.ULrEfLZBFxtxw0ErLzIuNy/IM8pN1NqwF0byUJoRhOoRPn5aonK",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "21f2da83-fe66-44f5-83fb-8dc66b949c6f",
+      "name": "Robo Student",
+      "email": "student-1780900199077@rees52.com",
+      "password_hash": "$2b$10$M6mnd4gQufpw.5qqipZBdeoVgdIQPsWhY7W/u89kzk8jYu7U2sPqS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "d30e4a83-bb49-4dd5-a172-71fe56df7918",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900220054@rees52.com",
+      "password_hash": "$2b$10$TJWgN6mMBgjV.rtTnGEzoe5RjEEthFEsMJnlu7bqzYfFwsx1uMtjS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "b0693ff1-86a6-4d58-bddc-2ace8ebb99c7",
+      "name": "Robo Student",
+      "email": "student-1780900236654@rees52.com",
+      "password_hash": "$2b$10$OvsAuW/TZ/coq.xIyCaOl.WzfSyKT47Tqr4hCbtcqivpxO3nwLljK",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "574beb98-f8cf-4a76-aa4c-1564c37513af",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900259351@rees52.com",
+      "password_hash": "$2b$10$r33hGj8Gsf1zyvT.2xeOqOwCfLg.EfgEk0P8CoJWw/.0C0w/vgQ2O",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "1ee3d2d3-c8ea-4381-a0a9-c7c9c7290a58",
+      "name": "Robo Student",
+      "email": "student-1780900272504@rees52.com",
+      "password_hash": "$2b$10$LPmu34mfYE5mXqfEvgEqEubDZZ2wK9jg4lE6VvvtEjdSNYdBgrAZe",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "26be6c16-25dd-49b5-9f55-aee156e8d421",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900334178@rees52.com",
+      "password_hash": "$2b$10$KMqFZReWNC7LEzr6bxEOx./e5TQQ.m4aZvfsQp/C.ncMjO.pqEEtC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "2a557ff6-295d-4fa0-bc52-0b8b964d5659",
+      "name": "Robo Student",
+      "email": "student-1780900381627@rees52.com",
+      "password_hash": "$2b$10$n7f3KvaZBXhwgwRAUgsXNeX1789qwoztaR5/4o.n5TyRGk5nQKW6.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "bef7e041-24fd-4b60-ba96-da9afa568c95",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900401157@rees52.com",
+      "password_hash": "$2b$10$X5Y68BStfBpX6Fn/y68SnOoVFOfo5aevwP91TxC7.gJszMAqpj8ma",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "509ad389-b5e3-47ea-8ecd-d9f5a6d7496a",
+      "name": "Robo Student",
+      "email": "student-1780900418553@rees52.com",
+      "password_hash": "$2b$10$JI/mczX6SWEDiv2dRuFEJ.S29Fle4MiMHDtwTyZYKaSwRXgpdjs/q",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "2a91ef9c-ed72-4fb3-8ad9-18f128254078",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900439226@rees52.com",
+      "password_hash": "$2b$10$2FZMxYLiowFi5xIB9/wPNOWZfllmWHx0U9rNJCRiwSZWOCNt.0U1u",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "bca7f438-ef82-4c23-a752-3aa24b0d483f",
+      "name": "Robo Student",
+      "email": "student-1780900454965@rees52.com",
+      "password_hash": "$2b$10$50k0dF50nkmgxS8DPBjLMeTRkaB..XP6g25One.InYbqQeJLARG5.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "1bb1faaf-24c0-4284-8821-87fe2a9605c7",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900477194@rees52.com",
+      "password_hash": "$2b$10$D07vkvUOnGCqSK7sCDeDO.e89/6uoJ.aPQNnD3rmZGUgK23D0Yi3i",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "0223c601-48aa-4b74-b9a5-7e7e904908e2",
+      "name": "Robo Student",
+      "email": "student-1780900706418@rees52.com",
+      "password_hash": "$2b$10$fVSFvO1xb4ZB5SUS.0Ppfu/gPZk/O3XOq8Qany/PDMeGvyrbzX82q",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "d977225c-0bde-4459-9a09-3b9333e55301",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900729466@rees52.com",
+      "password_hash": "$2b$10$Q77BcaFV6aIhmdJDdkmSp.yD78GeIH6B.5xj2vWyVH/ByfQKUS0BO",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "2f0c01e9-1a4d-463d-958f-112a158ec6cc",
+      "name": "Robo Student",
+      "email": "student-1780900745995@rees52.com",
+      "password_hash": "$2b$10$FQjdb7Flu4eQYD6eWodCKO9..mSR.GcnEj5FhyL.jHF2uk.sgQtn6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "354d4a41-b15b-45c4-8766-3ff9838b0998",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900768091@rees52.com",
+      "password_hash": "$2b$10$wdL1f8thDzjJBO0V8aeCmuII7QZgknQHlMnywQRUeh77oLvn.U4yW",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "c7c67760-4be6-4d9c-8d96-8b35471a84fc",
+      "name": "Robo Student",
+      "email": "student-1780900783782@rees52.com",
+      "password_hash": "$2b$10$tNJ4QEEIiCQpODq2vWhSUe/zslWpGhAcurTQXdbZ5.6n8WSE8Lxru",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "9bb69d33-69c3-425d-bd81-1e66097df101",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900803600@rees52.com",
+      "password_hash": "$2b$10$yotr4Abpt3SXCtx5QqUH1ewzxU0gFzaUKM/avPNPLvQS4Iv25E8Lq",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "c3b08a38-4f7c-41b5-898b-6dbb7fd5efa3",
+      "name": "Robo Student",
+      "email": "student-1780900827470@rees52.com",
+      "password_hash": "$2b$10$cI.STnVwHhbuIzFb3pU0hOlLcQkD5CHOj/Qq8DccW0TXVG0xChiGu",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "d0d7deb1-4030-462b-8213-c6dad878a0ac",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900847387@rees52.com",
+      "password_hash": "$2b$10$/Y2jJ87tGWQaWdy5RKVaM.OAlbIs/myPNqumLwDGBLtu.5YA6y33a",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "e064c2aa-39c7-4ea5-b8b4-e4c5778e2494",
+      "name": "Robo Student",
+      "email": "student-1780900864004@rees52.com",
+      "password_hash": "$2b$10$6f.0xNtWuNpCzqFF37BLq.xDT87le2eBf0m2sdOh.gtlTN5v6lGg6",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "b2b2dc9f-437f-4e32-b3b6-821b971e70ee",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900885441@rees52.com",
+      "password_hash": "$2b$10$QYwGrIgs777gm8xpVwnPyO6NEAmypA90Klcj0d9jg7Co3hj61mDfO",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "5950fc59-2728-4ba2-a1ec-05f1e9a59560",
+      "name": "Robo Student",
+      "email": "student-1780900898263@rees52.com",
+      "password_hash": "$2b$10$gsbm/3aa0tskBEg7PB0nY.6KQc50PfaRvnZKbCY1KzrM5y9n79Zp.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "12702c8c-e485-46b0-b6b0-2c4312d56965",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900921375@rees52.com",
+      "password_hash": "$2b$10$O9EClSKl/opoVc7tS5Jf5uxAHQu0EIA.co84AuXBYi/O0cBCd2aDa",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "b27d1b2d-48ea-402c-a86c-77fc8f1686b9",
+      "name": "Robo Student",
+      "email": "student-1780900979493@rees52.com",
+      "password_hash": "$2b$10$SnUh5xRtmC5Z/66cCYHsxebkoDvB4BIGJdeVj9yt0LUGQ1GoQ1q5O",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "4daae299-efdd-4f22-a33e-442f83083fc3",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780900999430@rees52.com",
+      "password_hash": "$2b$10$32t1ForgXRv2T/1AColV8.BpAy4a4NST0qJGuvw0FdM3z8iymTt16",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "4d2d9521-4529-45c4-90d2-bf0c3e5946cc",
+      "name": "Robo Student",
+      "email": "student-1780901017105@rees52.com",
+      "password_hash": "$2b$10$AUcsNvlYKxoqfnTs8mtZEeRttv0nMwpt4SwlFaV/SJW9Fo4F0mCde",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "e4f07ec0-2ed0-4c73-a740-1af3104a81ee",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780901040084@rees52.com",
+      "password_hash": "$2b$10$y4P7uvWDk8xeT3N.slDRZu7AxhG1dD3ac2Ch/c1R4tE2LylhEVARC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "b31804a3-c604-4f0d-8de0-bc13c58ce65f",
+      "name": "Robo Student",
+      "email": "student-1780901053172@rees52.com",
+      "password_hash": "$2b$10$vAmcB.ElYtDtggR6j2ndl..C0T7yZMf84rdgfmR7vZP8dPUH3mt/C",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "84afd35e-ed86-4cb0-8b98-48ed31ed67c1",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780901072951@rees52.com",
+      "password_hash": "$2b$10$EHsfGGd73ypjAm34FGpMSusisCDZpUABi1yC4yZ0ND215s2UVvZpi",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "d8ef7d5d-fe5a-4ce1-bf30-33bc03490303",
+      "name": "Robo Student",
+      "email": "student-1780901154758@rees52.com",
+      "password_hash": "$2b$10$3cgkQY/lW6DwTBHvF0vple/GDk5euN.GxqXTS0vp1lVi4D9OR32e.",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "61d7569f-822c-490d-9bf2-a9a5042268c6",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780901173934@rees52.com",
+      "password_hash": "$2b$10$RrBGDS2fpLyWI3HuY4K4fOR0e8z/9t9uPYtjLuOhTEnLmTvLsKatS",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "30ec0d04-6290-48dc-8b07-1d730ce4d304",
+      "name": "Robo Student",
+      "email": "student-1780901190883@rees52.com",
+      "password_hash": "$2b$10$1.v8w/8JZ.bgFMABXeGVaeKTHwkROsjF1D.CLN.rrhNVkAyYct3b2",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "34fb164c-1b30-4e1f-acde-5cb3e06f56b8",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780901213159@rees52.com",
+      "password_hash": "$2b$10$8mat3b7t6LGERBsW4pgqfOjLx44SUQzVCYmf4I7eDJYB9XBJwv2Ky",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": []
+    },
+    {
+      "id": "6e821c84-4e80-403e-a3a3-ed7353813b7c",
+      "name": "Robo Student",
+      "email": "student-1780901226923@rees52.com",
+      "password_hash": "$2b$10$8ETOnKFPs0YwFkSQlnKYY.kSzlPWqeDlwgusSJVukZL5rce6bRADC",
+      "role": "Student",
+      "enrolled_videos": [],
+      "purchased_ebooks": [
+        "ebk-1"
+      ]
+    },
+    {
+      "id": "ca31da85-2666-4ef6-8f43-726508e8a841",
+      "name": "Temp Reset User",
+      "email": "temp-reset-1780901248812@rees52.com",
+      "password_hash": "$2b$10$xnoKB8VJ4uy6fVnrZvUU6uQC4pcVajP4q413tFxkUXzq6qqOVNusG",
       "role": "Student",
       "enrolled_videos": [],
       "purchased_ebooks": []

@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AdSensePlaceholder from "@/components/AdSensePlaceholder";
 import HeroSection from "@/components/HeroSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
@@ -83,6 +83,8 @@ function getYouTubeId(url?: string | null) {
 export default function ContentExplorer({ initialType = "all" }: { initialType?: Tab }) {
   const { user, enrollInVideo, purchaseEbook } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get("type");
 
   const [tab, setTab] = useState<Tab>(initialType);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -164,6 +166,14 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
     setTab(initialType);
   }, [initialType]);
 
+  useEffect(() => {
+    if (typeParam && ["all", "ebooks", "videos", "live", "products", "dashboard"].includes(typeParam)) {
+      setTab(typeParam as Tab);
+    } else if (!typeParam) {
+      setTab("all");
+    }
+  }, [typeParam]);
+
   // Load interactive state from LocalStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -174,12 +184,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       if (storedLikes) setLikes(JSON.parse(storedLikes));
       if (storedBookmarks) setBookmarks(JSON.parse(storedBookmarks));
       if (storedHistory) setSearchHistory(JSON.parse(storedHistory));
-
-      const params = new URLSearchParams(window.location.search);
-      const t = params.get("type");
-      if (t && ["all", "ebooks", "videos", "live", "products", "dashboard"].includes(t)) {
-        setTab(t as Tab);
-      }
     }
   }, []);
 
@@ -1197,7 +1201,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                           </div>
                           <div className="flex items-center justify-between mt-1">
                             <span className="text-[5px] text-slate-500 font-extrabold uppercase">
-                              REES52 Infinity
+                              REES52 Learning
                             </span>
                             <BookOpen className="w-3.5 h-3.5 text-cyan-600" />
                           </div>

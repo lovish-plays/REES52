@@ -492,7 +492,7 @@ export default function AdminDashboard({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">Infinity Purchase URL</label>
+                  <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-1">External Purchase URL</label>
                   <div className="flex gap-2">
                     <input
                       type="url"

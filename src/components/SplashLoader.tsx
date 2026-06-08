@@ -9,7 +9,7 @@ const TELEMETRY_LOGS = [
   { threshold: 38, text: "GYRO >> Stabilizing 6-Axis kinematic balance struts..." },
   { threshold: 58, text: "DB   >> Fetching IoT masterclass schemas & curriculum PDFs..." },
   { threshold: 78, text: "SEC  >> Establishing Supabase encrypted relational tunnels..." },
-  { threshold: 95, text: "SYS  >> Calibration complete. Infinity Hub workspace active." }
+  { threshold: 95, text: "SYS  >> Calibration complete. Learning Hub workspace active." }
 ];
 
 export default function SplashLoader() {
@@ -90,7 +90,7 @@ export default function SplashLoader() {
 
         {/* Brand Banner */}
         <h1 className="text-xl md:text-2xl font-black tracking-widest text-white drop-shadow-[0_0_12px_rgba(6,182,212,0.25)] uppercase font-mono">
-          REES<span className="text-cyan-400">52</span> // INFINITY
+          REES<span className="text-cyan-400">52</span> // LEARNING
         </h1>
         <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">
           Robotics Embedded Calibration Core

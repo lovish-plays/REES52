@@ -75,8 +75,12 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  const { pathname } = request.nextUrl;
+  console.log(`[Middleware] Request received for: ${pathname} [${request.method}]`);
+
   // 1. Refresh Supabase session token
   const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+  console.log(`[Middleware] Supabase user: ${supabaseUser ? `${supabaseUser.email} (${supabaseUser.id})` : 'None'}`);
 
   // 2. Validate local fallback session token if present
   let hasLocalSession = false;
@@ -85,12 +89,16 @@ export async function middleware(request: NextRequest) {
     const payload = decodeJwtPayload(localSession);
     if (payload && payload.exp && payload.exp * 1000 > Date.now()) {
       hasLocalSession = true;
+      console.log(`[Middleware] Valid local session cookie found for user ID: ${payload.userId || payload.id}`);
+    } else {
+      console.log(`[Middleware] Local session cookie found but is invalid or expired.`);
     }
+  } else {
+    console.log(`[Middleware] No local session cookie found.`);
   }
 
   const isAuthenticated = !!supabaseUser || hasLocalSession;
-
-  const { pathname } = request.nextUrl;
+  console.log(`[Middleware] Path: ${pathname} | isAuthenticated: ${isAuthenticated}`);
 
   // Exclude API routes and public metadata assets (ads.txt, robots.txt, sitemap.xml) from redirect checks
   if (
@@ -112,6 +120,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage) {
+    console.log(`[Middleware] Redirecting unauthenticated user from ${pathname} to /login`);
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);
@@ -126,6 +135,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthenticated && isLoginPage) {
     const redirectTo = request.nextUrl.searchParams.get("redirect_to") || "/";
+    console.log(`[Middleware] Redirecting authenticated user from /login to: ${redirectTo}`);
     const redirectUrl = new URL(redirectTo, request.url);
     
     const redirectResponse = NextResponse.redirect(redirectUrl);

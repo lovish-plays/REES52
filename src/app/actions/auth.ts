@@ -145,10 +145,12 @@ export async function loginUser(formData: any) {
 
   // Match password
   let isMatch = false;
-  try {
-    isMatch = bcrypt.compareSync(password, user.password_hash);
-  } catch (err) {
-    console.error("Bcrypt compare error:", err);
+  if (user.password_hash) {
+    try {
+      isMatch = bcrypt.compareSync(password, user.password_hash);
+    } catch (err) {
+      console.error("Bcrypt compare error:", err);
+    }
   }
 
   // Fallback for seed admin user password 'admin123' if hash comparison fails
@@ -211,7 +213,7 @@ export async function getCurrentUser() {
           .eq('id', user.id)
           .maybeSingle();
         if (!retryError) {
-          profile = retryProfile;
+          profile = retryProfile as any;
           profileError = null;
         }
       }
@@ -482,7 +484,7 @@ export async function syncUserByEmailFromSupabase(email: string) {
           .eq('email', cleanEmail)
           .maybeSingle();
         if (!retryError) {
-          data = retryProfile;
+          data = retryProfile as any;
           error = null;
         }
       }
@@ -551,7 +553,10 @@ export async function syncUserByEmailFromSupabase(email: string) {
           }
         }
       }
-      // Fallback to anon client if no admin client is available
+    }
+
+    // Fallback to anon client if no admin client is available or user profile not found yet
+    if (!profile) {
       const supabase = await createClient();
       let { data, error } = await supabase
         .from('profiles')
@@ -567,7 +572,7 @@ export async function syncUserByEmailFromSupabase(email: string) {
           .eq('email', cleanEmail)
           .maybeSingle();
         if (!retryError) {
-          data = retryData;
+          data = retryData as any;
           error = null;
         }
       }
@@ -576,6 +581,7 @@ export async function syncUserByEmailFromSupabase(email: string) {
         profile = data;
       }
     }
+
 
     if (profile) {
       const db = getDB();

@@ -394,7 +394,7 @@ function LoginForm() {
                       setLoading(false);
                     }
                   }}
-                  variant="outline"
+                  variant="default"
                   className="w-full py-3 text-xs tracking-widest font-black uppercase glass-btn-secondary flex items-center justify-center gap-2 cursor-pointer bg-white/80 border border-slate-300 hover:bg-white transition-all text-slate-800"
                   disabled={loading}
                 >

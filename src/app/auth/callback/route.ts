@@ -26,7 +26,7 @@ export async function GET(request: Request) {
           .select('id, name, role')
           .eq('id', user.id)
           .maybeSingle();
-        profile = retryProfile;
+        profile = retryProfile as any;
       }
 
       if (profile) {

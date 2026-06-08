@@ -15,25 +15,34 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     role TEXT DEFAULT 'Student',
     enrolled_videos TEXT[] DEFAULT '{}',
     purchased_ebooks TEXT[] DEFAULT '{}',
+    avatar_url TEXT,
+    provider TEXT DEFAULT 'email',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Ensure email column exists on profiles table (Migration/Update for existing tables)
+-- Ensure email, avatar_url, and provider columns exist on profiles table (Migration/Update for existing tables)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'email';
 
 -- Automate profile generation when a new user registers via Supabase Auth
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, email, role, enrolled_videos, purchased_ebooks)
-  VALUES (
-    new.id,
-    COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
-    new.email,
-    'Student',
-    ARRAY[]::TEXT[],
-    ARRAY[]::TEXT[]
-  );
+  -- Only auto-create profiles for email signups.
+  -- OAuth signups will go through the onboarding flow to set their name.
+  IF COALESCE(new.raw_app_meta_data->>'provider', 'email') = 'email' THEN
+    INSERT INTO public.profiles (id, name, email, role, enrolled_videos, purchased_ebooks, provider)
+    VALUES (
+      new.id,
+      COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+      new.email,
+      'Student',
+      ARRAY[]::TEXT[],
+      ARRAY[]::TEXT[],
+      'email'
+    );
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

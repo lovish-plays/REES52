@@ -197,11 +197,24 @@ export async function getCurrentUser() {
 
     if (user) {
       // Fetch role explicitly from public.profiles where id = auth.uid()
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
         .eq('id', user.id)
         .maybeSingle();
+
+      if (profileError && (profileError.message.includes("column") || profileError.message.includes("avatar_url"))) {
+        console.log("[getCurrentUser] Profiles table lacks avatar_url/provider. Retrying query without them.");
+        const { data: retryProfile, error: retryError } = await supabase
+          .from('profiles')
+          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!retryError) {
+          profile = retryProfile;
+          profileError = null;
+        }
+      }
 
       if (profileError) {
         console.error('Profile fetch failed:', profileError.message);
@@ -211,6 +224,7 @@ export async function getCurrentUser() {
       const name =
         profile?.name?.trim() ||
         (user.user_metadata?.name as string | undefined) ||
+        (user.user_metadata?.full_name as string | undefined) ||
         user.email?.split('@')[0] ||
         'User';
 
@@ -221,6 +235,9 @@ export async function getCurrentUser() {
         role: role as 'Admin' | 'Student',
         enrolled_videos: profile?.enrolled_videos ?? [],
         purchased_ebooks: profile?.purchased_ebooks ?? [],
+        avatar_url: profile?.avatar_url ?? (user.user_metadata?.avatar_url as string | undefined) ?? (user.user_metadata?.picture as string | undefined),
+        provider: profile?.provider ?? (user.app_metadata?.provider as string | undefined) ?? 'google',
+        hasProfile: !!profile
       };
     }
 
@@ -279,6 +296,9 @@ export async function getCurrentUser() {
               role: finalRole as 'Admin' | 'Student',
               enrolled_videos: localUser.enrolled_videos ?? [],
               purchased_ebooks: localUser.purchased_ebooks ?? [],
+              avatar_url: localUser.avatar_url,
+              provider: localUser.provider ?? 'email',
+              hasProfile: true
             };
           }
         }
@@ -340,7 +360,14 @@ export async function purchaseEbookAction(ebookId: string) {
   return { success: true, user: userWithoutPassword };
 }
 
-export async function createLocalSessionForSupabaseUser(id: string, email: string, name: string, role: string = 'Student') {
+export async function createLocalSessionForSupabaseUser(
+  id: string,
+  email: string,
+  name: string,
+  role: string = 'Student',
+  avatarUrl?: string,
+  provider?: string
+) {
   console.log("[authServerAction] createLocalSessionForSupabaseUser started. id:", id, "email:", email);
   try {
     const db = getDB();
@@ -359,7 +386,9 @@ export async function createLocalSessionForSupabaseUser(id: string, email: strin
         password_hash: '', // oauth/supabase users don't need a local password hash
         role: (role.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
         enrolled_videos: [],
-        purchased_ebooks: []
+        purchased_ebooks: [],
+        avatar_url: avatarUrl,
+        provider: provider || 'google'
       };
       db.users.push(user);
       saveDB(db);
@@ -382,6 +411,14 @@ export async function createLocalSessionForSupabaseUser(id: string, email: strin
       }
       if (user.email !== cleanEmail) {
         user.email = cleanEmail;
+        changed = true;
+      }
+      if (avatarUrl && user.avatar_url !== avatarUrl) {
+        user.avatar_url = avatarUrl;
+        changed = true;
+      }
+      if (provider && user.provider !== provider) {
+        user.provider = provider;
         changed = true;
       }
       if (changed) {
@@ -431,11 +468,25 @@ export async function syncUserByEmailFromSupabase(email: string) {
 
     if (supabaseAdmin) {
       // 1. Try to fetch profile using admin client (bypasses RLS)
-      const { data, error } = await supabaseAdmin
+      let { data, error } = await supabaseAdmin
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
         .eq('email', cleanEmail)
         .maybeSingle();
+
+      if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
+        console.log("[syncUserByEmailFromSupabase] Profiles table lacks avatar_url/provider. Retrying query without them.");
+        const { data: retryProfile, error: retryError } = await supabaseAdmin
+          .from('profiles')
+          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+        if (!retryError) {
+          data = retryProfile;
+          error = null;
+        }
+      }
+
       if (!error && data) {
         profile = data;
       }
@@ -500,14 +551,27 @@ export async function syncUserByEmailFromSupabase(email: string) {
           }
         }
       }
-    } else {
       // Fallback to anon client if no admin client is available
       const supabase = await createClient();
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
         .eq('email', cleanEmail)
         .maybeSingle();
+
+      if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
+        console.log("[syncUserByEmailFromSupabase] Profiles table lacks avatar_url/provider. Retrying query without them.");
+        const { data: retryData, error: retryError } = await supabase
+          .from('profiles')
+          .select('id, name, role, enrolled_videos, purchased_ebooks')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+        if (!retryError) {
+          data = retryData;
+          error = null;
+        }
+      }
+
       if (!error && data) {
         profile = data;
       }
@@ -524,7 +588,9 @@ export async function syncUserByEmailFromSupabase(email: string) {
           password_hash: '',
           role: (profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student'),
           enrolled_videos: profile.enrolled_videos ?? [],
-          purchased_ebooks: profile.purchased_ebooks ?? []
+          purchased_ebooks: profile.purchased_ebooks ?? [],
+          avatar_url: profile.avatar_url,
+          provider: profile.provider ?? 'google'
         };
         db.users.push(user);
         saveDB(db);
@@ -532,6 +598,8 @@ export async function syncUserByEmailFromSupabase(email: string) {
         let changed = false;
         if (user.id !== profile.id) { user.id = profile.id; changed = true; }
         if (user.name !== profile.name) { user.name = profile.name; changed = true; }
+        if (profile.avatar_url && user.avatar_url !== profile.avatar_url) { user.avatar_url = profile.avatar_url; changed = true; }
+        if (profile.provider && user.provider !== profile.provider) { user.provider = profile.provider; changed = true; }
         const finalRole = (profile.role?.toLowerCase() === 'admin' ? 'Admin' : 'Student');
         if (user.role !== finalRole) { user.role = finalRole; changed = true; }
         if (changed) saveDB(db);

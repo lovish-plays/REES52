@@ -21,6 +21,9 @@ interface AuthUser {
   role: "Student" | "Admin";
   enrolled_videos: string[];
   purchased_ebooks: string[];
+  avatar_url?: string;
+  provider?: string;
+  hasProfile?: boolean;
 }
 
 interface AuthContextType {
@@ -36,6 +39,7 @@ interface AuthContextType {
     email: string,
     password: string
   ) => Promise<{ success?: boolean; error?: string }>;
+  signInWithGoogle: () => Promise<{ success?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   enrollInVideo: (videoId: string) => Promise<{ success?: boolean; error?: string }>;
   purchaseEbook: (ebookId: string) => Promise<{ success?: boolean; error?: string }>;
@@ -50,6 +54,8 @@ type ProfileRow = {
   role: string | null;
   enrolled_videos: string[] | null;
   purchased_ebooks: string[] | null;
+  avatar_url: string | null;
+  provider: string | null;
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -67,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
         const queryPromise = supabase
           .from("profiles")
-          .select("id,name,role,enrolled_videos,purchased_ebooks")
+          .select("id,name,role,enrolled_videos,purchased_ebooks,avatar_url,provider")
           .eq("id", authUserId)
           .maybeSingle<ProfileRow>();
           
@@ -78,6 +84,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await Promise.race([queryPromise, timeoutPromise]);
         data = response.data;
         error = response.error;
+
+        if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
+          console.log("[AuthContext] Profiles table lacks avatar_url/provider. Retrying query without them.");
+          const retryRes = await supabase
+            .from("profiles")
+            .select("id,name,role,enrolled_videos,purchased_ebooks")
+            .eq("id", authUserId)
+            .maybeSingle<any>();
+          if (!retryRes.error) {
+            data = {
+              ...retryRes.data,
+              avatar_url: null,
+              provider: 'email'
+            };
+            error = null;
+          } else {
+            error = retryRes.error;
+          }
+        }
+
         console.log("[AuthContext] Supabase profile query finished. data:", data, "error:", error);
       } catch (err: any) {
         console.warn("[AuthContext] Supabase profile query failed or timed out:", err.message || err);
@@ -99,12 +125,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      if (!data && !error) {
+      // Only create self-healing profile if the provider is 'email'
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authProvider = sessionData?.session?.user?.app_metadata?.provider || "email";
+
+      if (!data && !error && authProvider === "email") {
         console.log("[AuthContext] No profile found. Creating self-healing profile...");
         const role = "Student";
         const name = fallbackName?.trim() || email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
         
-        const { data: newProfile, error: insertError } = await supabase
+        const insertRes = await supabase
           .from("profiles")
           .insert({
             id: authUserId,
@@ -115,13 +145,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             purchased_ebooks: []
           })
           .select("id,name,role,enrolled_videos,purchased_ebooks")
-          .maybeSingle<ProfileRow>();
+          .maybeSingle<any>();
 
-        if (!insertError && newProfile) {
-          console.log("[AuthContext] Self-healing profile created successfully:", newProfile);
-          data = newProfile;
-        } else if (insertError) {
-          console.error("[AuthContext] Self-healing profile creation failed:", insertError.message);
+        if (!insertRes.error && insertRes.data) {
+          console.log("[AuthContext] Self-healing profile created successfully:", insertRes.data);
+          data = {
+            ...insertRes.data,
+            avatar_url: null,
+            provider: 'email'
+          };
+        } else if (insertRes.error) {
+          console.error("[AuthContext] Self-healing profile creation failed:", insertRes.error.message);
         }
       }
 
@@ -143,6 +177,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role,
         enrolled_videos: data?.enrolled_videos ?? [],
         purchased_ebooks: data?.purchased_ebooks ?? [],
+        avatar_url: data?.avatar_url ?? (sessionData?.session?.user?.user_metadata?.avatar_url as string | undefined) ?? (sessionData?.session?.user?.user_metadata?.picture as string | undefined),
+        provider: data?.provider ?? authProvider,
+        hasProfile: !!data
       });
       console.log("[AuthContext] User state set successfully in loadProfile.");
     } catch (e: any) {
@@ -211,6 +248,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               role: localUser.role,
               enrolled_videos: localUser.enrolled_videos,
               purchased_ebooks: localUser.purchased_ebooks,
+              avatar_url: localUser.avatar_url,
+              provider: localUser.provider,
+              hasProfile: localUser.hasProfile
             });
           } else if (isSubscribed) {
             setUser(null);
@@ -257,6 +297,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: localRes.user.role as "Student" | "Admin",
             enrolled_videos: localRes.user.enrolled_videos ?? [],
             purchased_ebooks: localRes.user.purchased_ebooks ?? [],
+            avatar_url: localRes.user.avatar_url,
+            provider: localRes.user.provider || 'email',
+            hasProfile: true
           });
           console.log("[AuthContext] Local fallback sign in successful. User state set.");
           profileLoadingRef.current = false;
@@ -342,6 +385,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: localUser.role as "Student" | "Admin",
           enrolled_videos: localUser.enrolled_videos ?? [],
           purchased_ebooks: localUser.purchased_ebooks ?? [],
+          avatar_url: localUser.avatar_url,
+          provider: localUser.provider || 'email',
+          hasProfile: true
         });
         setIsLoading(false);
         return { success: true };
@@ -381,6 +427,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: localUser.role as "Student" | "Admin",
           enrolled_videos: localUser.enrolled_videos ?? [],
           purchased_ebooks: localUser.purchased_ebooks ?? [],
+          avatar_url: localUser.avatar_url,
+          provider: localUser.provider || 'email',
+          hasProfile: true
         });
       } else {
         await loadProfile(data.user.id, email, name);
@@ -525,6 +574,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: "Failed to purchase ebook" };
   };
 
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const getURL = () => {
+        let url =
+          process.env.NEXT_PUBLIC_SITE_URL ??
+          process.env.NEXT_PUBLIC_VERCEL_URL ??
+          'http://localhost:3000/';
+        url = url.startsWith('http') ? url : `https://${url}`;
+        url = url.endsWith('/') ? url : `${url}/`;
+        return url;
+      };
+
+      const redirectTo = `${getURL()}auth/callback`;
+      console.log("[AuthContext] signInWithGoogle starting. Redirecting to:", redirectTo);
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (error) {
+        console.error("[AuthContext] Google signInWithOAuth failed:", error.message);
+        setIsLoading(false);
+        return { error: error.message };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error("[AuthContext] Google signInWithOAuth encountered error:", err);
+      setIsLoading(false);
+      return { error: err.message || "An unexpected error occurred." };
+    }
+  };
+
+  // Redirect to onboarding if authenticated but profile doesn't exist
+  useEffect(() => {
+    if (user && user.hasProfile === false && typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (path !== "/onboarding" && path !== "/auth/callback") {
+        console.log("[AuthContext] Redirecting to /onboarding because profile does not exist.");
+        window.location.href = "/onboarding";
+      }
+    }
+  }, [user]);
+
   const value = useMemo<AuthContextType>(
     () => ({
       user,
@@ -532,6 +629,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       signIn,
       signUp,
+      signInWithGoogle,
       signOut,
       enrollInVideo,
       purchaseEbook,

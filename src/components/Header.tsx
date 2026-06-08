@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -280,6 +280,9 @@ export default function Header() {
                       aria-label="User menu"
                     >
                       <Avatar className="h-9 w-9 transition-transform duration-300 group-hover:scale-105">
+                        {user.avatar_url && (
+                          <AvatarImage src={user.avatar_url} alt={user.name} />
+                        )}
                         <AvatarFallback className="bg-cyan-100 text-cyan-900 font-bold">
                           {user.name?.trim()?.charAt(0)?.toUpperCase() ?? "U"}
                         </AvatarFallback>

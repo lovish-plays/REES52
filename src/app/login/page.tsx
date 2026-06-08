@@ -12,7 +12,7 @@ import { sendPasswordResetOtpAction, verifyOtpAction, resetPasswordWithOtpAction
 type AuthMode = "signin" | "signup" | "forgot" | "otp" | "reset";
 
 function LoginForm() {
-  const { signIn, signUp, user, isLoading: authLoading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect_to") || "/";
@@ -371,6 +371,56 @@ function LoginForm() {
                "RESET PASSWORD"}
             </Button>
 
+            {(mode === "signin" || mode === "signup") && (
+              <>
+                <div className="relative my-6 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-300/50"></div>
+                  </div>
+                  <span className="relative bg-[#F7F4EB] px-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    OR
+                  </span>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    setError(null);
+                    setInfoMessage(null);
+                    setLoading(true);
+                    const res = await signInWithGoogle();
+                    if (res?.error) {
+                      setError(res.error);
+                      setLoading(false);
+                    }
+                  }}
+                  variant="outline"
+                  className="w-full py-3 text-xs tracking-widest font-black uppercase glass-btn-secondary flex items-center justify-center gap-2 cursor-pointer bg-white/80 border border-slate-300 hover:bg-white transition-all text-slate-800"
+                  disabled={loading}
+                >
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24">
+                    <path
+                      fill="#EA4335"
+                      d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3A11.973 11.973 0 0 0 12 0C7.054 0 2.766 2.81 0 6.903l5.266 2.862z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M16.04 15.358c-1.076.75-2.5 1.196-4.04 1.196-3.805 0-7.027-2.545-8.177-5.973L.662 13.435C2.766 17.595 7.054 20.4 12 20.4c3.055 0 5.864-1.077 7.973-2.909l-3.932-2.133z"
+                    />
+                    <path
+                      fill="#4285F4"
+                      d="M23.49 12.273c0-.818-.082-1.609-.232-2.373H12v4.582h6.49A5.626 5.626 0 0 1 16.04 15.36l3.931 2.132c2.291-2.113 3.518-5.218 3.518-9.218z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M3.823 10.582a7.03 7.03 0 0 1 0-2.364L.663 5.356a11.93 11.93 0 0 0 0 8.87l3.16-2.844c-.3-.5-.468-1.091-.468-1.782z"
+                    />
+                  </svg>
+                  Continue with Google
+                </Button>
+              </>
+            )}
+
             {mode !== "otp" && mode !== "reset" && (
               <button
                 type="button"
@@ -379,7 +429,7 @@ function LoginForm() {
                   setError(null);
                   setInfoMessage(null);
                 }}
-                className="w-full text-center text-[10px] font-black uppercase tracking-widest text-cyan-800 hover:text-cyan-700 transition-colors mt-2 cursor-pointer border-none bg-transparent"
+                className="w-full text-center text-[10px] font-black uppercase tracking-widest text-cyan-800 hover:text-cyan-700 transition-colors mt-4 cursor-pointer border-none bg-transparent"
               >
                 {mode === "signup"
                   ? "ALREADY HAVE AN ACCOUNT? SIGN IN"

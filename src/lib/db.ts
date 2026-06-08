@@ -48,10 +48,12 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password_hash: string;
+  password_hash?: string;
   role: 'Student' | 'Admin';
   enrolled_videos: string[]; // Video IDs
   purchased_ebooks: string[]; // Ebook IDs
+  avatar_url?: string;
+  provider?: string;
 }
 
 export interface DatabaseStore {

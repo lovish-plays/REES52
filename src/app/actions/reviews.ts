@@ -19,7 +19,7 @@ export async function getReviewsAction(): Promise<Review[]> {
 export async function submitReviewAction(
   name: string,
   rating: number,
-  comment: string
+  review: string
 ): Promise<{ success: boolean; review?: Review; error?: string }> {
   try {
     // Attempt to resolve active user for profile properties
@@ -28,7 +28,7 @@ export async function submitReviewAction(
     return await ReviewRepository.addReview(
       name,
       rating,
-      comment
+      review
     );
   } catch (err: any) {
     console.error('submitReviewAction error:', err);

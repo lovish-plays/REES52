@@ -10,7 +10,7 @@ export class ReviewRepository {
     try {
       const { data, error } = await supabasePublic
         .from('reviews')
-        .select('id, name, rating, comment, created_at')
+        .select('id, name, rating, review, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -22,7 +22,7 @@ export class ReviewRepository {
         id: item.id,
         name: item.name,
         rating: item.rating,
-        comment: item.comment,
+        review: item.review,
         created_at: item.created_at
       }));
     } catch (err: any) {
@@ -37,21 +37,21 @@ export class ReviewRepository {
   static async addReview(
     name: string,
     rating: number,
-    comment: string
+    review: string
   ): Promise<{ success: boolean; review?: Review; error?: string }> {
     try {
       const cleanName = (name || 'Anonymous Learner').trim();
-      const cleanComment = (comment || '').trim();
+      const cleanReview = (review || '').trim();
       const ratingVal = Math.min(5, Math.max(1, rating));
 
-      if (!cleanComment) {
-        return { success: false, error: 'Review comment cannot be empty.' };
+      if (!cleanReview) {
+        return { success: false, error: 'Review text cannot be empty.' };
       }
 
       const newReview = {
         name: cleanName,
         rating: ratingVal,
-        comment: cleanComment,
+        review: cleanReview,
         created_at: new Date().toISOString()
       };
 
@@ -72,7 +72,7 @@ export class ReviewRepository {
           id: data.id,
           name: data.name,
           rating: data.rating,
-          comment: data.comment,
+          review: data.review,
           created_at: data.created_at
         }
       };

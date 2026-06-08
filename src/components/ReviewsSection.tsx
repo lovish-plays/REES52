@@ -27,7 +27,7 @@ export default function ReviewsSection() {
   const [reviewerName, setReviewerName] = useState("");
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const [reviewText, setReviewText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -72,7 +72,7 @@ export default function ReviewsSection() {
     setModalOpen(true);
     setSubmitSuccess(false);
     setSubmitError("");
-    setComment("");
+    setReviewText("");
     setRating(5);
     if (user) {
       setReviewerName(user.name);
@@ -87,16 +87,16 @@ export default function ReviewsSection() {
     setSubmitting(true);
 
     const nameToSubmit = reviewerName.trim() || (user?.name ?? "Anonymous Learner");
-    const commentToSubmit = comment.trim();
+    const reviewToSubmit = reviewText.trim();
 
-    if (!commentToSubmit) {
-      setSubmitError("Please write your feedback comment.");
+    if (!reviewToSubmit) {
+      setSubmitError("Please write your feedback review.");
       setSubmitting(false);
       return;
     }
 
     try {
-      const res = await submitReviewAction(nameToSubmit, rating, commentToSubmit);
+      const res = await submitReviewAction(nameToSubmit, rating, reviewToSubmit);
       if (res.success && res.review) {
         setSubmitSuccess(true);
         // Refresh reviews list
@@ -212,9 +212,9 @@ export default function ReviewsSection() {
                 </div>
               </div>
 
-              {/* Feedback comment text */}
+              {/* Feedback review text */}
               <p className="text-xs md:text-sm leading-relaxed text-slate-655 font-medium italic relative">
-                “ {reviews[currentIndex].comment} ”
+                “ {reviews[currentIndex].review} ”
               </p>
             </div>
           </div>
@@ -313,17 +313,17 @@ export default function ReviewsSection() {
                 </div>
               </div>
 
-              {/* Comment Field */}
+              {/* Review Field */}
               <div className="space-y-1">
                 <label htmlFor="rev-comment" className="text-[9px] font-black uppercase tracking-widest text-slate-600 block">
-                  Feedback Comment
+                  Feedback Review
                 </label>
                 <textarea
                   id="rev-comment"
                   rows={4}
                   placeholder="Describe your learning experience, what you built, or kit quality..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
                   required
                   className="w-full px-4 py-3 bg-white border border-slate-200 focus:bg-white rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all resize-none leading-relaxed shadow-sm"
                 />

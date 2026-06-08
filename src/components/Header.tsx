@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,8 +43,15 @@ const TAGLINES = [
   "52 Weeks to Build the Future. Start This Week."
 ];
 
+interface NotificationItem {
+  id: string;
+  message: string;
+  link: string;
+  created_at: string;
+}
+
 export default function Header() {
-  const { user, signOut } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
@@ -53,18 +60,21 @@ export default function Header() {
   const [directoryOpen, setDirectoryOpen] = useState(false);
   const [tagline, setTagline] = useState("");
 
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Real-time animation popup toast
-  const [realtimePopup, setRealtimePopup] = useState<any | null>(null);
+  const [realtimePopup, setRealtimePopup] = useState<NotificationItem | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const idx = Math.floor(Math.random() * TAGLINES.length);
-    setTagline(TAGLINES[idx]);
+    const timer = setTimeout(() => {
+      setTagline(TAGLINES[idx]);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -83,7 +93,7 @@ export default function Header() {
 
     const channel = supabase
       .channel('realtime-notifications')
-      .on('broadcast', { event: 'new-notification' }, (payload: any) => {
+      .on('broadcast', { event: 'new-notification' }, (payload: { payload: { id?: string; message: string; link?: string; created_at?: string } }) => {
         const newNotif = {
           id: payload.payload.id || Date.now().toString(),
           message: payload.payload.message,
@@ -143,7 +153,16 @@ export default function Header() {
           </Link>
 
           <div className="flex items-center gap-2">
-            {!user ? (
+            {isLoading ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white/70 shadow-sm animate-pulse">
+                <div className="h-5 w-5 rounded-full bg-slate-350 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-3 w-3 border border-t-transparent border-slate-650"></div>
+                </div>
+                <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest text-slate-500">
+                  Loading profile...
+                </span>
+              </div>
+            ) : !user ? (
               !isLoginPage && (
                 <Button variant="primary" size="sm" onClick={() => setAuthOpen(true)} className="premium-btn-shimmer">
                   Sign In

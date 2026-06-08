@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
+import type { User, UserProgress, UserCertificate, UserBadge, UserStreak } from "@/lib/db";
 
 import {
   registerUser,
@@ -28,10 +29,10 @@ interface AuthUser {
   purchased_ebooks: string[];
   provider?: string;
   hasProfile?: boolean;
-  progress?: Record<string, any>;
-  certificates?: any[];
-  badges?: any[];
-  streak?: any;
+  progress?: Record<string, UserProgress>;
+  certificates?: UserCertificate[];
+  badges?: UserBadge[];
+  streak?: UserStreak | null;
   recently_viewed?: string[];
 }
 
@@ -53,11 +54,11 @@ interface AuthContextType {
   enrollInVideo: (videoId: string) => Promise<{ success?: boolean; error?: string }>;
   purchaseEbook: (ebookId: string) => Promise<{ success?: boolean; error?: string }>;
   refreshUser: () => Promise<void>;
-  saveProgress: (courseId: string, percentage: number, lastViewedLesson?: string) => Promise<any>;
-  claimCertificate: (courseId: string, courseName: string) => Promise<any>;
-  updateStreak: () => Promise<any>;
-  addRecentlyViewed: (courseId: string) => Promise<any>;
-  trackAnalyticsEvent: (eventType: string, eventData: any) => Promise<any>;
+  saveProgress: (courseId: string, percentage: number, lastViewedLesson?: string) => Promise<{ success?: boolean; progress?: UserProgress; badges?: UserBadge[]; error?: string }>;
+  claimCertificate: (courseId: string, courseName: string) => Promise<{ success?: boolean; certificate?: UserCertificate; error?: string }>;
+  updateStreak: () => Promise<{ success?: boolean; streak?: UserStreak; error?: string }>;
+  addRecentlyViewed: (courseId: string) => Promise<{ success?: boolean; recently_viewed?: string[]; error?: string }>;
+  trackAnalyticsEvent: (eventType: string, eventData: Record<string, unknown>) => Promise<{ success?: boolean }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -69,6 +70,11 @@ type ProfileRow = {
   enrolled_videos: string[] | null;
   purchased_ebooks: string[] | null;
   provider: string | null;
+  progress?: Record<string, UserProgress> | null;
+  certificates?: UserCertificate[] | null;
+  badges?: UserBadge[] | null;
+  streak?: UserStreak | null;
+  recently_viewed?: string[] | null;
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -76,63 +82,94 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
 
+  const isLoadingProfileRef = React.useRef(false);
+
   const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
+    if (isLoadingProfileRef.current) {
+      console.log("[AuthContext] loadProfile already in progress. Skipping duplicate call.");
+      return;
+    }
+    isLoadingProfileRef.current = true;
     console.log("[AuthContext] loadProfile started for authUserId:", authUserId);
+    
+    const startTime = performance.now();
+    console.time(`profile-query-${authUserId}`);
+    
     try {
       let data: ProfileRow | null = null;
       let error = null;
 
       try {
         console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
+        console.time(`supabase-db-query-${authUserId}`);
+        
         const queryPromise = supabase
           .from("profiles")
           .select("id,name,role,enrolled_videos,purchased_ebooks,provider")
           .eq("id", authUserId)
-          .maybeSingle<ProfileRow>();
+          .single<ProfileRow>();
           
         const timeoutPromise = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error("Supabase profile query timed out after 10 seconds")), 10000)
+          setTimeout(() => reject(new Error("Supabase profile query timed out")), 2500)
         );
 
         const response = await Promise.race([queryPromise, timeoutPromise]);
         data = response.data;
         error = response.error;
+        console.timeEnd(`supabase-db-query-${authUserId}`);
 
-        if (error && (error.message.includes("column") || error.message.includes("provider"))) {
-          console.log("[AuthContext] Profiles table lacks provider. Retrying query without it.");
-          const retryRes = await supabase
-            .from("profiles")
-            .select("id,name,role,enrolled_videos,purchased_ebooks")
-            .eq("id", authUserId)
-            .maybeSingle<any>();
-          if (!retryRes.error) {
-            data = {
-              ...retryRes.data,
-              provider: 'email'
-            };
-            error = null;
-          } else {
-            error = retryRes.error;
+        if (error) {
+          if (error.message.includes("column") || error.message.includes("provider")) {
+            console.log("[AuthContext] Profiles table lacks provider. Retrying query without it.");
+            const retryRes = await supabase
+              .from("profiles")
+              .select("id,name,role,enrolled_videos,purchased_ebooks")
+              .eq("id", authUserId)
+              .single<Omit<ProfileRow, 'provider'>>();
+            if (!retryRes.error) {
+              data = {
+                ...retryRes.data,
+                provider: 'email'
+              };
+              error = null;
+            } else {
+              error = retryRes.error;
+            }
           }
         }
 
         console.log("[AuthContext] Supabase profile query finished. data:", data, "error:", error);
-      } catch (err: any) {
-        console.warn("[AuthContext] Supabase profile query failed or timed out:", err.message || err);
-        error = err;
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.timeEnd(`supabase-db-query-${authUserId}`);
+        console.warn("[AuthContext] Supabase profile query failed or timed out:", errorMsg);
+        error = err instanceof Error ? err : new Error(errorMsg);
       }
 
       // If client query failed/timed out or returned no profile, fallback to the server action
       if (error || !data) {
         console.log("[AuthContext] Client profile query failed/empty. Trying server action fallback...");
+        const fallbackStart = performance.now();
+        console.time(`fallback-action-${authUserId}`);
         try {
           const serverUser = await getCurrentUser();
+          console.timeEnd(`fallback-action-${authUserId}`);
+          const fallbackDur = performance.now() - fallbackStart;
+          console.log(`[AuthContext] Fallback query completed in ${fallbackDur.toFixed(2)}ms`);
+          
           if (serverUser && serverUser.id === authUserId) {
             console.log("[AuthContext] Profile retrieved via server action fallback:", serverUser);
-            setUser(serverUser);
+            const normalizedRole = (serverUser.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
+            setUser({
+              ...serverUser,
+              role: normalizedRole
+            });
+            const totalDur = performance.now() - startTime;
+            console.log(`[AuthContext] Total login/profile flow completed in ${totalDur.toFixed(2)}ms (via fallback)`);
             return;
           }
         } catch (serverErr) {
+          console.timeEnd(`fallback-action-${authUserId}`);
           console.error("[AuthContext] Server action fallback failed:", serverErr);
         }
       }
@@ -157,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             purchased_ebooks: []
           })
           .select("id,name,role,enrolled_videos,purchased_ebooks")
-          .maybeSingle<any>();
+          .single<Omit<ProfileRow, 'provider'>>();
 
         if (!insertRes.error && insertRes.data) {
           console.log("[AuthContext] Self-healing profile created successfully:", insertRes.data);
@@ -192,11 +229,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         purchased_ebooks: data?.purchased_ebooks ?? [],
         provider: data?.provider ?? authProvider,
         hasProfile: hasProfile,
-        progress: (data as any)?.progress ?? {},
-        certificates: (data as any)?.certificates ?? [],
-        badges: (data as any)?.badges ?? [],
-        streak: (data as any)?.streak ?? null,
-        recently_viewed: (data as any)?.recently_viewed ?? []
+        progress: data?.progress ?? {},
+        certificates: data?.certificates ?? [],
+        badges: data?.badges ?? [],
+        streak: data?.streak ?? null,
+        recently_viewed: data?.recently_viewed ?? []
       });
       console.log("[AuthContext] User state set successfully in loadProfile. Triggering streak update...");
       
@@ -207,8 +244,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }).catch(err => console.warn("Streak auto-update error:", err));
 
-    } catch (e: any) {
+      const totalDur = performance.now() - startTime;
+      console.log(`[AuthContext] Total login/profile flow completed in ${totalDur.toFixed(2)}ms (success)`);
+
+    } catch (e) {
       console.error("[AuthContext] loadProfile encountered unexpected error:", e);
+    } finally {
+      console.timeEnd(`profile-query-${authUserId}`);
+      isLoadingProfileRef.current = false;
     }
   };
 
@@ -220,6 +263,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const s = data.session;
       if (!s?.user) {
         setUser(null);
+        setIsLoading(false);
         return;
       }
       await loadProfile(
@@ -238,41 +282,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const profileLoadingRef = React.useRef(false);
 
   useEffect(() => {
-    setIsLoading(true);
-
     let isSubscribed = true;
 
     // Listen to auth changes (including initial session load)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isSubscribed) return;
-      setSession(newSession);
+
+      console.log("[AuthContext] onAuthStateChange event:", event, "session user ID:", newSession?.user?.id);
 
       if (newSession?.user) {
-        if (profileLoadingRef.current) return;
-        setIsLoading(true);
-        await loadProfile(
-          newSession.user.id,
-          newSession.user.email ?? "",
-          (newSession.user.user_metadata?.name as string | undefined) ?? undefined
+        const u = newSession.user;
+        const authProvider = u.app_metadata?.provider || "email";
+        const role = (u.user_metadata?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
+        const name = u.user_metadata?.name || u.email?.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
+
+        // Set session and default user state synchronously in one rendering cycle
+        setSession(newSession);
+        setUser((prev) => {
+          if (prev && prev.id === u.id && prev.hasProfile) {
+            return prev;
+          }
+          return {
+            id: u.id,
+            email: u.email ?? "",
+            name: name,
+            role: role,
+            enrolled_videos: prev?.enrolled_videos ?? [],
+            purchased_ebooks: prev?.purchased_ebooks ?? [],
+            provider: authProvider,
+            hasProfile: prev?.hasProfile
+          };
+        });
+        setIsLoading(false);
+
+        // Load profile in the background
+        loadProfile(
+          u.id,
+          u.email ?? "",
+          (u.user_metadata?.name as string | undefined) ?? undefined
         );
-        if (isSubscribed) {
-          setIsLoading(false);
-        }
       } else {
-        // Fallback to check local session via getCurrentUser server action
-        if (isSubscribed) {
-          setIsLoading(true);
-        }
+        setSession(null);
+        // Try to check local session fallback
         try {
           const localUser = await getCurrentUser();
           if (localUser && isSubscribed) {
+            const finalRole = (localUser.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
             setUser({
               id: localUser.id,
               name: localUser.name,
               email: localUser.email,
-              role: localUser.role,
-              enrolled_videos: localUser.enrolled_videos,
-              purchased_ebooks: localUser.purchased_ebooks,
+              role: finalRole,
+              enrolled_videos: localUser.enrolled_videos || [],
+              purchased_ebooks: localUser.purchased_ebooks || [],
               provider: localUser.provider,
               hasProfile: true
             });
@@ -296,11 +358,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isSubscribed = false;
       authListener.subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signIn = async (email: string, password: string) => {
     console.log("[AuthContext] signIn started for email:", email);
+    const loginStart = performance.now();
     setIsLoading(true);
     // Prevent the onAuthStateChange listener from triggering concurrent loadProfile calls
     profileLoadingRef.current = true;
@@ -314,11 +376,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const localRes = await loginUser({ email, password });
         console.log("[AuthContext] local fallback loginUser response:", localRes);
         if (localRes.success && localRes.user) {
+          const finalRole = (localRes.user.role?.toLowerCase() === 'admin' ? 'Admin' as const : 'Student' as const);
           setUser({
             id: localRes.user.id,
             email: localRes.user.email,
             name: localRes.user.name,
-            role: localRes.user.role as "Student" | "Admin",
+            role: finalRole,
             enrolled_videos: localRes.user.enrolled_videos ?? [],
             purchased_ebooks: localRes.user.purchased_ebooks ?? [],
             provider: localRes.user.provider || 'email',
@@ -327,6 +390,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("[AuthContext] Local fallback sign in successful. User state set.");
           profileLoadingRef.current = false;
           setIsLoading(false);
+          const loginDuration = performance.now() - loginStart;
+          console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms (local fallback)`);
           return { success: true };
         } else {
           console.warn("[AuthContext] Local fallback sign in failed:", localRes.error);
@@ -341,12 +406,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session ?? null);
 
       if (data.user) {
-        const role = data.user.user_metadata?.role || 'Student';
+        const rawRole = data.user.user_metadata?.role || 'Student';
+        const role = (rawRole.toLowerCase() === 'admin' ? 'Admin' : 'Student') as "Admin" | "Student";
         const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
         
         console.log("[AuthContext] Calling createLocalSessionForSupabaseUser...");
         const localSessionRes = await createLocalSessionForSupabaseUser(data.user.id, data.user.email ?? '', name, role);
         console.log("[AuthContext] createLocalSessionForSupabaseUser completed:", localSessionRes);
+
+        // Update authenticated state immediately so user sees UI change instantly
+        setUser({
+          id: data.user.id,
+          email: data.user.email ?? "",
+          name: name,
+          role: role,
+          enrolled_videos: [],
+          purchased_ebooks: [],
+          provider: data.user.app_metadata?.provider || 'email',
+          hasProfile: undefined
+        });
+        setIsLoading(false);
 
         console.log("[AuthContext] Starting loadProfile in background...");
         loadProfile(
@@ -359,8 +438,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error("[AuthContext] Background loadProfile failed:", err);
         }).finally(() => {
           profileLoadingRef.current = false;
-          setIsLoading(false);
-          console.log("[AuthContext] Background loadProfile finally completed. isLoading set to false.");
+          console.log("[AuthContext] Background loadProfile completed.");
         });
       } else {
         console.log("[AuthContext] No data.user returned from Supabase sign in");
@@ -368,13 +446,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       }
 
-      console.log("[AuthContext] signIn returning success: true");
+      const loginDuration = performance.now() - loginStart;
+      console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms`);
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       console.error("[AuthContext] signIn encountered unexpected error:", err);
       profileLoadingRef.current = false;
       setIsLoading(false);
-      return { error: err?.message || "An unexpected error occurred." };
+      return { error: err instanceof Error ? err.message : "An unexpected error occurred." };
     }
   };
 
@@ -388,11 +467,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
-    let localUser: any = null;
+    let localUser: Omit<User, 'password_hash'> | null = null;
     try {
       const localRes = await registerUser({ name, email, password });
       if (localRes.success && localRes.user) {
-        localUser = localRes.user;
+        localUser = localRes.user as Omit<User, 'password_hash'>;
       }
     } catch (err) {
       console.error("Local JSON registerUser failed:", err);
@@ -634,10 +713,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       console.error("[AuthContext] Google signInWithOAuth encountered error:", err);
       setIsLoading(false);
-      return { error: err.message || "An unexpected error occurred." };
+      return { error: err instanceof Error ? err.message : "An unexpected error occurred." };
     }
   };
 
@@ -666,32 +745,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       refreshUser,
       saveProgress: async (cId, pct, lsn) => {
         const res = await saveProgressAction(cId, pct, lsn);
-        if (res.success && !res.error) {
-          setUser(prev => prev ? { ...prev, progress: res.progress, badges: res.badges } : null);
+        if (res.success && !res.error && res.progress) {
+          setUser(prev => prev ? {
+            ...prev,
+            progress: {
+              ...(prev.progress || {}),
+              [cId]: res.progress!
+            },
+            badges: res.badges ?? prev.badges
+          } : null);
         }
         return res;
       },
       claimCertificate: async (cId, cName) => {
         const res = await claimCertificateAction(cId, cName);
-        if (res.success && !res.error) {
+        if (res.success && !res.error && res.certificate) {
           setUser(prev => prev ? { 
             ...prev, 
-            certificates: Array.from(new Set([...(prev.certificates || []), res.certificate])) 
+            certificates: prev.certificates?.some(c => c.id === res.certificate!.id)
+              ? prev.certificates
+              : [...(prev.certificates || []), res.certificate!]
           } : null);
         }
         return res;
       },
       updateStreak: async () => {
         const res = await updateStreakAction();
-        if (res.success && !res.error) {
-          setUser(prev => prev ? { ...prev, streak: res.streak } : null);
+        if (res.success && !res.error && res.streak) {
+          setUser(prev => prev ? { ...prev, streak: res.streak! } : null);
         }
         return res;
       },
       addRecentlyViewed: async (cId) => {
         const res = await addRecentlyViewedAction(cId);
-        if (res.success && !res.error) {
-          setUser(prev => prev ? { ...prev, recently_viewed: res.recently_viewed } : null);
+        if (res.success && !res.error && res.recently_viewed) {
+          setUser(prev => prev ? { ...prev, recently_viewed: res.recently_viewed! } : null);
         }
         return res;
       },

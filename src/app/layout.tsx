@@ -113,12 +113,13 @@ export default function RootLayout({
         {/* Explicit crossorigin so Vercel preview deployments pass session
             cookies when fetching the PWA manifest — prevents 401 errors */}
         <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
+        <meta name="google-adsense-account" content="ca-pub-4035712855313003" />
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
           <Script
             async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1234567890123456"}`}
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4035712855313003"
             crossOrigin="anonymous"
             strategy="afterInteractive"
           />

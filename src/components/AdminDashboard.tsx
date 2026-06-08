@@ -84,6 +84,7 @@ export default function AdminDashboard({
   // Notifications Form States
   const [notifMessage, setNotifMessage] = useState('');
   const [notifLink, setNotifLink] = useState('');
+  const [notifChannel, setNotifChannel] = useState<any>(null);
 
   useEffect(() => {
     async function loadNotifications() {
@@ -91,6 +92,13 @@ export default function AdminDashboard({
       setNotifications(list);
     }
     loadNotifications();
+
+    const channel = supabase.channel('realtime-notifications').subscribe();
+    setNotifChannel(channel);
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const [loading, setLoading] = useState(false);
@@ -344,16 +352,18 @@ export default function AdminDashboard({
       
       // Trigger real-time broadcast
       try {
-        await supabase.channel('realtime-notifications').send({
-          type: 'broadcast',
-          event: 'new-notification',
-          payload: {
-            id: res.notification.id,
-            message: notifMessage,
-            link: notifLink || '',
-            created_at: res.notification.created_at
-          }
-        });
+        if (notifChannel) {
+          await notifChannel.send({
+            type: 'broadcast',
+            event: 'new-notification',
+            payload: {
+              id: res.notification.id,
+              message: notifMessage,
+              link: notifLink || '',
+              created_at: res.notification.created_at
+            }
+          });
+        }
       } catch (err) {
         console.error("Realtime broadcast failed:", err);
       }

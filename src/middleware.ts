@@ -92,8 +92,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Exclude API routes from redirect checks
-  if (pathname.startsWith("/api")) {
+  // Exclude API routes and ads.txt from redirect checks
+  if (pathname === "/ads.txt" || pathname.startsWith("/api")) {
     return addSecurityHeaders(supabaseResponse);
   }
 

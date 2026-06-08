@@ -671,7 +671,8 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
         return { error: `Supabase password reset failed: ${adminError.message}` };
       }
     } else {
-      console.warn("Supabase Service Role Key missing. Password updated locally only.");
+      console.error("Supabase Service Role Key missing. Cannot update Supabase password.");
+      return { error: "Supabase Service Role Key is missing. Password reset cannot be completed." };
     }
   }
 

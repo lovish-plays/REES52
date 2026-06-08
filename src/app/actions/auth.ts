@@ -51,6 +51,9 @@ const transporter = nodemailer.createTransport({
     user: SMTP_USER,
     pass: SMTP_PASS,
   },
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,   // 5 seconds
+  socketTimeout: 5000,     // 5 seconds
 });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'rees52-cyber-vault-key-987654';
@@ -546,7 +549,11 @@ export async function sendPasswordResetOtpAction(email: string) {
       return { success: true, message: `OTP code sent successfully to ${cleanEmail}!` };
     } catch (mailError: any) {
       console.error("[NODEMAILER ERROR]", mailError);
-      return { error: `SMTP server error: ${mailError.message}. Falling back to developer mode.`, mockOtp: otp };
+      return { 
+        success: true, 
+        message: `SMTP error: ${mailError.message}. Fell back to developer mode.`, 
+        mockOtp: otp 
+      };
     }
   }
 

@@ -118,14 +118,24 @@ function initDB(): DatabaseStore {
   return db;
 }
 
+let cachedDb: DatabaseStore | null = null;
+
 // Get the current database state
 export function getDB(): DatabaseStore {
-  return initDB();
+  if (!cachedDb) {
+    cachedDb = initDB();
+  }
+  return cachedDb;
 }
 
 // Save database state
 export function saveDB(db: DatabaseStore): void {
-  fs.writeFileSync(DB_FILE_PATH, JSON.stringify(db, null, 2), 'utf-8');
+  cachedDb = db;
+  try {
+    fs.writeFileSync(DB_FILE_PATH, JSON.stringify(db, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn("Failed to save database file (expected in read-only environments):", err);
+  }
 }
 
 // UUID helper

@@ -384,11 +384,35 @@ export async function syncUserByEmailFromSupabase(email: string) {
         profile = data;
       }
 
-      // 2. If profile is not found or profile query failed, check auth.users directly via getUserByEmail
+      // 2. If profile is not found or profile query failed, check auth.users directly via paginated listUsers
       if (!profile) {
-        const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(cleanEmail);
-        if (!getUserError && userData?.user) {
-          const authUser = userData.user;
+        let page = 1;
+        const perPage = 100;
+        let authUser: any = null;
+
+        while (true) {
+          const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+            page,
+            perPage
+          });
+
+          if (listError || !listData?.users || listData.users.length === 0) {
+            break;
+          }
+
+          const found = listData.users.find((u: any) => u.email?.toLowerCase() === cleanEmail);
+          if (found) {
+            authUser = found;
+            break;
+          }
+
+          if (listData.users.length < perPage) {
+            break;
+          }
+          page++;
+        }
+
+        if (authUser) {
           // Found in auth.users! Let's insert a profile row for them so the database is in sync
           const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
           const { data: newProfile, error: insertError } = await supabaseAdmin

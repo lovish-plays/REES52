@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getReviewsAction, submitReviewAction } from "@/app/actions/reviews";
 import { Review } from "@/lib/db";
@@ -143,27 +142,7 @@ export default function ReviewsSection() {
     );
   };
 
-  // Fallback avatar generator
-  const getRandomAvatar = (seed: string) => {
-    const avatars = [
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=120",
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120"
-    ];
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % avatars.length;
-    return avatars[index];
-  };
+
 
   if (loading && reviews.length === 0) {
     return (
@@ -206,15 +185,9 @@ export default function ReviewsSection() {
           {/* Active Review Card */}
           <div className="glassmorphism p-6 md:p-10 rounded-3xl border border-slate-200/50 bg-white/70 shadow-lg relative flex flex-col md:flex-row items-center md:items-start gap-6 transition-all duration-500 animate-fade-in">
             
-            {/* User profile image or badge */}
-            <div className="flex-shrink-0 relative w-16 h-16">
-              <Image
-                src={reviews[currentIndex].avatar_url || getRandomAvatar(reviews[currentIndex].id || reviews[currentIndex].name)}
-                alt={reviews[currentIndex].name}
-                fill
-                sizes="64px"
-                className="rounded-full object-cover border-2 border-cyan-500 shadow-md"
-              />
+            {/* Styled universal default profile circular icon */}
+            <div className="flex-shrink-0 relative w-16 h-16 flex items-center justify-center bg-cyan-100/80 rounded-full border border-cyan-500/20 text-cyan-600 shadow-md">
+              <User className="w-8 h-8" />
             </div>
 
             {/* Review content details */}

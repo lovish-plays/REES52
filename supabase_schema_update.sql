@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     name TEXT NOT NULL,
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT NOT NULL,
-    avatar_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS public.reviews (
 -- 2. ALTER PROFILES TABLE (ADD MISSING COLUMNS)
 -- =========================================================================
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS password_hash TEXT;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'email';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS progress JSONB DEFAULT '{}'::jsonb;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS badges JSONB DEFAULT '[]'::jsonb;

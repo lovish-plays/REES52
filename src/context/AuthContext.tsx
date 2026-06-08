@@ -26,7 +26,6 @@ interface AuthUser {
   role: "Student" | "Admin";
   enrolled_videos: string[];
   purchased_ebooks: string[];
-  avatar_url?: string;
   provider?: string;
   hasProfile?: boolean;
   progress?: Record<string, any>;
@@ -69,7 +68,6 @@ type ProfileRow = {
   role: string | null;
   enrolled_videos: string[] | null;
   purchased_ebooks: string[] | null;
-  avatar_url: string | null;
   provider: string | null;
 };
 
@@ -88,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
         const queryPromise = supabase
           .from("profiles")
-          .select("id,name,role,enrolled_videos,purchased_ebooks,avatar_url,provider")
+          .select("id,name,role,enrolled_videos,purchased_ebooks,provider")
           .eq("id", authUserId)
           .maybeSingle<ProfileRow>();
           
@@ -100,8 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data = response.data;
         error = response.error;
 
-        if (error && (error.message.includes("column") || error.message.includes("avatar_url"))) {
-          console.log("[AuthContext] Profiles table lacks avatar_url/provider. Retrying query without them.");
+        if (error && (error.message.includes("column") || error.message.includes("provider"))) {
+          console.log("[AuthContext] Profiles table lacks provider. Retrying query without it.");
           const retryRes = await supabase
             .from("profiles")
             .select("id,name,role,enrolled_videos,purchased_ebooks")
@@ -110,7 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!retryRes.error) {
             data = {
               ...retryRes.data,
-              avatar_url: null,
               provider: 'email'
             };
             error = null;
@@ -166,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("[AuthContext] Self-healing profile created successfully:", insertRes.data);
           data = {
             ...insertRes.data,
-            avatar_url: null,
             provider: 'email'
           };
         } else if (insertRes.error) {
@@ -194,7 +190,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role,
         enrolled_videos: data?.enrolled_videos ?? [],
         purchased_ebooks: data?.purchased_ebooks ?? [],
-        avatar_url: data?.avatar_url ?? (sessionData?.session?.user?.user_metadata?.avatar_url as string | undefined) ?? (sessionData?.session?.user?.user_metadata?.picture as string | undefined),
         provider: data?.provider ?? authProvider,
         hasProfile: hasProfile,
         progress: (data as any)?.progress ?? {},
@@ -278,7 +273,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               role: localUser.role,
               enrolled_videos: localUser.enrolled_videos,
               purchased_ebooks: localUser.purchased_ebooks,
-              avatar_url: localUser.avatar_url,
               provider: localUser.provider,
               hasProfile: true
             });
@@ -327,7 +321,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: localRes.user.role as "Student" | "Admin",
             enrolled_videos: localRes.user.enrolled_videos ?? [],
             purchased_ebooks: localRes.user.purchased_ebooks ?? [],
-            avatar_url: localRes.user.avatar_url,
             provider: localRes.user.provider || 'email',
             hasProfile: true
           });
@@ -415,7 +408,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: localUser.role as "Student" | "Admin",
           enrolled_videos: localUser.enrolled_videos ?? [],
           purchased_ebooks: localUser.purchased_ebooks ?? [],
-          avatar_url: localUser.avatar_url,
           provider: localUser.provider || 'email',
           hasProfile: true
         });
@@ -457,7 +449,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: localUser.role as "Student" | "Admin",
           enrolled_videos: localUser.enrolled_videos ?? [],
           purchased_ebooks: localUser.purchased_ebooks ?? [],
-          avatar_url: localUser.avatar_url,
           provider: localUser.provider || 'email',
           hasProfile: true
         });

@@ -70,7 +70,6 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const avatarUrl = sessionUser.user_metadata?.avatar_url || sessionUser.user_metadata?.picture || null;
       const provider = sessionUser.app_metadata?.provider || 'google';
 
       // 1. Create the profile row in Supabase
@@ -83,12 +82,11 @@ export default function OnboardingPage() {
           role: "Student",
           enrolled_videos: [],
           purchased_ebooks: [],
-          avatar_url: avatarUrl,
           provider: provider
         });
 
-      if (profileError && (profileError.message.includes("column") || profileError.message.includes("avatar_url") || profileError.message.includes("provider"))) {
-        console.log("[Onboarding] Profiles table lacks avatar_url/provider. Retrying insert without them.");
+      if (profileError && (profileError.message.includes("column") || profileError.message.includes("provider"))) {
+        console.log("[Onboarding] Profiles table lacks provider column. Retrying insert without it.");
         const { error: retryError } = await supabase
           .from("profiles")
           .insert({
@@ -115,7 +113,6 @@ export default function OnboardingPage() {
         sessionUser.email ?? "",
         name.trim(),
         "Student",
-        avatarUrl ?? undefined,
         provider
       );
 

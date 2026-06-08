@@ -88,7 +88,6 @@ export class UserRepository {
         role: user.role || 'Student',
         enrolled_videos: user.enrolled_videos || [],
         purchased_ebooks: user.purchased_ebooks || [],
-        avatar_url: user.avatar_url || null,
         provider: user.provider || 'email',
         progress: user.progress || {},
         badges: user.badges || [],
@@ -123,7 +122,6 @@ export class UserRepository {
       if (updates.name !== undefined) payload.name = updates.name;
       if (updates.password_hash !== undefined) payload.password_hash = updates.password_hash;
       if (updates.role !== undefined) payload.role = updates.role;
-      if (updates.avatar_url !== undefined) payload.avatar_url = updates.avatar_url;
       if (updates.provider !== undefined) payload.provider = updates.provider;
       if (updates.enrolled_videos !== undefined) payload.enrolled_videos = updates.enrolled_videos;
       if (updates.purchased_ebooks !== undefined) payload.purchased_ebooks = updates.purchased_ebooks;
@@ -161,7 +159,6 @@ export class UserRepository {
       role: (raw.role as 'Student' | 'Admin') || 'Student',
       enrolled_videos: raw.enrolled_videos || [],
       purchased_ebooks: raw.purchased_ebooks || [],
-      avatar_url: raw.avatar_url || undefined,
       provider: raw.provider || 'email',
       progress: typeof raw.progress === 'string' ? JSON.parse(raw.progress) : (raw.progress || {}),
       badges: typeof raw.badges === 'string' ? JSON.parse(raw.badges) : (raw.badges || []),

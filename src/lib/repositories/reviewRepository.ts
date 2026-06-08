@@ -10,7 +10,7 @@ export class ReviewRepository {
     try {
       const { data, error } = await supabasePublic
         .from('reviews')
-        .select('id, name, rating, comment, avatar_url, created_at')
+        .select('id, name, rating, comment, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -23,8 +23,7 @@ export class ReviewRepository {
         name: item.name,
         rating: item.rating,
         comment: item.comment,
-        created_at: item.created_at,
-        avatar_url: item.avatar_url || undefined
+        created_at: item.created_at
       }));
     } catch (err: any) {
       console.error('[ReviewRepository.getReviews] exception:', err.message || err);
@@ -38,8 +37,7 @@ export class ReviewRepository {
   static async addReview(
     name: string,
     rating: number,
-    comment: string,
-    avatarUrl?: string
+    comment: string
   ): Promise<{ success: boolean; review?: Review; error?: string }> {
     try {
       const cleanName = (name || 'Anonymous Learner').trim();
@@ -54,7 +52,6 @@ export class ReviewRepository {
         name: cleanName,
         rating: ratingVal,
         comment: cleanComment,
-        avatar_url: avatarUrl || null,
         created_at: new Date().toISOString()
       };
 
@@ -76,8 +73,7 @@ export class ReviewRepository {
           name: data.name,
           rating: data.rating,
           comment: data.comment,
-          created_at: data.created_at,
-          avatar_url: data.avatar_url || undefined
+          created_at: data.created_at
         }
       };
     } catch (err: any) {

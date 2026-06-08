@@ -79,7 +79,6 @@ export interface User {
   role: 'Student' | 'Admin';
   enrolled_videos: string[]; // Video IDs
   purchased_ebooks: string[]; // Ebook IDs
-  avatar_url?: string;
   provider?: string;
   progress?: { [courseId: string]: UserProgress };
   certificates?: UserCertificate[];
@@ -94,7 +93,6 @@ export interface Review {
   rating: number;
   comment: string;
   created_at: string;
-  avatar_url?: string;
 }
 
 export interface DatabaseStore {

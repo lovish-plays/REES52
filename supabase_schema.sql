@@ -15,14 +15,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     role TEXT DEFAULT 'Student',
     enrolled_videos TEXT[] DEFAULT '{}',
     purchased_ebooks TEXT[] DEFAULT '{}',
-    avatar_url TEXT,
     provider TEXT DEFAULT 'email',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Ensure email, avatar_url, and provider columns exist on profiles table (Migration/Update for existing tables)
+-- Ensure email and provider columns exist on profiles table (Migration/Update for existing tables)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email TEXT;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'email';
 
 -- Automate profile generation when a new user registers via Supabase Auth

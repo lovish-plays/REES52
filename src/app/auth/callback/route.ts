@@ -87,7 +87,7 @@ export async function GET(request: Request) {
     console.log(`[OAuth Callback] Querying profiles table by email: ${cleanEmail}`);
     let { data: profile, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider, progress, certificates, badges, streak, recently_viewed')
+      .select('id, name, role, enrolled_videos, purchased_ebooks, provider, progress, certificates, badges, streak, recently_viewed')
       .eq('email', cleanEmail)
       .maybeSingle();
 
@@ -95,15 +95,13 @@ export async function GET(request: Request) {
       console.log("[OAuth Callback] Profiles table lacks some new columns or query failed. Retrying query with core fields.");
       const { data: retryProfile } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, avatar_url, provider')
+        .select('id, name, role, enrolled_videos, purchased_ebooks, provider')
         .eq('email', cleanEmail)
         .maybeSingle();
       profile = retryProfile as any;
     }
 
     console.log(`[OAuth Callback] Existing profile found: ${profile ? 'Yes' : 'No'}`);
-
-    const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
 
     if (profile) {
       console.log(`[OAuth Callback] Existing profile details - ID: ${profile.id}, Provider: ${profile.provider}`);
@@ -122,7 +120,6 @@ export async function GET(request: Request) {
             role: profile.role || 'Student',
             enrolled_videos: profile.enrolled_videos || [],
             purchased_ebooks: profile.purchased_ebooks || [],
-            avatar_url: avatarUrl || profile.avatar_url,
             provider: 'google',
             progress: (profile as any).progress || {},
             certificates: (profile as any).certificates || [],
@@ -142,7 +139,6 @@ export async function GET(request: Request) {
               role: profile.role || 'Student',
               enrolled_videos: profile.enrolled_videos || [],
               purchased_ebooks: profile.purchased_ebooks || [],
-              avatar_url: avatarUrl || profile.avatar_url,
               provider: 'google'
             });
           linkError = coreLinkError;
@@ -170,7 +166,7 @@ export async function GET(request: Request) {
         console.log(`[OAuth Callback] Profiles IDs match. Updating provider to google.`);
         await supabase
           .from('profiles')
-          .update({ provider: 'google', avatar_url: avatarUrl || profile.avatar_url })
+          .update({ provider: 'google' })
           .eq('id', user.id);
       }
 
@@ -185,7 +181,6 @@ export async function GET(request: Request) {
         cleanEmail,
         name,
         role,
-        avatarUrl || profile.avatar_url,
         provider
       );
       

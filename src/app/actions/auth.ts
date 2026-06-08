@@ -298,7 +298,6 @@ export async function createLocalSessionForSupabaseUser(
   email: string,
   name: string,
   role: string = 'Student',
-  avatarUrl?: string,
   provider?: string
 ) {
   console.log("[authServerAction] createLocalSessionForSupabaseUser started. id:", id, "email:", email);
@@ -323,7 +322,6 @@ export async function createLocalSessionForSupabaseUser(
         role: finalRole,
         enrolled_videos: [],
         purchased_ebooks: [],
-        avatar_url: avatarUrl,
         provider: provider || 'google',
         progress: {},
         badges: [],
@@ -341,7 +339,6 @@ export async function createLocalSessionForSupabaseUser(
       if (user.role !== finalRole) { updates.role = finalRole; user.role = finalRole; changed = true; }
       if (name && user.name !== name) { updates.name = name; user.name = name; changed = true; }
       if (user.email !== cleanEmail) { updates.email = cleanEmail; user.email = cleanEmail; changed = true; }
-      if (avatarUrl && user.avatar_url !== avatarUrl) { updates.avatar_url = avatarUrl; user.avatar_url = avatarUrl; changed = true; }
       if (provider && user.provider !== provider) { updates.provider = provider; user.provider = provider; changed = true; }
       
       if (changed) {

@@ -28,8 +28,7 @@ export async function submitReviewAction(
     return await ReviewRepository.addReview(
       name,
       rating,
-      comment,
-      currentUser?.avatar_url || undefined
+      comment
     );
   } catch (err: any) {
     console.error('submitReviewAction error:', err);

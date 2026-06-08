@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
 
   const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("profiles")
       .select("id,name,role,enrolled_videos,purchased_ebooks")
       .eq("id", authUserId)
@@ -66,6 +66,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) {
       console.error("Supabase profile read failed:", error.message);
+    }
+
+    if (!data && !error) {
+      // Self-healing: if the user authenticated successfully but has no profile row, create it
+      const role = "Student";
+      const name = fallbackName?.trim() || email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
+      
+      const { data: newProfile, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: authUserId,
+          name,
+          email,
+          role,
+          enrolled_videos: [],
+          purchased_ebooks: []
+        })
+        .select("id,name,role,enrolled_videos,purchased_ebooks")
+        .maybeSingle<ProfileRow>();
+
+      if (!insertError && newProfile) {
+        data = newProfile;
+      } else if (insertError) {
+        console.error("Self-healing profile creation failed:", insertError.message);
+      }
     }
 
     const role = (data?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as

@@ -250,7 +250,7 @@ export default function ReviewsSection() {
           <button
             onClick={handlePrev}
             aria-label="Previous Review"
-            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
+            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 sm:p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -258,7 +258,7 @@ export default function ReviewsSection() {
           <button
             onClick={handleNext}
             aria-label="Next Review"
-            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
+            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-800 p-1.5 sm:p-2.5 shadow-md transition-all active:scale-95 cursor-pointer hover:border-cyan-400 hover:text-cyan-600"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

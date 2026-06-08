@@ -147,7 +147,7 @@ export default function FeaturedCarousel({ onQuickPreview, onStartLearning, prod
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative w-full h-[280px] sm:h-[220px] overflow-hidden rounded-2xl"
+        className="relative w-full h-[320px] sm:h-[220px] overflow-hidden rounded-2xl"
       >
         {featuredList.map((item, index) => {
           const isActive = index === currentIndex;

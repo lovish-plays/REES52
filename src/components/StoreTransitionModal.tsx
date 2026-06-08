@@ -87,7 +87,7 @@ export default function StoreTransitionModal() {
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/50 bg-[#F7F4EB] p-6 text-slate-800 shadow-2xl animate-fade-in-up">
+      <div className="relative w-[calc(100%-2rem)] md:w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/50 bg-[#F7F4EB] p-6 text-slate-800 shadow-2xl animate-fade-in-up">
         {/* Decorative cyber gradient line at top */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-500 to-blue-500" />
         

@@ -366,7 +366,7 @@ export async function createLocalSessionForSupabaseUser(
     });
 
     const { password_hash: _, ...userWithoutPassword } = user;
-    return { success: true, user: userWithoutPassword };
+    return { success: true, user: userWithoutPassword, token };
   } catch (err) {
     console.error("createLocalSessionForSupabaseUser error:", err);
     return { error: "Failed to establish active workspace session." };

@@ -167,13 +167,18 @@ export async function GET(request: Request) {
       const provider = 'google'; // Linked to google now
 
       console.log(`[OAuth Callback] Creating local session. User ID: ${user.id}`);
-      await createLocalSessionForSupabaseUser(user.id, cleanEmail, name, role, avatarUrl || profile.avatar_url, provider);
+      const sessionResult = await createLocalSessionForSupabaseUser(
+        user.id,
+        cleanEmail,
+        name,
+        role,
+        avatarUrl || profile.avatar_url,
+        provider
+      );
       
-      // Copy the local session token to redirectResponse
-      const cookieStore = await cookies();
-      const localSessionToken = cookieStore.get('session')?.value;
+      const localSessionToken = sessionResult.token;
       if (localSessionToken) {
-        console.log("[OAuth Callback] Copying session token to redirectResponse");
+        console.log("[OAuth Callback] Setting session token on redirectResponse");
         redirectResponse.cookies.set('session', localSessionToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
@@ -182,7 +187,7 @@ export async function GET(request: Request) {
           path: '/'
         });
       } else {
-        console.warn("[OAuth Callback] Local session token was not found in cookieStore!");
+        console.warn("[OAuth Callback] Local session token was not returned by createLocalSessionForSupabaseUser!");
       }
       
       console.log(`[OAuth Callback] Redirecting to: ${origin}${next}`);

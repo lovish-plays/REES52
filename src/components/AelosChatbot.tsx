@@ -204,7 +204,7 @@ export default function AelosChatbot() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl premium-bot-btn cursor-pointer border border-cyan-400/40 group"
+        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl premium-bot-btn cursor-pointer border border-cyan-400/40 group"
         aria-label="Aelos AI Chatbot"
       >
         <span className="absolute -inset-1.5 rounded-full bg-cyan-500/20 animate-ping opacity-75 pointer-events-none"></span>
@@ -213,7 +213,7 @@ export default function AelosChatbot() {
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-[#F7F4EB]/95 border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 backdrop-blur-xl">
+        <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)] h-[500px] sm:h-[520px] bg-[#F7F4EB]/95 border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 backdrop-blur-xl">
           {/* Header */}
           <div className="bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-white px-4 py-3.5 flex items-center justify-between border-b border-cyan-500/25">
             <div className="flex items-center gap-2.5">

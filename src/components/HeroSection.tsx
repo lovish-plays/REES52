@@ -23,7 +23,7 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
         </span>
 
         {/* Dynamic Bold Typography Headline */}
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight">
           Master <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">Robotics, IoT & Embedded Systems</span> Through Real Projects
         </h1>
 

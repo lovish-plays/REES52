@@ -684,10 +684,10 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
           </div>
 
           {/* ── 4. Interactive Category Chips (Replaced `<select>`) ── */}
-          <div className="flex flex-wrap gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full md:max-w-2xl">
+          <div className="flex overflow-x-auto no-scrollbar py-0.5 max-w-full gap-1.5 whitespace-nowrap scroll-smooth">
             <button
               onClick={() => setCategoryId("")}
-              className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer ${
+              className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer flex-shrink-0 ${
                 categoryId === ""
                   ? "bg-slate-900 text-white border border-slate-900 shadow-sm"
                   : "bg-white/80 border border-slate-200 hover:border-slate-350 text-slate-700"
@@ -707,7 +707,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                 <button
                   key={c.id}
                   onClick={() => setCategoryId(c.id)}
-                  className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center gap-1.5 flex-shrink-0 ${
                     categoryId === c.id
                       ? "bg-slate-900 text-white border border-slate-900 shadow-sm"
                       : "bg-white/80 border border-slate-200 hover:border-slate-350 text-slate-700"
@@ -723,7 +723,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
         </div>
 
         {/* Tab Filters */}
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+        <div className="flex overflow-x-auto no-scrollbar pt-3 border-t border-slate-100 gap-2 whitespace-nowrap scroll-smooth">
           {(
             [
               { id: "all", label: "Explorer feed" },
@@ -737,7 +737,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-[1.03] hover:translate-y-[-0.5px] cursor-pointer ${
+              className={`rounded-xl px-4 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 hover:scale-[1.03] hover:translate-y-[-0.5px] cursor-pointer flex-shrink-0 ${
                 tab === t.id
                   ? "bg-cyan-600/15 text-slate-900 border border-cyan-500/40 shadow-sm font-black"
                   : "border border-slate-200 bg-white/70 text-slate-650 hover:bg-white hover:border-cyan-500/20 hover:shadow-sm"

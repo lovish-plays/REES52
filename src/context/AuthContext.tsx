@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle<ProfileRow>();
           
         const timeoutPromise = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error("Supabase profile query timed out after 3 seconds")), 3000)
+          setTimeout(() => reject(new Error("Supabase profile query timed out after 10 seconds")), 10000)
         );
 
         const response = await Promise.race([queryPromise, timeoutPromise]);
@@ -184,7 +184,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
         "Learner";
 
-      console.log("[AuthContext] Setting user state. role:", role, "name:", finalName);
+      const hasProfile = data ? true : (error ? undefined : false);
+
+      console.log("[AuthContext] Setting user state. role:", role, "name:", finalName, "hasProfile:", hasProfile);
       setUser({
         id: authUserId,
         email,
@@ -194,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         purchased_ebooks: data?.purchased_ebooks ?? [],
         avatar_url: data?.avatar_url ?? (sessionData?.session?.user?.user_metadata?.avatar_url as string | undefined) ?? (sessionData?.session?.user?.user_metadata?.picture as string | undefined),
         provider: data?.provider ?? authProvider,
-        hasProfile: !!data,
+        hasProfile: hasProfile,
         progress: (data as any)?.progress ?? {},
         certificates: (data as any)?.certificates ?? [],
         badges: (data as any)?.badges ?? [],

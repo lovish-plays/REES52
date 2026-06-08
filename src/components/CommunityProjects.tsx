@@ -15,38 +15,7 @@ interface CommunityProject {
   created_at: string;
 }
 
-const SEED_PROJECTS: CommunityProject[] = [
-  {
-    id: "proj-1",
-    title: "DIY Autonomous Quadcopter",
-    description: "Built an autonomous drone using a custom F450 frame, ArduPilot flight controller, and Raspberry Pi 4 for computer vision tracking.",
-    technologies: ["Raspberry Pi", "ArduPilot", "F450 Frame"],
-    author: "Lovish",
-    imageUrl: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600&auto=format&fit=crop&q=60",
-    likes: 24,
-    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: "proj-2",
-    title: "WiFi Smart Irrigation System",
-    description: "Automated greenhouse watering using NodeMCU (ESP8266), soil moisture sensors, and a solenoid valve controlled via local dashboard API.",
-    technologies: ["ESP8266", "Soil Sensors", "Relays"],
-    author: "Riya",
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=60",
-    likes: 18,
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: "proj-3",
-    title: "Voice Controlled Robotic Arm",
-    description: "Assembled a 4-DOF mechanical arm using SG90 servos and Arduino Nano. Managed controller commands using a Bluetooth telemetry app.",
-    technologies: ["Arduino Nano", "Bluetooth", "SG90 Servos"],
-    author: "Pratiush",
-    imageUrl: "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&auto=format&fit=crop&q=60",
-    likes: 35,
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-  }
-];
+const SEED_PROJECTS: CommunityProject[] = [];
 
 const PRESETS = [
   "https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60",
@@ -73,14 +42,17 @@ export default function CommunityProjects() {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("rees_community_projects");
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setProjects(JSON.parse(stored));
       } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setProjects(SEED_PROJECTS);
         localStorage.setItem("rees_community_projects", JSON.stringify(SEED_PROJECTS));
       }
 
       const storedLikes = localStorage.getItem("rees_community_likes");
       if (storedLikes) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLikedProjects(JSON.parse(storedLikes));
       }
     }
@@ -88,7 +60,7 @@ export default function CommunityProjects() {
 
   const handleLike = (id: string) => {
     let updatedLikes = [...likedProjects];
-    let updatedProjects = projects.map(p => {
+    const updatedProjects = projects.map(p => {
       if (p.id === id) {
         if (likedProjects.includes(id)) {
           updatedLikes = updatedLikes.filter(item => item !== id);
@@ -176,80 +148,87 @@ export default function CommunityProjects() {
       </div>
 
       {/* Grid of Projects */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {projects.map((proj) => {
-          const isLiked = likedProjects.includes(proj.id);
-          return (
-            <div
-              key={proj.id}
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm hover:border-cyan-500/35 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div>
-                {/* Visual Cover Frame */}
-                {proj.imageUrl && (
-                  <div className="relative w-full h-40 bg-slate-100 overflow-hidden">
-                    <img
-                      src={proj.imageUrl}
-                      alt={proj.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
-                    />
-                    
-                    {/* Authorship tag */}
-                    <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md text-[8.5px] font-black uppercase tracking-wider bg-slate-900/80 border border-white/10 text-white flex items-center gap-1.5 backdrop-blur-sm">
-                      <User className="w-3 h-3 text-cyan-400" />
-                      <span>By {proj.author}</span>
-                    </span>
-                  </div>
-                )}
-
-                <div className="p-5 space-y-2">
-                  <h3 className="text-sm font-black text-slate-900 tracking-wide uppercase leading-tight truncate">
-                    {proj.title}
-                  </h3>
-                  <p className="text-[11px] text-slate-605 leading-relaxed font-medium line-clamp-3">
-                    {proj.description}
-                  </p>
-
-                  {/* Technologies tags */}
-                  <div className="flex flex-wrap gap-1 pt-1.5">
-                    {proj.technologies.map(t => (
-                      <span
-                        key={t}
-                        className="px-2 py-0.5 rounded-md border border-slate-100 bg-slate-50 text-[8.5px] font-black uppercase tracking-wider text-slate-600"
-                      >
-                        {t}
+      {projects.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/80 bg-white/70 p-10 text-center shadow-sm">
+          <p className="text-sm font-black text-slate-800 uppercase">No community projects shared yet.</p>
+          <p className="mt-2 text-[11px] text-slate-500 font-medium">Be the first to share your awesome hardware build with the academy!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {projects.map((proj) => {
+            const isLiked = likedProjects.includes(proj.id);
+            return (
+              <div
+                key={proj.id}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm hover:border-cyan-500/35 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div>
+                  {/* Visual Cover Frame */}
+                  {proj.imageUrl && (
+                    <div className="relative w-full h-40 bg-slate-100 overflow-hidden">
+                      <img
+                        src={proj.imageUrl}
+                        alt={proj.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
+                      />
+                      
+                      {/* Authorship tag */}
+                      <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md text-[8.5px] font-black uppercase tracking-wider bg-slate-900/80 border border-white/10 text-white flex items-center gap-1.5 backdrop-blur-sm">
+                        <User className="w-3 h-3 text-cyan-400" />
+                        <span>By {proj.author}</span>
                       </span>
-                    ))}
+                    </div>
+                  )}
+
+                  <div className="p-5 space-y-2">
+                    <h3 className="text-sm font-black text-slate-900 tracking-wide uppercase leading-tight truncate">
+                      {proj.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-605 leading-relaxed font-medium line-clamp-3">
+                      {proj.description}
+                    </p>
+
+                    {/* Technologies tags */}
+                    <div className="flex flex-wrap gap-1 pt-1.5">
+                      {proj.technologies.map(t => (
+                        <span
+                          key={t}
+                          className="px-2 py-0.5 rounded-md border border-slate-100 bg-slate-50 text-[8.5px] font-black uppercase tracking-wider text-slate-600"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Action Like button */}
-              <div className="mx-5 mb-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400">
-                  {new Date(proj.created_at).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric"
-                  })}
-                </span>
+                {/* Action Like button */}
+                <div className="mx-5 mb-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400">
+                    {new Date(proj.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric"
+                    })}
+                  </span>
 
-                <button
-                  onClick={() => handleLike(proj.id)}
-                  className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    isLiked
-                      ? "border-rose-200 bg-rose-50 text-rose-600"
-                      : "border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200"
-                  }`}
-                >
-                  <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-rose-600 text-rose-600" : ""}`} />
-                  <span>{proj.likes} Likes</span>
-                </button>
+                  <button
+                    onClick={() => handleLike(proj.id)}
+                    className={`px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      isLiked
+                        ? "border-rose-200 bg-rose-50 text-rose-600"
+                        : "border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200"
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${isLiked ? "fill-rose-600 text-rose-600" : ""}`} />
+                    <span>{proj.likes} Likes</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Submission Modal */}
       {modalOpen && (

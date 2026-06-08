@@ -384,41 +384,39 @@ export async function syncUserByEmailFromSupabase(email: string) {
         profile = data;
       }
 
-      // 2. If profile is not found or profile query failed, check auth.users directly via listUsers
+      // 2. If profile is not found or profile query failed, check auth.users directly via getUserByEmail
       if (!profile) {
-        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (!listError && users) {
-          const authUser = users.find(u => u.email?.toLowerCase() === cleanEmail);
-          if (authUser) {
-            // Found in auth.users! Let's insert a profile row for them so the database is in sync
-            const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
-            const { data: newProfile, error: insertError } = await supabaseAdmin
-              .from('profiles')
-              .insert({
-                id: authUser.id,
-                name,
-                email: cleanEmail,
-                role: 'Student',
-                enrolled_videos: [],
-                purchased_ebooks: []
-              })
-              .select('id, name, role, enrolled_videos, purchased_ebooks')
-              .maybeSingle();
+        const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(cleanEmail);
+        if (!getUserError && userData?.user) {
+          const authUser = userData.user;
+          // Found in auth.users! Let's insert a profile row for them so the database is in sync
+          const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
+          const { data: newProfile, error: insertError } = await supabaseAdmin
+            .from('profiles')
+            .insert({
+              id: authUser.id,
+              name,
+              email: cleanEmail,
+              role: 'Student',
+              enrolled_videos: [],
+              purchased_ebooks: []
+            })
+            .select('id, name, role, enrolled_videos, purchased_ebooks')
+            .maybeSingle();
 
-            if (!insertError && newProfile) {
-              profile = newProfile;
-            } else {
-              // Even if profile insert fails (e.g. database schema mismatch or connection issues),
-              // we mock a profile object to ensure the user is synced to the local DB for password reset.
-              profile = {
-                id: authUser.id,
-                name,
-                email: cleanEmail,
-                role: 'Student',
-                enrolled_videos: [],
-                purchased_ebooks: []
-              };
-            }
+          if (!insertError && newProfile) {
+            profile = newProfile;
+          } else {
+            // Even if profile insert fails (e.g. database schema mismatch or connection issues),
+            // we mock a profile object to ensure the user is synced to the local DB for password reset.
+            profile = {
+              id: authUser.id,
+              name,
+              email: cleanEmail,
+              role: 'Student',
+              enrolled_videos: [],
+              purchased_ebooks: []
+            };
           }
         }
       }

@@ -114,15 +114,14 @@ export default function RootLayout({
             cookies when fetching the PWA manifest — prevents 401 errors */}
         <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
         <meta name="google-adsense-account" content="ca-pub-4035712855313003" />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4035712855313003"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
         <AuthProvider>
-          <Script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4035712855313003"
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
           <Suspense fallback={null}>
             <GoogleAnalytics />
           </Suspense>

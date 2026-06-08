@@ -8,7 +8,7 @@ interface AdSensePlaceholderProps {
   className?: string;
 }
 
-const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1234567890123456";
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-4035712855313003";
 
 export default function AdSensePlaceholder({
   slotId,

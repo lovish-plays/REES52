@@ -939,7 +939,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                       <Fragment key={`prod-group:${p.id}`}>
                         {productCard}
                         <div className="col-span-1 h-full">
-                          <AdSensePlaceholder slotId="ca-pub-rees52-product-inline-ad" />
+                           <AdSensePlaceholder slotId="4035712855" />
                         </div>
                       </Fragment>
                     );
@@ -1079,7 +1079,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     <Fragment key={`group:${it.id}`}>
                       {itemCard}
                       <div className="col-span-1 h-full">
-                        <AdSensePlaceholder slotId="ca-pub-rees52-card-inline-ad" />
+                         <AdSensePlaceholder slotId="4035712856" />
                       </div>
                     </Fragment>
                   );

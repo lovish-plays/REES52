@@ -125,9 +125,32 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </Panel>
 
           <Panel title="Circuit Diagram" icon={<Download className="h-5 w-5" />}>
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
-              {project.circuitDiagramUrl ? "Circuit diagram URL is ready." : "Circuit diagram placeholder"}
-            </div>
+            {project.circuitDiagramUrl ? (
+              <a
+                href={project.circuitDiagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block overflow-hidden rounded-xl border border-slate-200 bg-white"
+              >
+                <div className="relative aspect-square">
+                  <Image
+                    src={project.circuitDiagramUrl}
+                    alt={`${project.title} circuit diagram`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 30vw"
+                    className="object-contain p-3 transition-transform group-hover:scale-[1.02]"
+                  />
+                </div>
+                <span className="flex items-center justify-center gap-2 border-t border-slate-200 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-cyan-800">
+                  <Download className="h-3.5 w-3.5" />
+                  Open full size
+                </span>
+              </a>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                Circuit diagram coming soon
+              </div>
+            )}
           </Panel>
 
           <form>

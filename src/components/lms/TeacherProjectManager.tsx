@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Check, Eye, EyeOff, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { createProjectAction, deleteProjectAction, updateProjectAction, type TeacherProject, type TeacherProjectInput } from '@/app/actions/teacherProjects';
+import AdminImageUpload from '@/components/admin/AdminImageUpload';
 import { schoolClassOptions } from '@/lib/lms/class-categories';
 
 const emptyProject: TeacherProjectInput = {
@@ -60,9 +61,9 @@ export default function TeacherProjectManager({ initialProjects }: { initialProj
           <Field label="School class" required><select value={form.classLevel} onChange={(event) => update('classLevel', event.target.value as TeacherProjectInput['classLevel'])} className={inputClass}>{schoolClassOptions.map((schoolClass) => <option key={schoolClass}>{schoolClass}</option>)}</select></Field>
           <Field label="Level"><select value={form.level} onChange={(event) => update('level', event.target.value as TeacherProjectInput['level'])} className={inputClass}><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></Field>
           <Field label="Estimated time"><input value={form.estimatedTime} onChange={(event) => update('estimatedTime', event.target.value)} className={inputClass} placeholder="3 hours" /></Field>
-          <Field label="Thumbnail URL"><input type="url" value={form.thumbnailUrl} onChange={(event) => update('thumbnailUrl', event.target.value)} className={inputClass} /></Field>
+          <AdminImageUpload label="Project thumbnail" value={form.thumbnailUrl} onChange={(url) => update('thumbnailUrl', url)} scope="projects" />
           <Field label="Video URL"><input type="url" value={form.videoUrl} onChange={(event) => update('videoUrl', event.target.value)} className={inputClass} /></Field>
-          <Field label="Circuit diagram URL"><input type="url" value={form.circuitDiagramUrl} onChange={(event) => update('circuitDiagramUrl', event.target.value)} className={inputClass} /></Field>
+          <AdminImageUpload label="Circuit diagram" value={form.circuitDiagramUrl} onChange={(url) => update('circuitDiagramUrl', url)} scope="project-diagrams" />
           <Field label="Short description" className="md:col-span-2"><input value={form.shortDescription} onChange={(event) => update('shortDescription', event.target.value)} className={inputClass} /></Field>
           <Field label="Full description" className="md:col-span-2"><textarea rows={4} value={form.description} onChange={(event) => update('description', event.target.value)} className={inputClass} /></Field>
           <Field label="Source code" className="md:col-span-2"><textarea rows={7} value={form.sourceCode} onChange={(event) => update('sourceCode', event.target.value)} className={`${inputClass} font-mono`} /></Field>

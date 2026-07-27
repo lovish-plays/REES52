@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowRight, Download, Eye, FileText, Image as ImageIcon } from "lucide-react";
 import LessonSidebar from "@/components/lms/LessonSidebar";
@@ -95,11 +96,26 @@ export default async function LessonPage({ params }: PageProps) {
               <ImageIcon className="h-5 w-5 text-cyan-700" />
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-950">Circuit Diagram / Image</h2>
             </div>
-            <div className="mt-4 flex min-h-56 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                {lesson.circuitDiagramUrl ? "Circuit image URL is ready for backend rendering." : "Add circuit_diagram_url or project image in Supabase."}
-              </p>
-            </div>
+            {lesson.circuitDiagramUrl ? (
+              <a
+                href={lesson.circuitDiagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative mt-4 block min-h-56 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+              >
+                <Image
+                  src={lesson.circuitDiagramUrl}
+                  alt={`${lesson.title} circuit diagram`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain p-3"
+                />
+              </a>
+            ) : (
+              <div className="mt-4 flex min-h-56 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Circuit diagram coming soon</p>
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200/80 bg-slate-950 p-6 text-white shadow-sm">

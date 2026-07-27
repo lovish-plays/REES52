@@ -18,7 +18,7 @@ Set these in the hosting provider's production environment, not in the repositor
 
 ## Supabase
 
-1. Run `supabase/complete_frontend_setup.sql` on a new project, or apply migrations `001` through `007` in order on an existing project.
+1. Run `supabase/complete_frontend_setup.sql` on a new project, or apply migrations `001` through `008` in order on an existing project. Migration `008` creates the public content-image bucket and limits uploads to authenticated teacher/admin accounts.
 2. Confirm email/password and Google OAuth redirect URLs use the production domain:
    `https://rees52.tech/auth/callback`.
 3. Confirm RLS is enabled and test student, teacher, and admin accounts separately.

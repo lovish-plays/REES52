@@ -10,6 +10,7 @@ import {
   type TeacherCourse,
   type TeacherCourseInput,
 } from '@/app/actions/teacherContent';
+import AdminImageUpload from '@/components/admin/AdminImageUpload';
 import { schoolClassOptions } from '@/lib/lms/class-categories';
 
 const emptyCourse: TeacherCourseInput = {
@@ -169,9 +170,12 @@ export default function TeacherCourseManager({ initialCourses }: { initialCourse
           <Field label="Duration">
             <input value={form.duration} onChange={(event) => updateField('duration', event.target.value)} className={inputClass} placeholder="4 weeks" />
           </Field>
-          <Field label="Thumbnail URL">
-            <input type="url" value={form.thumbnailUrl} onChange={(event) => updateField('thumbnailUrl', event.target.value)} className={inputClass} placeholder="https://…" />
-          </Field>
+          <AdminImageUpload
+            label="Course thumbnail"
+            value={form.thumbnailUrl}
+            onChange={(url) => updateField('thumbnailUrl', url)}
+            scope="courses"
+          />
           <Field label="Pricing">
             <select value={form.pricing} onChange={(event) => updateField('pricing', event.target.value as TeacherCourseInput['pricing'])} className={inputClass}>
               <option>Free</option>

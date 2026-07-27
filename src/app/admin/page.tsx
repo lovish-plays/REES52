@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Boxes, FileQuestion, FolderKanban, GraduationCap, Layers, Users, Video } from "lucide-react";
+import { BookOpen, Boxes, FileQuestion, FolderKanban, GraduationCap, Layers, Video } from "lucide-react";
 import AdminStatCard from "@/components/lms/AdminStatCard";
 import { getAdminSnapshot } from "@/lib/lms/data";
 
@@ -25,7 +25,6 @@ export default async function AdminPage() {
         <AdminStatCard title="Projects" value={stats.projects} href="/admin/projects" icon={<FolderKanban className="h-6 w-6" />} />
         <AdminStatCard title="Ebooks" value={stats.ebooks} href="/admin/ebooks" icon={<BookOpen className="h-6 w-6" />} />
         <AdminStatCard title="Quizzes" value={stats.quizzes} href="/admin/quizzes" icon={<FileQuestion className="h-6 w-6" />} />
-        <AdminStatCard title="Users" value={stats.users} href="/admin/users" icon={<Users className="h-6 w-6" />} />
         <AdminStatCard title="Product Links" value="Store" href="/admin/projects" icon={<Boxes className="h-6 w-6" />} />
       </div>
 
@@ -35,7 +34,7 @@ export default async function AdminPage() {
           {[
             ["Course Builder", "Add courses, arrange modules, add video/text lessons, attach PDFs and code.", "/admin/courses"],
             ["Project Library", "Add projects, components, circuit diagrams, source code, troubleshooting, and REES52 product links.", "/admin/projects"],
-            ["Quiz Management", "Add MCQ questions, set passing scores, and review quiz attempt structures.", "/admin/quizzes"],
+            ["Quiz Management", "Add a topic name, description and quiz link for students.", "/admin/quizzes"],
           ].map(([title, copy, href]) => (
             <Link key={title} href={href} className="rounded-lg bg-slate-50 p-5 transition-all hover:bg-cyan-50">
               <h3 className="text-sm font-black tracking-wide text-slate-950">{title}</h3>

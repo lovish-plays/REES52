@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/cookie-policy",
     "/courses",
     "/projects",
+    "/quizzes",
     "/ebooks",
   ];
   

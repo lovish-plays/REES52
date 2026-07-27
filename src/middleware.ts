@@ -46,6 +46,7 @@ function isPublicPath(pathname: string) {
   return publicPaths.has(pathname) || [
     "/courses",
     "/projects",
+    "/quizzes",
     "/ebooks",
     "/videos",
     "/learn",

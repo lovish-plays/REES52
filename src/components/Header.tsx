@@ -7,6 +7,7 @@ import {
   Bell,
   BookOpen,
   ExternalLink,
+  FileQuestion,
   FolderKanban,
   GraduationCap,
   LayoutDashboard,
@@ -39,6 +40,7 @@ const STORE_URL = "https://rees52.com/collections/stem-kits";
 const NAV_LINKS = [
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/quizzes", label: "Quizzes", icon: FileQuestion },
   { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
   { href: "/about", label: "About", icon: GraduationCap },
 ];
@@ -59,6 +61,14 @@ const DIRECTORY_LINKS = [
     icon: FolderKanban,
     iconWrap: "border-blue-300/40 bg-blue-500/10",
     iconClass: "text-blue-600",
+  },
+  {
+    href: "/quizzes",
+    label: "Quiz Library",
+    description: "Topic-based knowledge checks and course quizzes",
+    icon: FileQuestion,
+    iconWrap: "border-amber-300/40 bg-amber-500/10",
+    iconClass: "text-amber-700",
   },
   {
     href: "/ebooks",
@@ -460,7 +470,7 @@ export default function Header() {
               REES52 Academy
             </h3>
             <p className="mb-8 text-center text-sm text-slate-600">
-              Jump into courses, projects, ebooks, your dashboard, or the REES52 component store.
+              Jump into courses, projects, quizzes, ebooks, your dashboard, or the REES52 component store.
             </p>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">

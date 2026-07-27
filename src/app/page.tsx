@@ -7,6 +7,8 @@ import {
   Check,
   ClipboardCheck,
   Code2,
+  ExternalLink,
+  FileQuestion,
   GraduationCap,
   Images,
   LockKeyhole,
@@ -20,7 +22,10 @@ import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
+import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
 import { absoluteUrl } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Complete Robotics and Electronics Courses",
@@ -39,11 +44,12 @@ const institutionLogos = [
 ];
 
 export default async function HomePage() {
-  const [courses, projects, ebooks, reviews] = await Promise.all([
+  const [courses, projects, ebooks, reviews, quizzes] = await Promise.all([
     getCourses(),
     getProjects(),
     getEbooks(),
     getReviewsAction(),
+    getPublicQuizLinks(),
   ]);
   const learnerReview = reviews.find(
     (review) =>
@@ -163,6 +169,55 @@ export default async function HomePage() {
           {courses.slice(0, 3).map((course) => (
             <CourseCard key={course.slug} course={course} />
           ))}
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <SectionHeading
+            eyebrow="Test your knowledge"
+            title="Student Quiz Library"
+            copy="Start a course quiz or open a topic quiz published by your teacher. New teacher quizzes appear here automatically."
+            action={{ label: "All quizzes", href: "/quizzes" }}
+          />
+          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {quizzes.slice(0, 3).map((quiz) => (
+              <article
+                key={quiz.id}
+                className="flex min-h-64 flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="rounded-xl bg-sky-100 p-2.5 text-sky-800">
+                    <FileQuestion className="h-5 w-5" />
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-600">
+                    {quiz.source === "teacher" ? "Teacher quiz" : "Academy quiz"}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-xl font-black leading-tight text-slate-950">{quiz.topic}</h3>
+                <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-slate-600">{quiz.description}</p>
+                {quiz.source === "teacher" ? (
+                  <a
+                    href={quiz.quizUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
+                  >
+                    Start quiz
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <Link
+                    href={quiz.quizUrl}
+                    className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
+                  >
+                    Start quiz
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

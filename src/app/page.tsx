@@ -20,10 +20,12 @@ import {
 } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
+import ArticleCard from "@/components/news/ArticleCard";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
 import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
 import { getMonthlyLeaderboard, getMonthlyLeaderboardLabel } from "@/lib/lms/leaderboard";
+import { getPublishedArticles } from "@/lib/articles";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -45,13 +47,14 @@ const institutionLogos = [
 ];
 
 export default async function HomePage() {
-  const [courses, projects, ebooks, reviews, quizzes, leaderboard] = await Promise.all([
+  const [courses, projects, ebooks, reviews, quizzes, leaderboard, articles] = await Promise.all([
     getCourses(),
     getProjects(),
     getEbooks(),
     getReviewsAction(),
     getPublicQuizLinks(),
     getMonthlyLeaderboard(3),
+    getPublishedArticles(3),
   ]);
   const learnerReview = reviews.find(
     (review) =>
@@ -227,6 +230,31 @@ export default async function HomePage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <SectionHeading
+            eyebrow="From the Academy"
+            title="News & Articles"
+            copy="Read Academy announcements, classroom stories and practical guidance published by REES52 teachers."
+            action={{ label: "All news & articles", href: "/news" }}
+          />
+          {articles.length ? (
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {articles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8">
+              <p className="text-sm font-black text-slate-900">The Academy newsroom is ready.</p>
+              <p className="mt-2 text-xs font-medium text-slate-600">
+                Teacher-published news and articles will appear here automatically.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

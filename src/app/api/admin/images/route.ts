@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabaseServer';
 
 const IMAGE_BUCKET = 'content-images';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_SCOPES = new Set(['courses', 'projects', 'project-diagrams', 'ebook-covers', 'products']);
+const ALLOWED_SCOPES = new Set(['courses', 'projects', 'project-diagrams', 'ebook-covers', 'products', 'articles']);
 const EXTENSIONS_BY_MIME = new Map([
   ['image/jpeg', 'jpg'],
   ['image/png', 'png'],

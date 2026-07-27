@@ -3,6 +3,7 @@ import { supabasePublic } from '@/lib/supabasePublic';
 import { fromUUID } from '@/lib/uuidHelper';
 import { getCourses, getEbooks, getProjects } from '@/lib/lms/data';
 import { absoluteUrl } from '@/lib/site';
+import { getPublishedArticles } from '@/lib/articles';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -16,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/courses",
     "/projects",
     "/quizzes",
+    "/news",
     "/leaderboard",
     "/ebooks",
   ];
@@ -28,10 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   try {
-    const [courses, projects, ebooks, { data: videosData }] = await Promise.all([
+    const [courses, projects, ebooks, articles, { data: videosData }] = await Promise.all([
       getCourses(),
       getProjects(),
       getEbooks(),
+      getPublishedArticles(100),
       supabasePublic.from('videos').select('id, created_at'),
     ]);
 
@@ -60,6 +63,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: absoluteUrl(`/ebooks/${readableId}`),
         lastModified: now,
         changeFrequency: 'weekly',
+        priority: 0.75,
+      });
+    });
+
+    articles.forEach((article) => {
+      sitemapEntries.push({
+        url: absoluteUrl(`/news/${article.slug}`),
+        lastModified: new Date(article.updatedAt),
+        changeFrequency: 'monthly',
         priority: 0.75,
       });
     });

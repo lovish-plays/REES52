@@ -14,6 +14,7 @@ import {
   LogIn,
   LogOut,
   MoreVertical,
+  Newspaper,
   PackageCheck,
   Shield,
   ShoppingBag,
@@ -42,6 +43,7 @@ const NAV_LINKS = [
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/quizzes", label: "Quizzes", icon: FileQuestion },
+  { href: "/news", label: "News", icon: Newspaper },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
   { href: "/about", label: "About", icon: GraduationCap },
@@ -71,6 +73,14 @@ const DIRECTORY_LINKS = [
     icon: FileQuestion,
     iconWrap: "border-amber-300/40 bg-amber-500/10",
     iconClass: "text-amber-700",
+  },
+  {
+    href: "/news",
+    label: "News & Articles",
+    description: "Academy updates, classroom stories and practical guidance",
+    icon: Newspaper,
+    iconWrap: "border-rose-300/40 bg-rose-500/10",
+    iconClass: "text-rose-700",
   },
   {
     href: "/leaderboard",
@@ -480,7 +490,7 @@ export default function Header() {
               REES52 Academy
             </h3>
             <p className="mb-8 text-center text-sm text-slate-600">
-              Jump into courses, projects, quizzes, the leaderboard, ebooks, your dashboard, or the REES52 component store.
+              Jump into courses, projects, quizzes, Academy news, the leaderboard, ebooks, your dashboard, or the REES52 component store.
             </p>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">

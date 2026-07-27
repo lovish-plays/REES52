@@ -48,6 +48,7 @@ function isPublicPath(pathname: string) {
     "/projects",
     "/quizzes",
     "/quiz-out",
+    "/news",
     "/leaderboard",
     "/ebooks",
     "/videos",

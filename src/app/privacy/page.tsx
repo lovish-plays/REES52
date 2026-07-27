@@ -27,6 +27,7 @@ export default function PrivacyPage() {
           <li><strong>Account information:</strong> name, email address, sign-in credentials or identity-provider details, and the school class selected during onboarding.</li>
           <li><strong>Learning activity:</strong> course enrolments, completed lessons, quiz answers and scores, saved projects, downloaded resources and certificate status.</li>
           <li><strong>Leaderboard activity:</strong> monthly point events linked to an account and a shortened display name; email addresses are never shown on the public leaderboard.</li>
+          <li><strong>Teacher publications:</strong> article titles, summaries, body text, cover images, categories and the teacher display name selected for public attribution.</li>
           <li><strong>Content you submit:</strong> feedback, reviews, support messages and project information you choose to share.</li>
           <li><strong>Basic technical information:</strong> security logs, IP address, browser or device information, request timestamps and error details needed to keep the service reliable and secure.</li>
         </ul>
@@ -38,6 +39,7 @@ export default function PrivacyPage() {
           <li>To create and secure accounts, authenticate learners and prevent misuse.</li>
           <li>To deliver courses, remember progress, score quizzes, save project activity and issue course-completion certificates.</li>
           <li>To calculate monthly learner rankings from verified activity while limiting the public display to shortened names and point totals.</li>
+          <li>To publish Academy news and teaching articles that an authorised teacher has deliberately marked as public.</li>
           <li>To answer support requests, moderate feedback and improve lesson clarity.</li>
           <li>To maintain service security, investigate errors and comply with applicable law.</li>
         </ul>

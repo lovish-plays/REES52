@@ -3,7 +3,7 @@
 import { useId, useRef, useState } from 'react';
 import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
 
-type ImageScope = 'courses' | 'projects' | 'project-diagrams' | 'ebook-covers' | 'products';
+type ImageScope = 'courses' | 'projects' | 'project-diagrams' | 'ebook-covers' | 'products' | 'articles';
 
 interface AdminImageUploadProps {
   label: string;

@@ -19,3 +19,27 @@ export const leaderboardEvents = sqliteTable(
     index("leaderboard_events_user_month_idx").on(table.userId, table.monthKey),
   ],
 );
+
+export const articles = sqliteTable(
+  "articles",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    excerpt: text("excerpt").notNull(),
+    content: text("content").notNull(),
+    category: text("category").notNull(),
+    coverImageUrl: text("cover_image_url"),
+    authorId: text("author_id").notNull(),
+    authorName: text("author_name").notNull(),
+    status: text("status", { enum: ["draft", "published"] }).notNull().default("draft"),
+    publishedAt: text("published_at"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    uniqueIndex("articles_slug_unique").on(table.slug),
+    index("articles_status_published_idx").on(table.status, table.publishedAt),
+    index("articles_author_idx").on(table.authorId),
+  ],
+);

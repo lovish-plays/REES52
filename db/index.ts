@@ -16,7 +16,7 @@ export async function getD1Database(): Promise<D1DatabaseLike> {
   const { env } = await import("cloudflare:workers");
   const database = (env as unknown as { DB?: D1DatabaseLike }).DB;
   if (!database) {
-    throw new Error("Leaderboard storage is unavailable.");
+    throw new Error("Academy database storage is unavailable.");
   }
   return database;
 }

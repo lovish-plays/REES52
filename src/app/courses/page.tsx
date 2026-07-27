@@ -8,7 +8,7 @@ import { absoluteUrl } from "@/lib/site";
 export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Robotics, Arduino & STEM Courses",
-  description: "Browse robotics, Arduino, ESP32, IoT, Raspberry Pi, drone, 3D printing, and AI courses from REES52 Academy.",
+  description: "Browse complete Arduino, ESP32 IoT and mobile robotics courses from REES52 Academy.",
   alternates: { canonical: absoluteUrl("/courses") },
 };
 
@@ -25,7 +25,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
           Start with a course. Finish with a working project.
         </h1>
         <p className="max-w-3xl text-pretty text-sm font-semibold leading-relaxed text-slate-600">
-          Choose a clear path, follow short lessons, complete quizzes, and build with REES52 components.
+          Every listed course includes official videos, checked diagrams, working code, a PDF workbook, a hands-on build and a scored quiz.
         </p>
       </div>
 

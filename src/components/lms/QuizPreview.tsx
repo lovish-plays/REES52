@@ -51,7 +51,7 @@ export default function QuizPreview({ quiz }: { quiz: LmsQuiz }) {
 
       <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-900">
         <LockOpen className="h-5 w-5 shrink-0" />
-        Backend rule placeholder: passing this quiz can unlock the next module after quiz_attempts and student_progress are connected.
+        Registered learners can submit this quiz, see their score immediately and keep the result with their course progress.
       </div>
     </section>
   );

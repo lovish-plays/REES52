@@ -152,7 +152,7 @@ type DashboardSnapshot = {
 };
 
 export async function getCourses(): Promise<LmsCourse[]> {
-  if (!hasSupabaseEnv) return getLocalCourses();
+  if (!hasSupabaseEnv) return resolvePublicCourses(getLocalCourses());
 
   try {
     const { data, error } = await supabasePublic
@@ -162,33 +162,35 @@ export async function getCourses(): Promise<LmsCourse[]> {
       .order("created_at", { ascending: false });
 
     if (error || !data?.length) return lmsCourses;
-    return await hydrateCourses(data as CourseRow[]);
+    return resolvePublicCourses(await hydrateCourses(data as CourseRow[]));
   } catch {
     return lmsCourses;
   }
 }
 
 export async function getCourseBySlug(slug: string): Promise<LmsCourse | null> {
-  const mock = getLocalCourses().find((course) => course.slug === slug);
-  if (!hasSupabaseEnv) return mock ?? null;
+  const launchCourse = lmsCourses.find((course) => course.slug === slug);
+  const local = getLocalCourses().find((course) => course.slug === slug);
+  if (!hasSupabaseEnv) return resolveCourseCandidate(local, launchCourse);
 
   try {
     const { data, error } = await supabasePublic
       .from("courses")
       .select("id,title,slug,short_description,description,category,class_level,level,duration,thumbnail_url,is_free,price")
       .eq("slug", slug)
+      .eq("is_published", true)
       .maybeSingle();
 
-    if (error || !data) return mock ?? null;
+    if (error || !data) return resolveCourseCandidate(local, launchCourse);
     const [course] = await hydrateCourses([data as CourseRow]);
-    return course ?? mock ?? null;
+    return resolveCourseCandidate(course, launchCourse);
   } catch {
-    return mock ?? null;
+    return resolveCourseCandidate(local, launchCourse);
   }
 }
 
 export async function getProjects(): Promise<LmsProject[]> {
-  if (!hasSupabaseEnv) return getLocalProjects();
+  if (!hasSupabaseEnv) return resolvePublicProjects(getLocalProjects());
 
   try {
     const { data, error } = await supabasePublic
@@ -197,29 +199,31 @@ export async function getProjects(): Promise<LmsProject[]> {
       .eq("is_published", true)
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) return getLocalProjects();
-    return await hydrateProjects(data as ProjectRow[]);
+    if (error || !data?.length) return lmsProjects;
+    return resolvePublicProjects(await hydrateProjects(data as ProjectRow[]));
   } catch {
-    return getLocalProjects();
+    return lmsProjects;
   }
 }
 
 export async function getProjectBySlug(slug: string): Promise<LmsProject | null> {
-  const mock = getLocalProjects().find((project) => project.slug === slug);
-  if (!hasSupabaseEnv) return mock ?? null;
+  const launchProject = lmsProjects.find((project) => project.slug === slug);
+  const local = getLocalProjects().find((project) => project.slug === slug);
+  if (!hasSupabaseEnv) return resolveProjectCandidate(local, launchProject);
 
   try {
     const { data, error } = await supabasePublic
       .from("projects")
       .select("id,title,slug,short_description,description,category,class_level,level,estimated_time,thumbnail_url,video_url,circuit_diagram_url,source_code,steps,troubleshooting")
       .eq("slug", slug)
+      .eq("is_published", true)
       .maybeSingle();
 
-    if (error || !data) return mock ?? null;
+    if (error || !data) return resolveProjectCandidate(local, launchProject);
     const [project] = await hydrateProjects([data as ProjectRow]);
-    return project ?? mock ?? null;
+    return resolveProjectCandidate(project, launchProject);
   } catch {
-    return mock ?? null;
+    return resolveProjectCandidate(local, launchProject);
   }
 }
 
@@ -234,7 +238,7 @@ export async function getEbooks(): Promise<LmsEbook[]> {
       .order("created_at", { ascending: false });
 
     if (error || !data?.length) return lmsEbooks;
-    return data.map((row: EbookRow) => mapEbookRow(row));
+    return resolvePublicEbooks(data.map((row: EbookRow) => mapEbookRow(row)));
   } catch {
     return lmsEbooks;
   }
@@ -280,17 +284,13 @@ export function getFeaturedCourses(courses: LmsCourse[], count = 4) {
 export function getDashboardSnapshot(): DashboardSnapshot {
   return {
     continueCourse: lmsCourses[0],
-    progressPercentage: 45,
-    lastLesson: "Ultrasonic Sensor",
-    myCourses: lmsCourses.slice(0, 3),
-    myEbooks: lmsEbooks.slice(0, 3),
-    savedProjects: lmsProjects.slice(0, 3),
-    recommendedCourses: lmsCourses.slice(3, 7),
-    quizResults: [
-      { title: "Arduino Basics Quiz", score: 8, total: 10, passed: true },
-      { title: "Output Devices Quiz", score: 6, total: 10, passed: true },
-      { title: "Sensors Quiz", score: 5, total: 10, passed: false }
-    ]
+    progressPercentage: 0,
+    lastLesson: "Not started",
+    myCourses: [],
+    myEbooks: [],
+    savedProjects: [],
+    recommendedCourses: lmsCourses,
+    quizResults: []
   };
 }
 
@@ -389,6 +389,23 @@ export async function getDashboardSnapshotForCurrentUser(): Promise<DashboardSna
       .order("attempted_at", { ascending: false })
       .limit(3);
 
+    const metadataQuizResults = Array.isArray(user.user_metadata?.academy_quiz_results)
+      ? user.user_metadata.academy_quiz_results
+          .filter(
+            (row: unknown): row is {
+              title: string;
+              score: number;
+              total: number;
+              passed: boolean;
+            } =>
+              typeof row === "object" &&
+              row !== null &&
+              typeof (row as { title?: unknown }).title === "string" &&
+              typeof (row as { score?: unknown }).score === "number" &&
+              typeof (row as { total?: unknown }).total === "number",
+          )
+          .slice(0, 3)
+      : [];
     const quizResults = quizAttemptRows?.length
       ? (quizAttemptRows as QuizAttemptRow[]).map((row) => ({
           title: getQuizTitle(row.quizzes),
@@ -396,12 +413,22 @@ export async function getDashboardSnapshotForCurrentUser(): Promise<DashboardSna
           total: row.total_questions || 0,
           passed: Boolean(row.passed),
         }))
-      : fallback.quizResults;
+      : metadataQuizResults;
+    const lastLessonSlug =
+      user.user_metadata?.academy_last_lesson &&
+      typeof user.user_metadata.academy_last_lesson === "object"
+        ? (user.user_metadata.academy_last_lesson as Record<string, unknown>)[continueCourse.slug]
+        : undefined;
+    const lastLesson =
+      typeof lastLessonSlug === "string"
+        ? getCourseLesson(continueCourse, lastLessonSlug)?.title || fallback.lastLesson
+        : fallback.lastLesson;
 
     return {
       ...fallback,
       continueCourse,
       progressPercentage,
+      lastLesson,
       myCourses,
       savedProjects,
       quizResults,
@@ -419,7 +446,7 @@ export function getAdminSnapshot() {
     projects: lmsProjects.length,
     ebooks: lmsEbooks.length,
     quizzes: lmsQuizzes.length,
-    users: 128
+    users: getDB().users.length
   };
 }
 
@@ -464,10 +491,18 @@ async function hydrateCourses(rows: CourseRow[]): Promise<LmsCourse[]> {
   const outcomesByCourse = groupRows(courseIds, outcomeRows, (row) => row.course_id, (row) => row.outcome);
   const componentsByCourse = groupRows(courseIds, componentRows, (row) => row.course_id, mapCourseComponentRow);
   const projectsByCourse = groupRows(courseIds, projectRows, (row) => row.course_id, (row) => row.project_title);
-  const pdfsByCourse = groupRows(courseIds, pdfRows, (row) => row.course_id, (row) => row.title || row.file_url);
+  const pdfsByCourse = groupRows(
+    courseIds,
+    pdfRows,
+    (row) => row.course_id,
+    (row) => {
+      if (!row.file_url) return undefined;
+      return { title: row.title || "Course workbook", url: row.file_url };
+    },
+  );
   const faqsByCourse = groupRows(courseIds, faqRows, (row) => row.course_id, (row) => ({
-    question: row.question || "Question",
-    answer: row.answer || "Answer will be added by the admin team.",
+    question: row.question || "",
+    answer: row.answer || "",
   }));
 
   return rows.map((row) => {
@@ -536,7 +571,7 @@ async function fetchCourseLessons(courseIds: string[]): Promise<LessonRow[]> {
   try {
     const { data, error } = await supabasePublic
       .from("lessons")
-      .select("id,module_id,course_id,title,slug,lesson_type,video_url,content,code,pdf_url,position,is_preview")
+      .select("id,module_id,course_id,title,slug,lesson_type,video_url,content,code,pdf_url,duration,position,is_preview")
       .in("course_id", courseIds)
       .eq("is_published", true)
       .order("position", { ascending: true });
@@ -659,7 +694,10 @@ async function getCoursesByIds(courseIds: string[]): Promise<LmsCourse[]> {
 
   if (error || !data?.length) return lmsCourses.slice(0, Math.max(1, courseIds.length));
   const courses = await hydrateCourses(data as CourseRow[]);
-  return courses.sort((a, b) => courseIds.indexOf(a.id ?? "") - courseIds.indexOf(b.id ?? ""));
+  return courses
+    .map((course) => resolveCourseCandidate(course, lmsCourses.find((item) => item.slug === course.slug)))
+    .filter((course): course is LmsCourse => Boolean(course))
+    .sort((a, b) => courseIds.indexOf(a.id ?? "") - courseIds.indexOf(b.id ?? ""));
 }
 
 async function getProjectsByIds(projectIds: string[]): Promise<LmsProject[]> {
@@ -671,7 +709,10 @@ async function getProjectsByIds(projectIds: string[]): Promise<LmsProject[]> {
 
   if (error || !data?.length) return lmsProjects.slice(0, Math.max(1, projectIds.length));
   const projects = await hydrateProjects(data as ProjectRow[]);
-  return projects.sort((a, b) => projectIds.indexOf(a.id ?? "") - projectIds.indexOf(b.id ?? ""));
+  return projects
+    .map((project) => resolveProjectCandidate(project, lmsProjects.find((item) => item.slug === project.slug)))
+    .filter((project): project is LmsProject => Boolean(project))
+    .sort((a, b) => projectIds.indexOf(a.id ?? "") - projectIds.indexOf(b.id ?? ""));
 }
 
 function mapCourseRow(row: CourseRow, fallback: Partial<LmsCourse> = {}): LmsCourse {
@@ -680,19 +721,19 @@ function mapCourseRow(row: CourseRow, fallback: Partial<LmsCourse> = {}): LmsCou
 
   return {
     id: row.id,
-    title: row.title || "Untitled Course",
-    slug: row.slug || slugify(row.title || "untitled-course"),
-    shortDescription: row.short_description || "Project-based REES52 Academy course.",
-    description: row.description || row.short_description || "A backend-ready LMS course.",
-    category: row.category || "Robotics",
+    title: row.title || "",
+    slug: row.slug || slugify(row.title || ""),
+    shortDescription: row.short_description || "",
+    description: row.description || row.short_description || "",
+    category: row.category || "",
     classLevel: normalizeSchoolClass(row.class_level || fallback.classLevel),
     level: normalizeLevel(row.level),
-    duration: row.duration || "Self-paced",
+    duration: row.duration || "",
     lessonsCount: lessonsCount || fallback.lessonsCount || 0,
     language: fallback.language || "English",
     pricing: row.is_free === false ? "Paid" : "Free",
     price: toNumber(row.price),
-    thumbnailUrl: row.thumbnail_url || "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&auto=format&fit=crop&q=70",
+    thumbnailUrl: row.thumbnail_url || "",
     whatYouWillLearn: fallback.whatYouWillLearn ?? [],
     modules,
     requiredComponents: fallback.requiredComponents ?? [],
@@ -707,8 +748,8 @@ function mapModuleRow(row: ModuleRow, lessons: LmsLesson[]): LmsModule {
   return {
     id: row.id,
     courseId: row.course_id,
-    title: row.title || "Untitled Module",
-    description: row.description || "Module description will be added by the admin team.",
+    title: row.title || "",
+    description: row.description || "",
     lessons,
   };
 }
@@ -718,12 +759,12 @@ function mapLessonRow(row: LessonRow): LmsLesson {
     id: row.id,
     moduleId: row.module_id,
     courseId: row.course_id,
-    title: row.title || "Untitled Lesson",
-    slug: row.slug || slugify(row.title || "untitled-lesson"),
+    title: row.title || "",
+    slug: row.slug || slugify(row.title || ""),
     type: normalizeLessonType(row.lesson_type),
-    duration: "Self-paced",
+    duration: row.duration || "",
     videoUrl: row.video_url,
-    content: row.content || "Lesson content will be added by the admin team.",
+    content: row.content || "",
     code: row.code,
     pdfUrl: row.pdf_url,
     isPreview: row.is_preview,
@@ -733,18 +774,18 @@ function mapLessonRow(row: LessonRow): LmsLesson {
 function mapProjectRow(row: ProjectRow, fallback: Partial<LmsProject> = {}): LmsProject {
   return {
     id: row.id,
-    title: row.title || "Untitled Project",
-    slug: row.slug || slugify(row.title || "untitled-project"),
-    shortDescription: row.short_description || "Hands-on REES52 project.",
-    description: row.description || row.short_description || "A backend-ready LMS project.",
-    category: row.category || "Arduino Projects",
+    title: row.title || "",
+    slug: row.slug || slugify(row.title || ""),
+    shortDescription: row.short_description || "",
+    description: row.description || row.short_description || "",
+    category: row.category || "",
     classLevel: normalizeSchoolClass(row.class_level || fallback.classLevel),
     level: normalizeLevel(row.level),
-    estimatedTime: row.estimated_time || "Self-paced",
-    thumbnailUrl: row.thumbnail_url || "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&auto=format&fit=crop&q=70",
+    estimatedTime: row.estimated_time || "",
+    thumbnailUrl: row.thumbnail_url || "",
     videoUrl: row.video_url,
     circuitDiagramUrl: row.circuit_diagram_url,
-    sourceCode: row.source_code || "// Source code will be added by admin.",
+    sourceCode: row.source_code || "",
     steps: splitText(row.steps),
     troubleshooting: splitText(row.troubleshooting),
     components: fallback.components ?? [],
@@ -775,16 +816,167 @@ function mapCourseComponentRow(row: CourseComponentRow): LmsComponent & { role?:
 function mapEbookRow(row: EbookRow): LmsEbook {
   return {
     id: row.id,
-    title: row.title || "Untitled Ebook",
-    slug: row.slug || slugify(row.title || "untitled-ebook"),
-    description: row.description || "Downloadable REES52 Academy study material.",
-    category: row.category || "Arduino Guides",
+    title: row.title || "",
+    slug: row.slug || slugify(row.title || ""),
+    description: row.description || "",
+    category: row.category || "",
     pages: 0,
     level: normalizeLevel(row.level),
-    coverUrl: row.cover_url || "https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=700&auto=format&fit=crop&q=70",
-    fileUrl: row.file_url || "#",
+    coverUrl: row.cover_url || "",
+    fileUrl: row.file_url || "",
     isFree: row.is_free !== false
   };
+}
+
+function resolvePublicCourses(candidates: LmsCourse[]): LmsCourse[] {
+  const candidateBySlug = new Map(candidates.map((course) => [course.slug, course]));
+  const launchSlugs = new Set(lmsCourses.map((course) => course.slug));
+  const launchCourses = lmsCourses.map((launchCourse) =>
+    resolveCourseCandidate(candidateBySlug.get(launchCourse.slug), launchCourse),
+  );
+  const additionalCourses = candidates.filter(
+    (course) => !launchSlugs.has(course.slug) && isCompleteCourse(course),
+  );
+
+  return [...launchCourses, ...additionalCourses].filter(
+    (course): course is LmsCourse => Boolean(course),
+  );
+}
+
+function resolveCourseCandidate(
+  candidate?: LmsCourse,
+  launchCourse?: LmsCourse,
+): LmsCourse | null {
+  if (candidate && isCompleteCourse(candidate)) return candidate;
+  if (launchCourse && isCompleteCourse(launchCourse)) return launchCourse;
+  return null;
+}
+
+function resolvePublicProjects(candidates: LmsProject[]): LmsProject[] {
+  const candidateBySlug = new Map(candidates.map((project) => [project.slug, project]));
+  const launchSlugs = new Set(lmsProjects.map((project) => project.slug));
+  const launchProjects = lmsProjects.map((launchProject) =>
+    resolveProjectCandidate(candidateBySlug.get(launchProject.slug), launchProject),
+  );
+  const additionalProjects = candidates.filter(
+    (project) => !launchSlugs.has(project.slug) && isCompleteProject(project),
+  );
+
+  return [...launchProjects, ...additionalProjects].filter(
+    (project): project is LmsProject => Boolean(project),
+  );
+}
+
+function resolveProjectCandidate(
+  candidate?: LmsProject,
+  launchProject?: LmsProject,
+): LmsProject | null {
+  if (candidate && isCompleteProject(candidate)) return candidate;
+  if (launchProject && isCompleteProject(launchProject)) return launchProject;
+  return null;
+}
+
+function resolvePublicEbooks(candidates: LmsEbook[]): LmsEbook[] {
+  const candidateBySlug = new Map(candidates.map((ebook) => [ebook.slug, ebook]));
+  const launchSlugs = new Set(lmsEbooks.map((ebook) => ebook.slug));
+  const launchEbooks = lmsEbooks.map((launchEbook) => {
+    const candidate = candidateBySlug.get(launchEbook.slug);
+    return candidate && isCompleteEbook(candidate) ? candidate : launchEbook;
+  });
+  const additionalEbooks = candidates.filter(
+    (ebook) => !launchSlugs.has(ebook.slug) && isCompleteEbook(ebook),
+  );
+
+  return [...launchEbooks, ...additionalEbooks];
+}
+
+function isCompleteCourse(course: LmsCourse) {
+  const lessons = flattenLessons(course);
+  const quiz = lmsQuizzes.find((item) => item.courseSlug === course.slug);
+
+  return Boolean(
+    isSubstantialText(course.title, 8) &&
+      isSubstantialText(course.shortDescription, 30) &&
+      isSubstantialText(course.description, 80) &&
+      isSafeAsset(course.thumbnailUrl) &&
+      course.modules.length >= 2 &&
+      course.modules.every(
+        (module) =>
+          isSubstantialText(module.title, 8) &&
+          isSubstantialText(module.description, 20) &&
+          module.lessons.length >= 2,
+      ) &&
+      lessons.length >= 5 &&
+      lessons.every(
+        (lesson) =>
+          isSubstantialText(lesson.title, 6) &&
+          isSubstantialText(lesson.slug, 4) &&
+          isSubstantialText(lesson.duration, 3) &&
+          isSubstantialText(lesson.content, 25),
+      ) &&
+      lessons.filter((lesson) => isSafeAsset(lesson.videoUrl)).length >= 2 &&
+      lessons.some((lesson) => isSafeAsset(lesson.circuitDiagramUrl)) &&
+      lessons.some((lesson) => isSubstantialText(lesson.code, 40)) &&
+      lessons.some((lesson) => isSafePdf(lesson.pdfUrl)) &&
+      lessons.some((lesson) => lesson.type === "quiz") &&
+      course.downloadablePdfs.length >= 1 &&
+      course.downloadablePdfs.every(
+        (pdf) => isSubstantialText(pdf.title, 6) && isSafePdf(pdf.url),
+      ) &&
+      course.whatYouWillLearn.length >= 4 &&
+      course.requiredComponents.length >= 3 &&
+      course.projects.length >= 1 &&
+      course.faqs.length >= 1 &&
+      quiz &&
+      quiz.questions.length >= 5
+  );
+}
+
+function isCompleteProject(project: LmsProject) {
+  return Boolean(
+    isSubstantialText(project.title, 8) &&
+      isSubstantialText(project.shortDescription, 30) &&
+      isSubstantialText(project.description, 80) &&
+      isSafeAsset(project.thumbnailUrl) &&
+      isSafeAsset(project.videoUrl) &&
+      isSafeAsset(project.circuitDiagramUrl) &&
+      isSubstantialText(project.sourceCode, 80) &&
+      project.steps.length >= 4 &&
+      project.steps.every((step) => isSubstantialText(step, 20)) &&
+      project.troubleshooting.length >= 3 &&
+      project.components.length >= 3
+  );
+}
+
+function isCompleteEbook(ebook: LmsEbook) {
+  return Boolean(
+    isSubstantialText(ebook.title, 8) &&
+      isSubstantialText(ebook.description, 60) &&
+      ebook.pages >= 4 &&
+      isSafeAsset(ebook.coverUrl) &&
+      isSafePdf(ebook.fileUrl)
+  );
+}
+
+function isSubstantialText(value?: string, minimumLength = 1) {
+  if (!value || value.trim().length < minimumLength) return false;
+  return !hasIncompleteMarker(value);
+}
+
+function isSafeAsset(value?: string) {
+  if (!value || value === "#") return false;
+  return !hasIncompleteMarker(value);
+}
+
+function isSafePdf(value?: string) {
+  if (!isSafeAsset(value)) return false;
+  return value!.toLowerCase().split(/[?#]/)[0].endsWith(".pdf");
+}
+
+function hasIncompleteMarker(value: string) {
+  return /dummy|placeholder|coming\s+soon|will\s+be\s+added|to\s+be\s+added|untitled|example\.com|fallback-placeholder/i.test(
+    value,
+  );
 }
 
 function groupRows<Row, Value>(

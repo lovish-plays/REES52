@@ -1,12 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import AdSensePlaceholder from "@/components/AdSensePlaceholder";
 import HeroSection from "@/components/HeroSection";
-import MetricsSection from "@/components/MetricsSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import LearnerDashboard from "@/components/LearnerDashboard";
 import QuickPreviewModal from "@/components/QuickPreviewModal";
@@ -805,7 +803,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
       />
 
       {/* ── Social Proof Metrics Section ── */}
-      {tab !== "dashboard" && <MetricsSection />}
 
       {/* Anchor identifier for jumps */}
       <div id="explorer-anchor" className="scroll-mt-4" />
@@ -841,7 +838,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search lectures, ebooks, webinars..."
+              placeholder="Search courses, projects and ebooks..."
               className="w-full rounded-xl border border-slate-200 bg-white/80 py-2.5 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none premium-input-pulse font-medium"
             />
 
@@ -1225,7 +1222,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
-                {filteredProducts.map((p, idx) => {
+                {filteredProducts.map((p) => {
                   const cat = categories.find((c) => c.id === p.category_id);
                   const isSaved = bookmarks.includes(p.id);
                   const isLiked = likes.includes(p.id);
@@ -1300,16 +1297,6 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
                     </div>
                   );
 
-                  if (idx === 2) {
-                    return (
-                      <Fragment key={`prod-group:${p.id}`}>
-                        {productCard}
-                        <div className="col-span-1 h-full">
-                           <AdSensePlaceholder slotId="4035712855" />
-                        </div>
-                      </Fragment>
-                    );
-                  }
                   return productCard;
                 })}
               </div>
@@ -1374,18 +1361,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-start">
-              {filtered.map((it, idx) => {
+              {filtered.map((it) => {
                 const itemCard = renderItemCard(it);
-                if (idx === 2) {
-                  return (
-                    <Fragment key={`group:${it.id}`}>
-                      {itemCard}
-                      <div className="col-span-1 h-full">
-                         <AdSensePlaceholder slotId="4035712856" />
-                      </div>
-                    </Fragment>
-                  );
-                }
                 return itemCard;
               })}
             </div>

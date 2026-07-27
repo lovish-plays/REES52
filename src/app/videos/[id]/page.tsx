@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: absoluteUrl(`/videos/${id}`),
     },
     openGraph: {
-      title: `${video.title} Video Guide | REES52 Learning Hub`,
+      title: `${video.title} Video Guide | REES52 Academy`,
       description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}.`,
       url: absoluteUrl(`/videos/${id}`),
       type: "video.other",

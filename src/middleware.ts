@@ -14,15 +14,15 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.google.com https://tpc.googlesyndication.com https://*.adtrafficquality.google https://adtrafficquality.google https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleadservices.com https://*.googleadservices.com; " +
-    "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.google.com https://tpc.googlesyndication.com https://*.adtrafficquality.google https://adtrafficquality.google https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleadservices.com https://*.googleadservices.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.googlesyndication.com; " +
-    "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.googlesyndication.com; " +
-    "img-src 'self' data: https://*.youtube.com https://img.youtube.com https://*.rees52.com https://*.google-analytics.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://*.googlesyndication.com https://googleads.g.doubleclick.net https://*.google.com https://tpc.googlesyndication.com https://*.adtrafficquality.google https://adtrafficquality.google https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleadservices.com https://*.googleadservices.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "img-src 'self' data: blob: https://*.youtube.com https://img.youtube.com https://*.rees52.com https://*.supabase.co; " +
     "media-src 'self'; " +
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.adtrafficquality.google https://adtrafficquality.google https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleadservices.com https://*.googleadservices.com; " +
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co; " +
     "font-src 'self' https://fonts.gstatic.com data:; " +
-    "frame-src 'self' https://*.youtube.com https://www.youtube.com https://*.google.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://tpc.googlesyndication.com https://*.googlesyndication.com https://*.adtrafficquality.google https://adtrafficquality.google https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleadservices.com https://*.googleadservices.com;"
+    "frame-src 'self' https://*.youtube.com https://www.youtube.com;"
   );
   return response;
 }
@@ -49,6 +49,7 @@ function isPublicPath(pathname: string) {
     "/ebooks",
     "/videos",
     "/learn",
+    "/downloads",
   ].some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
@@ -248,8 +249,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - any png, jpg, jpeg, gif, svg, webp (image files)
+     * - public images and PDF downloads
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|pdf)$).*)",
   ],
 };

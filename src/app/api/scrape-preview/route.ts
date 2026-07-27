@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: !!productImageUrl,
-      thumbnail: productImageUrl || "https://rees52.com/fallback-placeholder.png",
+      thumbnail: productImageUrl || "",
       title: cleanTitle
     });
 
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     console.error("Scraper Failure Execution Log:", message);
     return NextResponse.json({ 
       success: false, 
-      thumbnail: "https://rees52.com/fallback-placeholder.png",
+      thumbnail: "",
       title: "External Link Product"
     });
   }

@@ -169,7 +169,7 @@ export default function ReviewsSection() {
             <Sparkles className="w-6 h-6 text-cyan-600 animate-pulse" /> What Our Inventors Say
           </h2>
           <p className="text-xs md:text-sm text-slate-650 font-medium">
-            Read certified project reviews and learning experiences from students, educators, and makers worldwide.
+            Read feedback submitted through REES52 Academy by learners, educators, and makers.
           </p>
         </div>
 

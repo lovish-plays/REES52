@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowRight, Download, Eye, FileText, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, Download, Eye, Image as ImageIcon } from "lucide-react";
 import LessonSidebar from "@/components/lms/LessonSidebar";
 import LessonCompletionButton from "@/components/lms/LessonCompletionButton";
 import QuizRunner from "@/components/lms/QuizRunner";
@@ -59,8 +59,8 @@ export default async function LessonPage({ params }: PageProps) {
           <p className="mt-2 text-sm font-semibold text-slate-600">{course.title} - {lesson.duration}</p>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl">
-          {lesson.videoUrl ? (
+        {lesson.videoUrl && (
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl">
             <div className="relative aspect-video bg-black">
               <iframe
                 src={lesson.videoUrl}
@@ -70,16 +70,8 @@ export default async function LessonPage({ params }: PageProps) {
                 className="absolute inset-0 h-full w-full"
               />
             </div>
-          ) : (
-            <div className="flex aspect-video flex-col items-center justify-center bg-slate-50 p-8 text-center text-slate-700">
-              <FileText className="h-10 w-10 text-sky-600" />
-              <h2 className="mt-3 text-sm font-black uppercase tracking-widest">Video Tutorial Placeholder</h2>
-              <p className="mt-2 max-w-md text-xs font-medium text-slate-500">
-                Add a YouTube, Vimeo, Bunny Stream, or other hosted video URL in the lesson video_url field.
-              </p>
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
         {publicQuiz ? (
           <QuizRunner quiz={publicQuiz} courseSlug={course.slug} />
@@ -90,53 +82,55 @@ export default async function LessonPage({ params }: PageProps) {
           </section>
         )}
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-xl">
+        {(lesson.circuitDiagramUrl || lesson.code) && (
+          <section className={`grid gap-6 ${lesson.circuitDiagramUrl && lesson.code ? "lg:grid-cols-2" : ""}`}>
+          {lesson.circuitDiagramUrl && (
+            <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-cyan-700" />
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-950">Circuit Diagram / Image</h2>
             </div>
-            {lesson.circuitDiagramUrl ? (
-              <a
-                href={lesson.circuitDiagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative mt-4 block min-h-56 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
-              >
-                <Image
-                  src={lesson.circuitDiagramUrl}
-                  alt={`${lesson.title} circuit diagram`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-contain p-3"
-                />
-              </a>
-            ) : (
-              <div className="mt-4 flex min-h-56 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Circuit diagram coming soon</p>
-              </div>
-            )}
+            <a
+              href={lesson.circuitDiagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative mt-4 block min-h-56 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+            >
+              <Image
+                src={lesson.circuitDiagramUrl}
+                alt={`${lesson.title} circuit diagram`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-contain p-3"
+              />
+            </a>
           </div>
+          )}
 
+          {lesson.code && (
           <div className="rounded-2xl border border-slate-200/80 bg-slate-950 p-6 text-white shadow-sm">
             <h2 className="text-sm font-black uppercase tracking-widest text-cyan-200">Code Section</h2>
             <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-4 text-xs leading-relaxed text-cyan-50">
-              <code>{lesson.code || "// Code will be added for this lesson by the admin team."}</code>
+              <code>{lesson.code}</code>
             </pre>
           </div>
+          )}
         </section>
+        )}
 
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row">
-            <a
-              href={lesson.pdfUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-cyan-900 transition-all hover:bg-cyan-600 hover:text-white"
-            >
-              <Download className="h-4 w-4" />
-              Download PDF
-            </a>
+            {lesson.pdfUrl && (
+              <a
+                href={lesson.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-cyan-900 transition-all hover:bg-cyan-600 hover:text-white"
+              >
+                <Download className="h-4 w-4" />
+                Download PDF
+              </a>
+            )}
             <LessonCompletionButton courseSlug={courseSlug} lessonSlug={lessonSlug} />
           </div>
 

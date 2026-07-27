@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: absoluteUrl(`/ebooks/${id}`),
     },
     openGraph: {
-      title: `${ebook.title} Project Guide | REES52 Learning Hub`,
+      title: `${ebook.title} Project Guide | REES52 Academy`,
       description: meta?.overview || `Read the official REES52 companion Ebook guide for ${ebook.title}.`,
       url: absoluteUrl(`/ebooks/${id}`),
       type: "article",

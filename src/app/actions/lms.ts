@@ -85,7 +85,7 @@ export async function submitQuizAction(input: {
   const currentUser = await getCurrentUser();
   if (!currentUser) return { error: "Please sign in before submitting a quiz." };
 
-  let quiz: LmsQuiz | null = getQuizzes().find((item) => item.courseSlug === input.courseSlug) ?? null;
+  const quiz: LmsQuiz | null = getQuizzes().find((item) => item.courseSlug === input.courseSlug) ?? null;
   let quizId: string | undefined;
   let questions = quiz?.questions ?? [];
   let passingScore = quiz?.passingScore ?? 60;
@@ -103,14 +103,14 @@ export async function submitQuizAction(input: {
           .limit(1)
           .maybeSingle();
         if (quizRow?.id) {
-          quizId = quizRow.id;
-          passingScore = Number(quizRow.passing_score) || passingScore;
           const { data: questionRows } = await supabase
             .from("quiz_questions")
             .select("question,option_a,option_b,option_c,option_d,correct_option,explanation")
             .eq("quiz_id", quizRow.id)
             .order("position", { ascending: true });
-          if (questionRows?.length) {
+          if (questionRows && questionRows.length >= 5) {
+            quizId = quizRow.id;
+            passingScore = Number(quizRow.passing_score) || passingScore;
             questions = questionRows.map((row: {
               question: string;
               option_a: string | null;
@@ -140,17 +140,42 @@ export async function submitQuizAction(input: {
   const passed = percentage >= passingScore;
   const attemptedAt = new Date().toISOString();
 
-  if (hasSupabaseEnv && quizId) {
+  if (hasSupabaseEnv) {
     const supabase = await createClient();
-    const { error } = await supabase.from("quiz_attempts").insert({
-      quiz_id: quizId,
-      user_id: currentUser.id,
-      score,
-      total_questions: totalQuestions,
-      passed,
-      attempted_at: attemptedAt,
-    });
-    if (error) return { error: error.message };
+    if (quizId) {
+      const { error } = await supabase.from("quiz_attempts").insert({
+        quiz_id: quizId,
+        user_id: currentUser.id,
+        score,
+        total_questions: totalQuestions,
+        passed,
+        attempted_at: attemptedAt,
+      });
+      if (error) return { error: error.message };
+    } else {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const previousResults = Array.isArray(user?.user_metadata?.academy_quiz_results)
+        ? user.user_metadata.academy_quiz_results
+        : [];
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          academy_quiz_results: [
+            {
+              courseSlug: input.courseSlug,
+              title: input.quizTitle || quiz?.title || "Course Quiz",
+              score,
+              total: totalQuestions,
+              passed,
+              attemptedAt,
+            },
+            ...previousResults,
+          ].slice(0, 12),
+        },
+      });
+      if (error) return { error: error.message };
+    }
   } else {
     const db = getDB();
     const attempt: QuizAttempt = {
@@ -200,8 +225,8 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
     .eq("slug", lessonSlug)
     .maybeSingle();
 
-  if (lessonError || !lessonRow?.id) {
-    return { error: "Lesson is not available in Supabase yet." };
+  if (lessonError) {
+    return { error: lessonError.message };
   }
 
   const profileName =
@@ -250,6 +275,57 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
     if (enrollmentError) {
       return { error: enrollmentError.message };
     }
+  }
+
+  if (!lessonRow?.id) {
+    const completedByCourse: Record<string, unknown> =
+      user.user_metadata?.academy_completed_lessons &&
+      typeof user.user_metadata.academy_completed_lessons === "object"
+        ? user.user_metadata.academy_completed_lessons as Record<string, unknown>
+        : {};
+    const existingSlugs = Array.isArray(completedByCourse[courseSlug])
+      ? completedByCourse[courseSlug].filter((value: unknown): value is string => typeof value === "string")
+      : [];
+    const completedSlugs = Array.from(new Set([...existingSlugs, lessonSlug]));
+    const progressPercentage = Math.min(
+      100,
+      Math.round((completedSlugs.length / Math.max(1, fallbackTotalLessons)) * 100),
+    );
+
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: {
+        academy_completed_lessons: {
+          ...completedByCourse,
+          [courseSlug]: completedSlugs,
+        },
+        academy_last_lesson: {
+          ...(user.user_metadata?.academy_last_lesson || {}),
+          [courseSlug]: lessonSlug,
+        },
+      },
+    });
+    if (metadataError) return { error: metadataError.message };
+
+    const completedAt = new Date().toISOString();
+    const { error: updateEnrollmentError } = await supabase
+      .from("course_enrollments")
+      .update({
+        progress_percentage: progressPercentage,
+        completed_at: progressPercentage >= 100 ? completedAt : null,
+      })
+      .eq("user_id", user.id)
+      .eq("course_id", courseRow.id);
+
+    if (updateEnrollmentError) return { error: updateEnrollmentError.message };
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/courses/${courseSlug}`);
+    revalidatePath(`/learn/${courseSlug}/${lessonSlug}`);
+    return {
+      success: true,
+      message: "Lesson marked complete.",
+      progressPercentage,
+    };
   }
 
   const completedAt = new Date().toISOString();

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import { LmsCourse } from "@/lib/lms/types";
-import { schoolClassOptions, type SchoolClass } from "@/lib/lms/class-categories";
+import { type SchoolClass } from "@/lib/lms/class-categories";
 
 const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 const pricing = ["All", "Free", "Paid"];
@@ -17,6 +17,7 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
   const [price, setPrice] = useState("All");
 
   const categories = useMemo(() => ["All", ...Array.from(new Set(courses.map((course) => course.category)))], [courses]);
+  const classOptions = useMemo(() => Array.from(new Set(courses.map((course) => course.classLevel))), [courses]);
   const filteredCourses = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -74,7 +75,7 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
           <FilterButton active={classLevel === "All Classes"} onClick={() => setClassLevel("All Classes")}>
             All Classes
           </FilterButton>
-          {schoolClassOptions.map((item) => (
+          {classOptions.map((item) => (
             <FilterButton key={item} active={classLevel === item} onClick={() => setClassLevel(item)}>
               {item}
             </FilterButton>

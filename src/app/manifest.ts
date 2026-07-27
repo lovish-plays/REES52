@@ -2,13 +2,13 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'REES52 Learning Hub',
-    short_name: 'REES52 Learning',
-    description: 'Premium robotics, embedded systems, and STEM learning portal by REES52.',
+    name: 'REES52 Academy',
+    short_name: 'REES52 Academy',
+    description: 'Complete robotics and electronics courses with videos, diagrams, code, PDFs and quizzes.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0D0E12',
-    theme_color: '#0D0E12',
+    background_color: '#0f172a',
+    theme_color: '#0f172a',
     orientation: 'portrait-primary',
     icons: [
       {

@@ -1,129 +1,118 @@
-import { Metadata } from "next";
-import { Sparkles, ShieldCheck, Users, Target, Heart, GraduationCap } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BookOpenCheck, GraduationCap, Headphones, School, ShieldCheck } from "lucide-react";
 import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About REES52",
-  description: "Learn about REES52, a leading distributor of electronics & robotics components. Discover our core values of customer-centricity, innovation, and integrity, and meet our team.",
-  keywords: ["About REES52", "Robotics distributor", "Electronics components distributor", "REES52 Values"],
+  title: "About REES52 Academy",
+  description:
+    "Learn how REES52 Academy turns REES52 tutorials, electronics components and classroom experience into complete project-based courses.",
   alternates: { canonical: absoluteUrl("/about") },
 };
 
 export default function AboutPage() {
   return (
-    <div className="flex-1 max-w-5xl mx-auto px-4 py-16 md:py-24 relative z-10 w-full">
-      {/* Page Title & Header */}
-      <div className="text-center mb-16 animate-fade-in-up">
-        <div className="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 shadow-sm mb-4">
-          <GraduationCap className="w-8 h-8 text-cyan-600 animate-pulse" />
+    <div className="flex-1 bg-white text-slate-950">
+      <section className="border-b border-slate-200 bg-slate-950 text-white">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1fr_0.8fr] lg:px-8">
+          <div className="flex flex-col justify-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-300">About REES52 Academy</p>
+            <h1 className="mt-4 text-4xl font-black leading-tight md:text-5xl">
+              Project-based learning built around real electronics work.
+            </h1>
+            <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-slate-300">
+              REES52 Academy is the learning service of Robotics Embedded Education Services Private Limited.
+              It brings REES52 tutorial videos, diagrams, code, workbooks, quizzes and component links into a single guided path.
+            </p>
+          </div>
+          <div className="relative min-h-80 overflow-hidden rounded-3xl border border-white/10">
+            <Image
+              src="/trust/student-robotics-workshop.jpg"
+              alt="Students working with robotics kits in a classroom image published by REES52"
+              fill
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-cover"
+            />
+          </div>
         </div>
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-wider text-slate-900">
-          About <span className="text-cyan-600">REES52</span>
-        </h1>
-        <p className="text-xs uppercase tracking-widest text-slate-500 font-extrabold mt-3 max-w-md mx-auto">
-          Planting the Seeds of Innovation and Engineering
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              icon: BookOpenCheck,
+              title: "Complete before public",
+              copy: "A course must include multiple videos, substantial lesson text, a wiring diagram, working code, a PDF workbook and a five-question quiz before it appears publicly.",
+            },
+            {
+              icon: GraduationCap,
+              title: "REES52 tutorial team",
+              copy: "The launch courses use videos published by REES52. Academy lessons add a structured sequence, build evidence and progress tracking around those tutorials.",
+            },
+            {
+              icon: Headphones,
+              title: "Human support",
+              copy: "Learners and schools can contact the REES52 support team at support@rees52.com or +91 95995 94520 during published support hours.",
+            },
+          ].map(({ icon: Icon, title, copy }) => (
+            <article key={title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <Icon className="h-6 w-6 text-sky-700" />
+              <h2 className="mt-4 text-lg font-black">{title}</h2>
+              <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{copy}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-sky-50/60">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 lg:grid-cols-2 lg:px-8">
+          <div>
+            <div className="flex items-center gap-2 text-sky-700">
+              <School className="h-5 w-5" />
+              <p className="text-[10px] font-black uppercase tracking-widest">Classroom experience</p>
+            </div>
+            <h2 className="mt-3 text-3xl font-black">Labs and educator development</h2>
+            <p className="mt-4 text-sm font-medium leading-relaxed text-slate-600">
+              REES52 publishes AI, robotics and STEM lab work, smart-classroom integration and faculty-development programmes.
+              Its PM SHRI robotics-lab page reports installations in more than 100 institutions and names IITs, NITs and other schools and colleges.
+            </p>
+            <a
+              href="https://rees52.com/pages/pm-shri-robotics-lab"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-sky-800"
+            >
+              Review the published lab programme
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="rounded-2xl border border-sky-100 bg-white p-7 shadow-sm">
+            <ShieldCheck className="h-6 w-6 text-emerald-600" />
+            <h2 className="mt-4 text-xl font-black">Trust and attribution</h2>
+            <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">
+              REES52 Academy does not invent learner results, instructor identities, testimonials or institutional endorsements.
+              Classroom images and lab-installation names are attributed to the REES52 pages where they were originally published.
+              Learner feedback is displayed only when submitted through the Academy.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 py-16 text-center lg:px-8">
+        <h2 className="text-3xl font-black">See the complete launch courses</h2>
+        <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-600">
+          Start with Arduino outputs, ESP32 sensing and networking, or a complete line-following robot.
         </p>
-      </div>
-
-      {/* Main Philosophy Card */}
-      <div className="glassmorphism bg-white/70 p-8 md:p-12 rounded-3xl shadow-xl mb-16 border border-slate-200/50">
-        <div className="flex flex-col md:flex-row gap-8 items-start">
-          <div className="flex-1 space-y-6">
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <Target className="w-5 h-5 text-cyan-600" />
-              <span>Welcome to REES52</span>
-            </h2>
-            <p className="text-sm text-slate-700 leading-relaxed font-medium">
-              Welcome to REES52, we are leading distributor of electronics & robotics components. 
-              We are working towards excellence in electronics space and believe in pursuing business 
-              through innovation and technology. Our team comes with several years of industry experience 
-              and comprise of a highly motivated set of specialists & industry experts.
-            </p>
-            <p className="text-sm text-slate-700 leading-relaxed font-medium">
-              Our goal is to be a leader in the industry by providing enhanced services, products, 
-              relationship and profitability.
-            </p>
-          </div>
-          
-          <div className="w-full md:w-80 flex flex-col gap-4 bg-slate-900/5 p-6 rounded-2xl border border-slate-200/30">
-            <div className="text-center py-4">
-              <span className="text-3xl font-black text-cyan-600 block">13+</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Years in Industry</span>
-            </div>
-            <div className="border-t border-slate-200/40 my-1"></div>
-            <div className="text-center py-4">
-              <span className="text-3xl font-black text-cyan-600 block">10,000+</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Products Distributed</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Values Grid */}
-      <div className="mb-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-black uppercase tracking-wider text-slate-900">
-            Our Values
-          </h2>
-          <div className="w-12 h-1 bg-cyan-600 mx-auto mt-3 rounded-full"></div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Value 1 */}
-          <div className="glassmorphism bg-white/70 p-6 rounded-2xl shadow-md border border-slate-200/50 hover:scale-105 transition-all">
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl w-fit mb-4">
-              <Heart className="w-6 h-6 text-red-600" />
-            </div>
-            <h3 className="text-md font-black uppercase tracking-wider text-slate-900 mb-2">
-              1) Customer-Centric
-            </h3>
-            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-              We prioritize the needs and satisfaction of our customers, striving to exceed expectations with every interaction.
-            </p>
-          </div>
-
-          {/* Value 2 */}
-          <div className="glassmorphism bg-white/70 p-6 rounded-2xl shadow-md border border-slate-200/50 hover:scale-105 transition-all">
-            <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-xl w-fit mb-4">
-              <Sparkles className="w-6 h-6 text-cyan-600" />
-            </div>
-            <h3 className="text-md font-black uppercase tracking-wider text-slate-900 mb-2">
-              2) Innovation
-            </h3>
-            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-              Embracing creativity and innovation, we continuously seek new and improved ways to deliver products.
-            </p>
-          </div>
-
-          {/* Value 3 */}
-          <div className="glassmorphism bg-white/70 p-6 rounded-2xl shadow-md border border-slate-200/50 hover:scale-105 transition-all">
-            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl w-fit mb-4">
-              <ShieldCheck className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="text-md font-black uppercase tracking-wider text-slate-900 mb-2">
-              3) Integrity
-            </h3>
-            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
-              Honesty and transparency are at the core of our business. We believe in building trust through ethical practices.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Section */}
-      <div className="glassmorphism bg-white/70 p-8 md:p-12 rounded-3xl shadow-xl border border-slate-200/50">
-        <div className="text-center max-w-2xl mx-auto">
-          <div className="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 shadow-sm mb-4">
-            <Users className="w-6 h-6 text-cyan-600" />
-          </div>
-          <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-slate-900 mb-4">
-            Our Team
-          </h2>
-          <p className="text-sm text-slate-700 leading-relaxed font-semibold">
-            Meet the passionate individuals who drive REES52 forward. Our diverse team brings a wealth of experience and expertise to ensure the success of our mission.
-          </p>
-        </div>
-      </div>
+        <Link
+          href="/courses"
+          className="mt-7 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white hover:bg-sky-500"
+        >
+          Browse courses
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </section>
     </div>
   );
 }

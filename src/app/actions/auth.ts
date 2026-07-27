@@ -513,7 +513,7 @@ export async function sendPasswordResetOtpAction(email: string) {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #F7F4EB;">
             <h2 style="color: #0891B2; text-align: center; text-transform: uppercase; margin-bottom: 5px;">REES52</h2>
-            <h3 style="color: #1e293b; text-align: center; text-transform: uppercase; font-size: 14px; margin-top: 0; letter-spacing: 1px;">LEARNING HUB</h3>
+            <h3 style="color: #1e293b; text-align: center; text-transform: uppercase; font-size: 14px; margin-top: 0; letter-spacing: 1px;">REES52 ACADEMY</h3>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
             <p style="color: #334155; font-size: 14px; line-height: 1.5;">${otpGreeting}</p>
             <p style="color: #334155; font-size: 14px; line-height: 1.5;">${otpBody}</p>

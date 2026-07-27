@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import ProjectCard from "@/components/lms/ProjectCard";
 import { LmsProject } from "@/lib/lms/types";
-import { schoolClassOptions, type SchoolClass } from "@/lib/lms/class-categories";
+import { type SchoolClass } from "@/lib/lms/class-categories";
 
 const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 
@@ -15,6 +15,7 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
   const [level, setLevel] = useState("All Levels");
 
   const categories = useMemo(() => ["All", ...Array.from(new Set(projects.map((project) => project.category)))], [projects]);
+  const classOptions = useMemo(() => Array.from(new Set(projects.map((project) => project.classLevel))), [projects]);
   const filteredProjects = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -48,7 +49,7 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search line follower, ESP32, drone, sensors..."
+              placeholder="Search line follower, ESP32, LED..."
               className="premium-input-pulse h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-sky-300 focus:bg-white focus:ring-4 focus:ring-sky-100"
             />
           </label>
@@ -71,7 +72,7 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
           <FilterButton active={classLevel === "All Classes"} onClick={() => setClassLevel("All Classes")}>
             All Classes
           </FilterButton>
-          {schoolClassOptions.map((item) => (
+          {classOptions.map((item) => (
             <FilterButton key={item} active={classLevel === item} onClick={() => setClassLevel(item)}>
               {item}
             </FilterButton>

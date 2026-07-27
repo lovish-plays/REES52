@@ -1,114 +1,97 @@
-import { Metadata } from "next";
-import { Cookie, ShieldAlert, CheckCircle2, Info } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Cookie Policy",
-  description: "Read the official Cookie Policy of REES52. Learn how we use essential, local storage fallback session cookies, and analytics cookies to deliver a secure learning experience.",
-  keywords: ["REES52 Cookie Policy", "robotic portal cookies", "essential cookies", "analytics tracking"],
-  alternates: {
-    canonical: absoluteUrl("/cookie-policy"),
-  }
+  description: "Cookies and local storage used by REES52 Academy for sign-in, progress and embedded course videos.",
+  alternates: { canonical: absoluteUrl("/cookie-policy") },
 };
 
 export default function CookiePolicyPage() {
   return (
-    <div className="flex-1 max-w-4xl mx-auto px-4 py-16 md:py-24 relative z-10 w-full">
-      {/* Page Title & Header */}
-      <div className="text-center mb-12 animate-fade-in-up">
-        <div className="inline-flex p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 shadow-sm mb-4">
-          <Cookie className="w-8 h-8 text-cyan-600 animate-pulse" />
-        </div>
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-wider text-slate-900">
-          Cookie Policy
-        </h1>
-        <p className="text-xs uppercase tracking-widest text-slate-500 font-extrabold mt-3">
-          EFFECTIVE DATE: JUNE 1, 2026
-        </p>
+    <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-14 lg:px-8">
+      <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Academy policy</p>
+      <h1 className="mt-3 text-4xl font-black text-slate-950">Cookie Policy</h1>
+      <p className="mt-4 text-base font-medium leading-relaxed text-slate-600">
+        This policy explains the cookies and browser storage used by REES52 Academy to keep learners signed in, save progress and deliver course media.
+      </p>
+      <p className="mt-3 text-xs font-bold text-slate-500">Effective: 27 July 2026</p>
+
+      <div className="mt-10 space-y-8">
+        <Section title="1. What cookies and browser storage are">
+          <p>
+            Cookies are small text records stored by a browser. Local storage and similar technologies can remember settings on the device.
+            Some are set by REES52 Academy, while embedded services may set their own records.
+          </p>
+        </Section>
+
+        <Section title="2. Essential Academy storage">
+          <p>Essential records support:</p>
+          <ul>
+            <li>Secure sign-in, session continuity and sign-out.</li>
+            <li>Account protection, request validation and abuse prevention.</li>
+            <li>Course enrolment, lesson completion, quiz state and saved learning activity.</li>
+            <li>Basic interface preferences needed for a consistent experience.</li>
+          </ul>
+          <p>
+            These functions are necessary for registered learning features. Blocking them may prevent sign-in or cause progress to stop saving.
+          </p>
+        </Section>
+
+        <Section title="3. Embedded REES52 videos">
+          <p>
+            Course lessons embed videos hosted by YouTube. When the video frame loads or is played, YouTube may receive technical information and may use cookies under Google&apos;s policies.
+            Learners can use the linked PDF and written lesson materials without playing an embedded video, but the video lesson itself is part of course completion.
+          </p>
+        </Section>
+
+        <Section title="4. Analytics and advertising">
+          <p>
+            At the effective date, REES52 Academy does not load third-party advertising scripts or Academy analytics cookies.
+            If optional analytics are introduced later, we will update this policy and provide any choice or notice required before those tools are enabled.
+          </p>
+          <p>The separate REES52 store may use different commerce, analytics or advertising technologies under its own cookie policy.</p>
+        </Section>
+
+        <Section title="5. How to control cookies">
+          <p>
+            Browser settings can delete or block cookies and site storage. Private-browsing modes may clear them automatically.
+            Blocking essential storage can sign a learner out, remove local preferences or prevent course progress from being associated with the account.
+          </p>
+          <p>
+            To ask what Academy storage applies to your account, email <a href="mailto:support@rees52.com">support@rees52.com</a>.
+          </p>
+        </Section>
+
+        <Section title="6. Changes and contact">
+          <p>
+            We update this page when the Academy changes the technologies it uses. Material changes will be reflected in the effective date.
+          </p>
+          <p>
+            Robotics Embedded Education Services Private Limited<br />
+            G-9, Om Vihar Phase 5, Uttam Nagar, New Delhi, India<br />
+            <a href="mailto:support@rees52.com">support@rees52.com</a> · <a href="tel:+919599594520">+91 95995 94520</a>
+          </p>
+        </Section>
       </div>
 
-      <div className="space-y-8">
-        {/* Section 1: Overview */}
-        <div className="glassmorphism bg-white/70 p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200/50">
-          <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2 mb-4">
-            <Info className="w-5 h-5 text-cyan-600" />
-            <span>1. What Are Cookies?</span>
-          </h2>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold">
-            Cookies are small text files stored on your computer or mobile device when you visit a website. They are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.
-          </p>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold mt-3">
-            At Robotics Embedded Education Services Private Limited (REES52), we believe in absolute transparency. This Cookie Policy explains how we use cookies and local storage tokens on our educational Learning Hub portal to provide secure, high-performance learning workflows.
-          </p>
-        </div>
-
-        {/* Section 2: Types of Cookies */}
-        <div className="glassmorphism bg-white/70 p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200/50">
-          <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2 mb-4">
-            <ShieldAlert className="w-5 h-5 text-cyan-600" />
-            <span>2. Types of Cookies We Use</span>
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-cyan-600/5 border border-cyan-500/20">
-              <h3 className="text-xs font-black uppercase text-cyan-900 tracking-wider">A. Essential Authentication Cookies</h3>
-              <p className="text-[11px] text-slate-600 leading-relaxed font-semibold mt-1">
-                These cookies are strictly necessary to provide you with secure access to protected dashboard workflows (e.g. My Learning lectures, unlocked Ebooks, and Admin controls).
-              </p>
-              <ul className="list-disc pl-5 mt-2 text-[10px] text-slate-500 space-y-1 font-bold">
-                <li><strong>Supabase JWT Session Cookies:</strong> Authenticates user requests and protects database tables.</li>
-                <li><strong>Local JSON Web Token Cookie:</strong> Provides secondary secure offline session validation to safeguard profiles.</li>
-              </ul>
-            </div>
-
-            <div className="p-4 rounded-xl bg-blue-600/5 border border-blue-500/20">
-              <h3 className="text-xs font-black uppercase text-blue-900 tracking-wider">B. Performance & Analytics Cookies</h3>
-              <p className="text-[11px] text-slate-600 leading-relaxed font-semibold mt-1">
-                These cookies collect aggregate information to help us understand how learners interact with Ebook guides, video lectures, and Aelos chatbot queries.
-              </p>
-              <ul className="list-disc pl-5 mt-2 text-[10px] text-slate-500 space-y-1 font-bold">
-                <li><strong>Google Analytics (GA4) Cookies:</strong> Tracks anonymous page views, connection speeds, and content enrollments to optimize download latency.</li>
-              </ul>
-            </div>
-
-            <div className="p-4 rounded-xl bg-pink-600/5 border border-pink-500/20">
-              <h3 className="text-xs font-black uppercase text-pink-900 tracking-wider">C. Sponsored Advertising Cookies (AdSense Ready)</h3>
-              <p className="text-[11px] text-slate-600 leading-relaxed font-semibold mt-1">
-                These cookies track user navigation histories to display personalized, relevant, and secure educational hardware sponsorships and AdSense units.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 3: Managing Cookies */}
-        <div className="glassmorphism bg-white/70 p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200/50">
-          <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2 mb-4">
-            <CheckCircle2 className="w-5 h-5 text-cyan-600" />
-            <span>3. How Can You Manage Cookies?</span>
-          </h2>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold">
-            You have the right to decide whether to accept or reject cookies. You can set or amend your web browser controls to accept or refuse cookies. If you choose to reject cookies, you may still use our website, though your access to certain secure sections (such as Ebook reading and video viewing) will be highly restricted as they depend on essential authentication tokens.
-          </p>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold mt-3">
-            To opt out of targeted Google Analytics event tracking or AdSense tracking, please consult your Google account privacy dashboard or use the Google Analytics Opt-out Browser Add-on.
-          </p>
-        </div>
-
-        {/* Section 4: Contact info */}
-        <div className="glassmorphism bg-white/70 p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200/50">
-          <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2 mb-4">
-            <Info className="w-5 h-5 text-cyan-600" />
-            <span>4. Questions & Policy Updates</span>
-          </h2>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold">
-            We may update this Cookie Policy from time to time in order to reflect changes to the cookies we use or for other operational, legal, or regulatory reasons. Please re-visit this Cookie Policy regularly to stay informed.
-          </p>
-          <p className="text-xs text-slate-700 leading-relaxed font-semibold mt-3">
-            If you have any questions or data request queries about our Cookie Policy, please contact our support department at:
-            <a href="mailto:info@rees52.in" className="text-cyan-700 hover:text-cyan-600 underline font-bold ml-1">info@rees52.in</a>.
-          </p>
-        </div>
+      <div className="mt-12 flex flex-wrap gap-4 border-t border-slate-200 pt-6 text-xs font-black uppercase tracking-widest text-sky-800">
+        <Link href="/privacy">Privacy Policy</Link>
+        <Link href="/terms">Terms of Use</Link>
+        <Link href="/contact">Contact</Link>
       </div>
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-black text-slate-950">{title}</h2>
+      <div className="mt-3 space-y-3 text-sm font-medium leading-relaxed text-slate-600 [&_a]:font-bold [&_a]:text-sky-800 [&_li]:ml-5 [&_li]:list-disc [&_li]:pl-1">
+        {children}
+      </div>
+    </section>
   );
 }

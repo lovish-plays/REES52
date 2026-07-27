@@ -4,28 +4,28 @@ import { ArrowRight, Bot, Cpu, GraduationCap, School } from "lucide-react";
 const paths = [
   {
     title: "Beginner Arduino",
-    description: "Start with wiring, Arduino IDE, LEDs, sensors, and one smart alert project.",
+    description: "Build a protected LED circuit, change timing and control two servo positions.",
     href: "/courses/arduino-beginner-course",
     label: "Best first course",
     icon: Cpu,
   },
   {
     title: "Robotics Starter",
-    description: "Build wheeled robots with motors, sensor logic, and movement basics.",
+    description: "Calibrate two IR sensors, test a motor driver and tune a complete line follower.",
     href: "/courses/robotics-starter-course",
     label: "Build a robot",
     icon: Bot,
   },
   {
     title: "IoT with ESP32",
-    description: "Move into Wi-Fi projects, sensor data, dashboards, and automation.",
+    description: "Read a DHT11 and serve a simple response on a trusted local network.",
     href: "/courses/esp32-iot-course",
     label: "After basics",
     icon: GraduationCap,
   },
   {
     title: "School / ATL Lab",
-    description: "Use short projects, worksheets, and component lists for classroom practice.",
+    description: "Use complete build guides and eight-page workbooks for supervised classroom practice.",
     href: "/projects",
     label: "For labs",
     icon: School,

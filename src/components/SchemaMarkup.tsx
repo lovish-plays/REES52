@@ -8,7 +8,6 @@ export default function SchemaMarkup() {
     alternateName: "REES52",
     url: siteConfig.url,
     logo: absoluteUrl("/icon-512.png"),
-    foundingDate: "2013",
     contactPoint: {
       "@type": "ContactPoint",
       telephone: siteConfig.contactPhone,

@@ -54,7 +54,7 @@ export interface LmsCourse {
   modules: LmsModule[];
   requiredComponents: LmsComponent[];
   projects: string[];
-  downloadablePdfs: string[];
+  downloadablePdfs: Array<{ title: string; url: string }>;
   relatedProducts: LmsComponent[];
   faqs: Array<{ question: string; answer: string }>;
 }

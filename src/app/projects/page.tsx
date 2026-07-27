@@ -7,7 +7,7 @@ import { absoluteUrl } from "@/lib/site";
 export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Robotics, Arduino & IoT Projects",
-  description: "Browse Arduino, robotics, IoT, ESP32, Raspberry Pi, drone, 3D printing, and ATL lab projects.",
+  description: "Browse complete Arduino, ESP32 and mobile robotics build guides with video, diagrams, code and troubleshooting.",
   alternates: { canonical: absoluteUrl("/projects") },
 };
 
@@ -24,7 +24,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           Pick a project and build with confidence
         </h1>
         <p className="mt-3 max-w-3xl text-pretty text-sm font-semibold leading-relaxed text-slate-600">
-          Each project keeps the essentials together: overview, components, circuit notes, source code, build steps, and store links.
+          Every listed project includes a real video, labelled circuit diagram, working source code, complete build steps and troubleshooting.
         </p>
       </div>
 

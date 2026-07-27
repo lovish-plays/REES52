@@ -9,7 +9,6 @@ import {
   ExternalLink,
   FolderKanban,
   GraduationCap,
-  Home,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -35,14 +34,13 @@ import { supabase } from "@/lib/supabaseClient";
 import { getNotifications } from "@/app/actions/content";
 import { isTeacherRole } from "@/lib/auth/roles";
 
-const STORE_URL = "https://rees52.com";
+const STORE_URL = "https://rees52.com/collections/stem-kits";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home", icon: Home },
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
-  { href: "/dashboard", label: "My Learning", icon: LayoutDashboard },
+  { href: "/about", label: "About", icon: GraduationCap },
 ];
 
 const DIRECTORY_LINKS = [
@@ -69,6 +67,14 @@ const DIRECTORY_LINKS = [
     icon: PackageCheck,
     iconWrap: "border-emerald-300/40 bg-emerald-500/10",
     iconClass: "text-emerald-600",
+  },
+  {
+    href: "/about",
+    label: "About REES52 Academy",
+    description: "Learning approach, company and support details",
+    icon: GraduationCap,
+    iconWrap: "border-violet-300/40 bg-violet-500/10",
+    iconClass: "text-violet-700",
   },
   {
     href: "/dashboard",
@@ -180,13 +186,10 @@ export default function Header() {
             </div>
             <div className="flex min-w-0 flex-col leading-tight">
               <span className="text-sm font-black tracking-wider text-slate-900 premium-logo-text">
-                REES<span className="text-cyan-600">52</span>
+                REES<span className="text-cyan-600">52</span> Academy
               </span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                Academy
-              </span>
-              <span className="hidden max-w-[250px] truncate text-[9px] font-bold uppercase tracking-wider text-slate-500 md:inline lg:max-w-md">
-                Robotics Learning Hub
+              <span className="hidden text-[9px] font-bold uppercase tracking-wider text-slate-500 md:inline">
+                Robotics and electronics courses
               </span>
             </div>
           </Link>
@@ -209,24 +212,35 @@ export default function Header() {
                 </Link>
               );
             })}
+            {user && (
+              <Link
+                href="/dashboard"
+                aria-current={pathname.startsWith("/dashboard") ? "page" : undefined}
+                className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  pathname.startsWith("/dashboard")
+                    ? "bg-sky-600 text-white shadow-sm shadow-sky-500/20"
+                    : "text-slate-700 hover:bg-white/90 hover:text-sky-800"
+                }`}
+              >
+                My Learning
+              </Link>
+            )}
             <a
               href={STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:bg-white/90 hover:text-sky-800"
             >
-              Store
+              Kits
               <ExternalLink className="h-3 w-3" />
             </a>
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
             {isLoading ? (
-              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-1.5 shadow-sm">
-                <div className="h-5 w-5 rounded-full bg-slate-300" />
-                <span className="hidden text-[9px] font-black uppercase tracking-widest text-slate-500 sm:inline">
-                  Loading profile...
-                </span>
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-1.5 shadow-sm" aria-label="Checking sign-in status">
+                <div className="h-5 w-5 animate-pulse rounded-full bg-slate-300" />
+                <div className="hidden h-2.5 w-14 animate-pulse rounded bg-slate-200 sm:block" />
               </div>
             ) : !user ? (
               !isLoginPage && (
@@ -489,7 +503,7 @@ export default function Header() {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-black uppercase tracking-wider text-slate-900">
-                      Store
+                      Kits
                     </p>
                     <p className="text-[11px] font-medium text-slate-600">
                       Buy kits and components from REES52.com

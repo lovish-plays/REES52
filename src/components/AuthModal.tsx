@@ -237,7 +237,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </DialogTitle>
             </div>
             <DialogDescription className="text-slate-600 font-semibold text-xs">
-              {mode === "signup" && "Join REES52 Learning Hub in seconds."}
+              {mode === "signup" && "Create your REES52 Academy account."}
               {mode === "signin" && (portal === "Teacher" ? "Sign in to create and manage learning content." : "Sign in to access your learning dashboard.")}
               {mode === "forgot" && "Receive a secure code to reset your account password."}
               {mode === "otp" && `Enter the OTP sent to ${email}.`}
@@ -400,7 +400,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 disabled={loading}
               >
                 <Sparkles className="h-4 w-4" />
-                {loading ? "PROCESSING..." : 
+                {loading ? "Please wait..." :
                  mode === "signup" ? "SIGN UP" : 
                  mode === "signin" ? "SIGN IN" : 
                  mode === "forgot" ? "SEND RESET OTP" :

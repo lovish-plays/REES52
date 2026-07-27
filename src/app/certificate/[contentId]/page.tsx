@@ -227,7 +227,7 @@ export default function CertificatePage({ params }: PageProps) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 min-h-[70vh]">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-600 mb-4"></div>
-        <p className="text-xs uppercase tracking-widest text-slate-500 font-black">Generating Certificate Credentials...</p>
+        <p className="text-xs font-black text-slate-500">Preparing your certificate...</p>
       </div>
     );
   }
@@ -384,7 +384,7 @@ export default function CertificatePage({ params }: PageProps) {
             <div className="text-center border-t border-slate-200/40 pt-4 flex items-center justify-between text-[7px] sm:text-[8.5px] font-bold text-slate-400 uppercase tracking-widest">
               <span>Secure Digital Credentials</span>
               <span className="text-slate-500 font-extrabold">Credential ID: {cert.id}</span>
-              <span>REES52 Learning Hub</span>
+              <span>REES52 Academy</span>
             </div>
 
           </div>
@@ -408,7 +408,7 @@ export default function CertificatePage({ params }: PageProps) {
             Share Your Achievement!
           </h4>
           <p className="text-[11px] text-cyan-800 leading-relaxed font-semibold">
-            You can showcase this credential on your LinkedIn profile, CV, or share it with recruiters. The Certificate ID <code className="bg-cyan-200/50 px-1.5 py-0.5 rounded font-black tracking-widest text-[10px]">{cert.id}</code> is stored in our database for permanent official verification.
+            This certificate records completion of the named REES52 Academy course. Certificate ID <code className="bg-cyan-200/50 px-1.5 py-0.5 rounded font-black tracking-widest text-[10px]">{cert.id}</code> helps match the certificate to the saved Academy completion record. It is not a degree, professional licence, or government-accredited qualification.
           </p>
         </div>
       </div>

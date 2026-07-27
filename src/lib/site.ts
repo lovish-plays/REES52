@@ -5,7 +5,7 @@ export const siteConfig = {
     "Learn robotics, Arduino, ESP32, IoT, AI, electronics, and STEM through practical courses, projects, quizzes, and downloadable guides.",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://rees52.tech").replace(/\/$/, ""),
   locale: "en_IN",
-  contactEmail: "info@rees52.in",
+  contactEmail: "support@rees52.com",
   contactPhone: "+91-9599594520",
   social: [
     "https://www.youtube.com/@REES52_Official",

@@ -125,7 +125,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </Panel>
 
           <Panel title="Circuit Diagram" icon={<Download className="h-5 w-5" />}>
-            {project.circuitDiagramUrl ? (
+            {project.circuitDiagramUrl && (
               <a
                 href={project.circuitDiagramUrl}
                 target="_blank"
@@ -146,10 +146,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   Open full size
                 </span>
               </a>
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
-                Circuit diagram coming soon
-              </div>
             )}
           </Panel>
 

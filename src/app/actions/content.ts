@@ -145,7 +145,7 @@ export async function getEbooks(): Promise<ContentEbook[]> {
       category_id: fromUUID(e.category_id),
       parent_product_id: fromUUID(e.product_id),
       created_at: e.created_at,
-    }));
+    })).filter((ebook: ContentEbook) => isPublicPdfUrl(ebook.pdf_url));
   } catch (e) {
     console.error('getEbooks:', e);
     try {
@@ -157,7 +157,7 @@ export async function getEbooks(): Promise<ContentEbook[]> {
         category_id: e.category_id,
         parent_product_id: e.parent_product_id,
         created_at: e.created_at,
-      }));
+      })).filter((ebook: ContentEbook) => isPublicPdfUrl(ebook.pdf_url));
     } catch {
       return [];
     }
@@ -317,7 +317,7 @@ export async function getEbookById(id: string): Promise<ContentEbook | null> {
         .maybeSingle()
     );
     if (error || !data) return null;
-    return {
+    const ebook = {
       id: fromUUID(data.id),
       title: data.title,
       pdf_url: data.pdf_url,
@@ -325,12 +325,13 @@ export async function getEbookById(id: string): Promise<ContentEbook | null> {
       parent_product_id: fromUUID(data.product_id),
       created_at: data.created_at,
     };
+    return isPublicPdfUrl(ebook.pdf_url) ? ebook : null;
   } catch {
     try {
       const localDb = getDB();
       const eb = localDb.ebooks.find((item: any) => item.id === id);
       if (eb) {
-        return {
+        const ebook = {
           id: eb.id,
           title: eb.title,
           pdf_url: eb.pdf_url,
@@ -338,6 +339,7 @@ export async function getEbookById(id: string): Promise<ContentEbook | null> {
           parent_product_id: eb.parent_product_id,
           created_at: eb.created_at,
         };
+        return isPublicPdfUrl(ebook.pdf_url) ? ebook : null;
       }
     } catch {}
     return null;
@@ -450,4 +452,13 @@ export async function getNotifications() {
     console.error('getNotifications:', e);
     return [];
   }
+}
+
+function isPublicPdfUrl(value?: string) {
+  if (!value) return false;
+  const normalized = value.toLowerCase();
+  return (
+    normalized.split(/[?#]/)[0].endsWith(".pdf") &&
+    !/dummy|placeholder|coming\s+soon|example\.com|fallback-placeholder/.test(normalized)
+  );
 }

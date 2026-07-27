@@ -178,7 +178,16 @@ export default async function CourseDetailPage({ params }: PageProps) {
           <InfoBlock title="Downloadable PDFs" icon={<Download className="h-5 w-5" />}>
             <div className="space-y-2">
               {course.downloadablePdfs.map((pdf) => (
-                <div key={pdf} className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700">{pdf}</div>
+                <a
+                  key={pdf.url}
+                  href={pdf.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-cyan-50 hover:text-cyan-900"
+                >
+                  {pdf.title}
+                  <Download className="h-3.5 w-3.5" />
+                </a>
               ))}
             </div>
           </InfoBlock>

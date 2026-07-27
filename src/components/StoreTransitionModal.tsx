@@ -110,7 +110,7 @@ export default function StoreTransitionModal() {
           </h3>
           
           <p className="mt-2.5 text-xs text-slate-655 font-medium leading-relaxed">
-            You are leaving REES52 Learning Hub to purchase the companion hardware kit on our main e-commerce platform.
+            You are leaving REES52 Academy to view the companion hardware kit on the REES52 store.
           </p>
 
           {/* Countdown & Loading Bar */}

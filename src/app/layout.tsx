@@ -1,18 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AelosChatbot from "@/components/AelosChatbot";
-import CyberBackground from "@/components/CyberBackground";
-import RobotPeeker from "@/components/RobotPeeker";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SchemaMarkup from "@/components/SchemaMarkup";
 import StoreTransitionModal from "@/components/StoreTransitionModal";
 import MobileViewportHandler from "@/components/MobileViewportHandler";
-import ScrollProgressBar from "@/components/ScrollProgressBar";
-import SplashLoader from "@/components/SplashLoader";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -25,7 +19,6 @@ export const metadata: Metadata = {
   keywords: [
     "REES52",
     "REES52 Academy",
-    "Learning Hub",
     "robotics education",
     "embedded systems",
     "Arduino",
@@ -42,7 +35,7 @@ export const metadata: Metadata = {
     "ebooks",
     "robotics kits",
   ],
-  authors: [{ name: "REES52 Learning Team" }],
+  authors: [{ name: "REES52 Academy Team" }],
   creator: "REES52",
   publisher: "REES52",
   manifest: "/manifest.webmanifest",
@@ -61,14 +54,14 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     locale: siteConfig.locale,
     type: "website",
-    images: [{ url: absoluteUrl("/icon-512.png"), width: 512, height: 512, alt: "REES52 Academy" }],
+    images: [{ url: absoluteUrl("/og.png"), width: 1200, height: 630, alt: "REES52 Academy robotics and electronics courses" }],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
     creator: "@rees52",
-    images: [absoluteUrl("/icon-512.png")],
+    images: [absoluteUrl("/og.png")],
   },
   robots: {
     index: true,
@@ -91,7 +84,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D0E12",
+  themeColor: "#0f172a",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -104,26 +97,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
-      <head>
-        <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
-        <meta name="google-adsense-account" content="ca-pub-4035712855313003" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4035712855313003"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
         <AuthProvider>
-          <SplashLoader />
-          <ScrollProgressBar />
           <MobileViewportHandler />
-          <Suspense fallback={null}>
-            <GoogleAnalytics />
-          </Suspense>
           <SchemaMarkup />
-          <RobotPeeker />
-          <CyberBackground />
           <Header />
           <main className="flex flex-1 flex-col page-loaded-entrance">
             {children}

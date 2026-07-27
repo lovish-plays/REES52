@@ -118,6 +118,13 @@ export default async function HomePage() {
               >
                 View build guides
               </Link>
+              <Link
+                href="/quizzes"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300/40 bg-amber-300/15 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-amber-100 transition-colors hover:bg-amber-300/25"
+              >
+                <FileQuestion className="h-4 w-4" />
+                Take a quiz
+              </Link>
             </div>
 
             <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">

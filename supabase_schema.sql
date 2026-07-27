@@ -108,26 +108,73 @@ DROP POLICY IF EXISTS "Allow individual insert profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Allow public read notifications" ON public.notifications;
 DROP POLICY IF EXISTS "Allow public write notifications" ON public.notifications;
 
--- Create Policies (Allow Public Read)
+-- Privileged writes are derived from the authenticated profile, never from a
+-- browser-supplied role or the public anon key.
+CREATE OR REPLACE FUNCTION public.is_lms_admin()
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE profiles.id = auth.uid()
+      AND lower(coalesce(profiles.role, 'student')) IN ('teacher', 'admin')
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.enforce_profile_role_boundary()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL AND auth.uid() = NEW.id THEN
+    IF TG_OP = 'INSERT' THEN
+      NEW.role := 'student';
+    -- Teachers can manage catalog content, but only an existing admin (or a
+    -- service-role migration where auth.uid() is null) may change roles.
+    ELSIF NEW.role IS DISTINCT FROM OLD.role
+      AND lower(coalesce(OLD.role, 'student')) <> 'admin' THEN
+      NEW.role := OLD.role;
+    END IF;
+  END IF;
+  NEW.role := lower(coalesce(NEW.role, 'student'));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS profiles_enforce_role_boundary ON public.profiles;
+CREATE TRIGGER profiles_enforce_role_boundary
+BEFORE INSERT OR UPDATE OF role ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.enforce_profile_role_boundary();
+
+-- Create Policies (Allow Public Read for catalog content only)
 CREATE POLICY "Allow public read categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Allow public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Allow public read ebooks" ON public.ebooks FOR SELECT USING (true);
 CREATE POLICY "Allow public read videos" ON public.videos FOR SELECT USING (true);
 CREATE POLICY "Allow public read webinars" ON public.webinars FOR SELECT USING (true);
-CREATE POLICY "Allow public read profiles" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Allow public read profiles" ON public.profiles FOR SELECT
+USING (auth.uid() = id OR public.is_lms_admin());
 CREATE POLICY "Allow public read notifications" ON public.notifications FOR SELECT USING (true);
 
--- Create Policies (Allow Public/Admin Writes for Dev/Admin Console access via anon key)
-CREATE POLICY "Allow public write categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public write products" ON public.products FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public write ebooks" ON public.ebooks FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public write videos" ON public.videos FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public write webinars" ON public.webinars FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public write notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
+-- Catalog writes require a trusted Teacher/Admin profile.
+CREATE POLICY "Allow public write categories" ON public.categories FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
+CREATE POLICY "Allow public write products" ON public.products FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
+CREATE POLICY "Allow public write ebooks" ON public.ebooks FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
+CREATE POLICY "Allow public write videos" ON public.videos FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
+CREATE POLICY "Allow public write webinars" ON public.webinars FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
+CREATE POLICY "Allow public write notifications" ON public.notifications FOR ALL USING (public.is_lms_admin()) WITH CHECK (public.is_lms_admin());
 
 -- Create Policies for Profiles (Allow user CRUD)
-CREATE POLICY "Allow individual insert profiles" ON public.profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow individual update profiles" ON public.profiles FOR UPDATE USING (auth.uid() = id OR true) WITH CHECK (true);
+CREATE POLICY "Allow individual insert profiles" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Allow individual update profiles" ON public.profiles FOR UPDATE
+USING (auth.uid() = id OR public.is_lms_admin())
+WITH CHECK (auth.uid() = id OR public.is_lms_admin());
 
 -- =========================================================================
 -- 3. SEED INITIAL DATA (WITH DETERMINISTIC UUID MAPPINGS)

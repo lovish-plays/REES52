@@ -12,6 +12,7 @@ import {
 import { getEbookById, getProductById, getUnifiedFeed } from "@/app/actions/content";
 import { getItemMetadata } from "@/lib/projectMetadata";
 import EbookProgressChecklist from "@/components/EbookProgressChecklist";
+import { absoluteUrl } from "@/lib/site";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -32,12 +33,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${ebook.title} Project Guide`,
     description: meta?.overview || `Read the official REES52 companion Ebook guide for ${ebook.title}. Complete hardware lists, schematics, and walkthroughs.`,
     alternates: {
-      canonical: `https://rees52.tech/ebooks/${id}`,
+      canonical: absoluteUrl(`/ebooks/${id}`),
     },
     openGraph: {
       title: `${ebook.title} Project Guide | REES52 Learning Hub`,
       description: meta?.overview || `Read the official REES52 companion Ebook guide for ${ebook.title}.`,
-      url: `https://rees52.tech/ebooks/${id}`,
+      url: absoluteUrl(`/ebooks/${id}`),
       type: "article",
     },
     twitter: {
@@ -93,7 +94,7 @@ export default async function EbookDetailPage({ params }: PageProps) {
       "name": "REES52",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://rees52.tech/icon.png"
+        "url": absoluteUrl("/icon.png")
       }
     }
   };
@@ -106,19 +107,19 @@ export default async function EbookDetailPage({ params }: PageProps) {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://rees52.tech"
+        "item": absoluteUrl()
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Ebooks",
-        "item": "https://rees52.tech/?type=ebooks"
+        "item": absoluteUrl("/?type=ebooks")
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": ebook.title,
-        "item": `https://rees52.tech/ebooks/${ebook.id}`
+        "item": absoluteUrl(`/ebooks/${ebook.id}`)
       }
     ]
   };

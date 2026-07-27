@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { Phone, Mail, MapPin, MessageSquare, Clock } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact REES52 | Electronics & Robotics Support",
+  title: "Contact REES52",
   description: "Get in touch with REES52. Call us at +91 95995 94520 or email info@rees52.in for sales, support, and business inquiries.",
   keywords: ["Contact REES52", "REES52 Phone Number", "REES52 Support Email", "Robotics customer care"],
+  alternates: { canonical: absoluteUrl("/contact") },
 };
 
 export default function ContactPage() {

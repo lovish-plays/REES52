@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS public.reviews (
 -- =========================================================================
 -- 2. ALTER PROFILES TABLE (ADD MISSING COLUMNS)
 -- =========================================================================
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS password_hash TEXT;
+-- Passwords belong exclusively in Supabase Auth. Never add or expose a
+-- password_hash column on the browser-readable profiles table.
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'email';
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS progress JSONB DEFAULT '{}'::jsonb;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS badges JSONB DEFAULT '[]'::jsonb;

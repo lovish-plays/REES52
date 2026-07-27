@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { FileText } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions | REES52",
+  title: "Terms and Conditions",
   description: "Read the REES52 Terms & Conditions. Understand the terms of use, membership rules, copyright details, and service modification conditions.",
   keywords: ["REES52 Terms and Conditions", "user agreement", "service terms"],
+  alternates: { canonical: absoluteUrl("/terms") },
 };
 
 export default function TermsPage() {

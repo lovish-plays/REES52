@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import { createLocalSessionForSupabaseUser } from '@/app/actions/auth';
 
 function getRedirectOrigin(requestUrl: string) {
   const urlObj = new URL(requestUrl);
@@ -28,7 +27,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+    const supabaseKey =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
     
     // Parse cookies from request headers to pass to the supabase client
     const cookieHeader = request.headers.get('cookie') || '';
@@ -87,15 +88,15 @@ export async function GET(request: Request) {
     console.log(`[OAuth Callback] Querying profiles table by email: ${cleanEmail}`);
     let { data: profile, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, name, role, enrolled_videos, purchased_ebooks, provider, progress, certificates, badges, streak, recently_viewed')
+      .select('*')
       .eq('email', cleanEmail)
       .maybeSingle();
 
     if (profileErr) {
-      console.log("[OAuth Callback] Profiles table lacks some new columns or query failed. Retrying query with core fields.");
+      console.log("[OAuth Callback] Profiles query failed. Retrying with LMS core fields.");
       const { data: retryProfile } = await supabase
         .from('profiles')
-        .select('id, name, role, enrolled_videos, purchased_ebooks, provider')
+        .select('id, full_name, email, role, avatar_url')
         .eq('email', cleanEmail)
         .maybeSingle();
       profile = retryProfile as any;
@@ -115,17 +116,9 @@ export async function GET(request: Request) {
           .from('profiles')
           .upsert({
             id: user.id,
-            name: profile.name,
+            full_name: profile.full_name || profile.name || user.user_metadata?.name || cleanEmail.split('@')[0],
             email: cleanEmail,
-            role: profile.role || 'Student',
-            enrolled_videos: profile.enrolled_videos || [],
-            purchased_ebooks: profile.purchased_ebooks || [],
-            provider: 'google',
-            progress: (profile as any).progress || {},
-            certificates: (profile as any).certificates || [],
-            badges: (profile as any).badges || [],
-            streak: (profile as any).streak || null,
-            recently_viewed: (profile as any).recently_viewed || []
+            role: profile.role?.toLowerCase() === 'admin' ? 'admin' : 'student',
           });
 
         if (linkError) {
@@ -134,7 +127,7 @@ export async function GET(request: Request) {
             .from('profiles')
             .upsert({
               id: user.id,
-              name: profile.name,
+              name: profile.name || profile.full_name || user.user_metadata?.name || cleanEmail.split('@')[0],
               email: cleanEmail,
               role: profile.role || 'Student',
               enrolled_videos: profile.enrolled_videos || [],
@@ -170,34 +163,7 @@ export async function GET(request: Request) {
           .eq('id', user.id);
       }
 
-      // Complete login flow by creating/updating the local session
-      const role = profile.role || 'Student';
-      const name = profile.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
-      const provider = 'google'; // Linked to google now
-
-      console.log(`[OAuth Callback] Creating local session. User ID: ${user.id}`);
-      const sessionResult = await createLocalSessionForSupabaseUser(
-        user.id,
-        cleanEmail,
-        name,
-        role,
-        provider
-      );
-      
-      const localSessionToken = sessionResult.token;
-      if (localSessionToken) {
-        console.log("[OAuth Callback] Setting session token on redirectResponse");
-        redirectResponse.cookies.set('session', localSessionToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 60 * 60 * 24 * 7,
-          path: '/'
-        });
-      } else {
-        console.warn("[OAuth Callback] Local session token was not returned by createLocalSessionForSupabaseUser!");
-      }
-      
+      // Supabase session cookies are the only production identity token.
       console.log(`[OAuth Callback] Redirecting to: ${redirectOrigin}${next}`);
       return redirectResponse;
     } else {

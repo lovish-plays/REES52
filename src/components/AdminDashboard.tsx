@@ -14,6 +14,10 @@ import {
 import { getNotifications } from '@/app/actions/content';
 import { Plus, Trash2, FolderPlus, Cpu, BookOpen, Video, Radio, Link as LinkIcon, ExternalLink, Bell } from 'lucide-react';
 
+type RealtimeCleanupClient = {
+  removeChannel: (channel: unknown) => unknown;
+};
+
 interface Category {
   id: string;
   name: string;
@@ -97,7 +101,7 @@ export default function AdminDashboard({
     setNotifChannel(channel);
 
     return () => {
-      supabase.removeChannel(channel);
+      (supabase as RealtimeCleanupClient).removeChannel(channel);
     };
   }, []);
 

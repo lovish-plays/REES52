@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { GraduationCap, Mail, ExternalLink, Cpu, ShieldAlert, Award } from 'lucide-react';
+import { GraduationCap, Mail, ExternalLink, Cpu, Award } from 'lucide-react';
+import { isTeacherRole } from '@/lib/auth/roles';
 
 export default function Footer() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export default function Footer() {
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
             <span className="font-extrabold text-md tracking-wider text-slate-900 premium-logo-text">
-              REES<span className="text-cyan-600">52</span> <span className="text-[10px] font-bold text-slate-500 uppercase ml-1">Learning</span>
+              REES<span className="text-cyan-600">52</span> <span className="text-[10px] font-bold text-slate-500 uppercase ml-1">Academy</span>
             </span>
           </Link>
           <p className="text-xs text-slate-600 leading-relaxed">
@@ -61,24 +62,29 @@ export default function Footer() {
           <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-600">Learning Portal</h4>
           <ul className="flex flex-col gap-2 text-xs font-semibold">
             <li className="w-fit py-0.5">
-              <Link href="/" className="premium-nav-link text-slate-700">
-                Content Explorer
+              <Link href="/courses" className="premium-nav-link text-slate-700">
+                Courses
               </Link>
             </li>
             <li className="w-fit py-0.5">
-              <Link href="/my-learning" className="premium-nav-link text-slate-700">
-                My Learning Lectures
+              <Link href="/projects" className="premium-nav-link text-slate-700">
+                Projects
               </Link>
             </li>
             <li className="w-fit py-0.5">
-              <Link href="/my-stuff" className="premium-nav-link text-slate-700">
-                My Unlocked Ebooks
+              <Link href="/ebooks" className="premium-nav-link text-slate-700">
+                Ebooks
               </Link>
             </li>
-            {user?.role === 'Admin' && (
+            <li className="w-fit py-0.5">
+              <Link href="/dashboard" className="premium-nav-link text-slate-700">
+                My Learning
+              </Link>
+            </li>
+            {isTeacherRole(user?.role) && (
               <li className="w-fit py-0.5">
                 <Link href="/admin" className="premium-nav-link text-slate-900 font-black">
-                  Admin Control
+                  Teacher Studio
                 </Link>
               </li>
             )}
@@ -183,7 +189,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 border-t border-slate-200/40 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-        <span>© 2013 REES52 (Robotics Embedded Education Services Private Limited). All rights reserved.</span>
+        <span>Copyright 2013 REES52 (Robotics Embedded Education Services Private Limited). All rights reserved.</span>
         <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center sm:justify-end text-[10px] text-slate-500 font-bold uppercase tracking-widest">
           <Link href="/about" className="premium-nav-link text-slate-500 py-0.5">
             About Us

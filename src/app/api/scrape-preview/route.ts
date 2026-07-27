@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { getCurrentUser } from "@/app/actions/auth";
+import { isTeacherRole } from "@/lib/auth/roles";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser || !isTeacherRole(currentUser.role)) {
+    return NextResponse.json({ error: "Teacher access is required" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");
 
@@ -12,14 +19,32 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "URL parameter is missing" }, { status: 400 });
   }
 
+  let targetUrl: URL;
   try {
-    const { data: html } = await axios.get(url, {
+    targetUrl = new URL(url);
+  } catch {
+    return NextResponse.json({ error: "Enter a valid URL" }, { status: 400 });
+  }
+
+  const allowedHosts = new Set(["rees52.com", "www.rees52.com"]);
+  if (targetUrl.protocol !== "https:" || !allowedHosts.has(targetUrl.hostname.toLowerCase())) {
+    return NextResponse.json(
+      { error: "Only HTTPS product links from rees52.com are supported" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { data: html } = await axios.get<string>(targetUrl.toString(), {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5'
       },
-      timeout: 10000
+      timeout: 10000,
+      maxRedirects: 0,
+      maxContentLength: 1_000_000,
+      responseType: "text",
     });
 
     const $ = cheerio.load(html);
@@ -27,7 +52,7 @@ export async function GET(request: NextRequest) {
     let productTitle = null;
 
     // 1. CHOSEN TARGETING PATTERNS FOR REES52.COM
-    if (url.includes('rees52.com')) {
+    if (allowedHosts.has(targetUrl.hostname.toLowerCase())) {
       const mainImage = $('.product__media img').first().length ? $('.product__media img').first() :
                         $('.product-single__photo img').first().length ? $('.product-single__photo img').first() :
                         $('img[class*="product"]').first();
@@ -84,8 +109,9 @@ export async function GET(request: NextRequest) {
       title: cleanTitle
     });
 
-  } catch (error: any) {
-    console.error("Scraper Failure Execution Log:", error.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown scraper failure";
+    console.error("Scraper Failure Execution Log:", message);
     return NextResponse.json({ 
       success: false, 
       thumbnail: "https://rees52.com/fallback-placeholder.png",

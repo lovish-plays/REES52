@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldAlert, Sparkles, CheckCircle2, Lock, Mail, Key, ArrowLeft } from "lucide-react";
+import { ShieldAlert, Sparkles, CheckCircle2, ArrowLeft, GraduationCap, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sendPasswordResetOtpAction, verifyOtpAction, resetPasswordWithOtpAction } from "@/app/actions/auth";
+import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 
 type AuthMode = "signin" | "signup" | "forgot" | "otp" | "reset";
 
@@ -16,6 +17,9 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect_to") || "/";
+  const [portal, setPortal] = useState<"Student" | "Teacher">(
+    searchParams.get("portal") === "teacher" ? "Teacher" : "Student"
+  );
 
   const [mode, setMode] = useState<AuthMode>("signin");
   const [name, setName] = useState("");
@@ -35,9 +39,9 @@ function LoginForm() {
   useEffect(() => {
     if (user && !authLoading) {
       router.refresh();
-      router.push(redirectTo);
+      router.push(portal === "Teacher" ? "/admin" : redirectTo);
     }
-  }, [user, authLoading, redirectTo, router]);
+  }, [user, authLoading, redirectTo, router, portal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,17 +73,17 @@ function LoginForm() {
           }, 1800);
         }
       } else if (mode === "signin") {
-        const res = await signIn(cleanEmail, password);
+        const res = await signIn(cleanEmail, password, portal);
         if (res.error) {
           setError(res.error);
           setLoading(false);
         } else {
-          setSuccessMsg("Welcome Back!");
+          setSuccessMsg(portal === "Teacher" ? "Teacher Access Granted!" : "Welcome Back!");
           setShowSuccess(true);
           setLoading(false);
           setTimeout(() => {
             router.refresh();
-            router.push(redirectTo);
+            router.push(portal === "Teacher" ? "/admin" : redirectTo);
           }, 500);
         }
       } else if (mode === "forgot") {
@@ -125,7 +129,7 @@ function LoginForm() {
           }, 1800);
         }
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
@@ -223,7 +227,7 @@ function LoginForm() {
             </div>
             <p className="text-slate-600 font-semibold text-xs">
               {mode === "signup" && "Join REES52 Learning Hub in seconds."}
-              {mode === "signin" && "Sign in to access your learning dashboard."}
+              {mode === "signin" && (portal === "Teacher" ? "Sign in to create and manage learning content." : "Sign in to access your learning dashboard.")}
               {mode === "forgot" && "Receive a secure code to reset your account password."}
               {mode === "otp" && `Enter the OTP sent to ${email}.`}
               {mode === "reset" && "Enter a new secure password for your account."}
@@ -255,6 +259,26 @@ function LoginForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === "signin" && (
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white/50 p-1.5" aria-label="Choose login type">
+                <button
+                  type="button"
+                  onClick={() => setPortal("Student")}
+                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Student" ? "bg-slate-950 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
+                >
+                  <UserRound className="h-4 w-4" />
+                  Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPortal("Teacher")}
+                  className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Teacher" ? "bg-cyan-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  Teacher
+                </button>
+              </div>
+            )}
             {mode === "signup" && (
               <div className="space-y-1.5 animate-fade-in">
                 <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Name</Label>
@@ -373,7 +397,7 @@ function LoginForm() {
                "RESET PASSWORD"}
             </Button>
 
-            {(mode === "signin" || mode === "signup") && (
+            {hasSupabaseEnv && (mode === "signin" || mode === "signup") && (
               <>
                 <div className="relative my-6 flex items-center justify-center">
                   <div className="absolute inset-0 flex items-center">
@@ -427,7 +451,9 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => {
-                  setMode(mode === "signup" ? "signin" : "signup");
+                  const nextMode = mode === "signup" ? "signin" : "signup";
+                  setMode(nextMode);
+                  if (nextMode === "signup") setPortal("Student");
                   setError(null);
                   setInfoMessage(null);
                 }}

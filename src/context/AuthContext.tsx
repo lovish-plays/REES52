@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 import type { Session } from "@supabase/supabase-js";
-import type { User, UserProgress, UserCertificate, UserBadge, UserStreak } from "@/lib/db";
+import type { UserProgress, UserCertificate, UserBadge, UserStreak } from "@/lib/db";
+import { isTeacherRole, normalizeRole, type AppRole } from "@/lib/auth/roles";
 
 import {
   registerUser,
@@ -24,7 +26,7 @@ interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "Student" | "Admin";
+  role: AppRole;
   enrolled_videos: string[];
   purchased_ebooks: string[];
   provider?: string;
@@ -42,8 +44,9 @@ interface AuthContextType {
   session: Session | null;
   signIn: (
     email: string,
-    password: string
-  ) => Promise<{ success?: boolean; error?: string }>;
+    password: string,
+    portal?: "Student" | "Teacher"
+  ) => Promise<{ success?: boolean; error?: string; role?: AppRole }>;
   signUp: (
     name: string,
     email: string,
@@ -138,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        console.log("[AuthContext] Supabase profile query finished. data:", data, "error:", error);
+        console.log("[AuthContext] Supabase profile query finished.");
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.timeEnd(`supabase-db-query-${authUserId}`);
@@ -158,8 +161,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log(`[AuthContext] Fallback query completed in ${fallbackDur.toFixed(2)}ms`);
           
           if (serverUser && serverUser.id === authUserId) {
-            console.log("[AuthContext] Profile retrieved via server action fallback:", serverUser);
-            const normalizedRole = (serverUser.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
+            console.log("[AuthContext] Profile retrieved via server action fallback.");
+            const normalizedRole = normalizeRole(serverUser.role);
             setUser({
               ...serverUser,
               role: normalizedRole
@@ -197,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single<Omit<ProfileRow, 'provider'>>();
 
         if (!insertRes.error && insertRes.data) {
-          console.log("[AuthContext] Self-healing profile created successfully:", insertRes.data);
+          console.log("[AuthContext] Self-healing profile created successfully.");
           data = {
             ...insertRes.data,
             provider: 'email'
@@ -207,9 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      const role = (data?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as
-        | "Admin"
-        | "Student";
+      const role = normalizeRole(data?.role);
 
       const finalName =
         data?.name?.trim() ||
@@ -219,7 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const hasProfile = data ? true : (error ? undefined : false);
 
-      console.log("[AuthContext] Setting user state. role:", role, "name:", finalName, "hasProfile:", hasProfile);
+      console.log("[AuthContext] Setting authenticated user state.");
       setUser({
         id: authUserId,
         email,
@@ -283,17 +284,109 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let isSubscribed = true;
+    let authEventHandled = false;
+
+    const setFallbackUser = async () => {
+      try {
+        const localUser = await Promise.race([
+          getCurrentUser(),
+          new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 2500)),
+        ]);
+
+        if (!isSubscribed) return;
+
+        if (localUser) {
+          const finalRole = normalizeRole(localUser.role);
+          setUser({
+            id: localUser.id,
+            name: localUser.name,
+            email: localUser.email,
+            role: finalRole,
+            enrolled_videos: localUser.enrolled_videos || [],
+            purchased_ebooks: localUser.purchased_ebooks || [],
+            provider: localUser.provider,
+            hasProfile: true
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (e) {
+        console.error("Local session fetch failed:", e);
+        if (isSubscribed) {
+          setUser(null);
+        }
+      } finally {
+        if (isSubscribed) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    const resolveInitialAuth = async () => {
+      try {
+        const { data } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<{ data: { session: null } }>((resolve) =>
+            window.setTimeout(() => resolve({ data: { session: null } }), 2500),
+          ),
+        ]);
+
+        if (!isSubscribed || authEventHandled) return;
+
+        const initialSession = data.session;
+        setSession(initialSession ?? null);
+
+        if (initialSession?.user) {
+          const u = initialSession.user;
+          const authProvider = u.app_metadata?.provider || "email";
+          const role: AppRole = "Student";
+          const name = u.user_metadata?.name || u.email?.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
+
+          setUser((prev) => {
+            if (prev && prev.id === u.id && prev.hasProfile) {
+              return prev;
+            }
+            return {
+              id: u.id,
+              email: u.email ?? "",
+              name,
+              role,
+              enrolled_videos: prev?.enrolled_videos ?? [],
+              purchased_ebooks: prev?.purchased_ebooks ?? [],
+              provider: authProvider,
+              hasProfile: prev?.hasProfile
+            };
+          });
+          setIsLoading(false);
+
+          loadProfile(
+            u.id,
+            u.email ?? "",
+            (u.user_metadata?.name as string | undefined) ?? undefined
+          );
+        } else {
+          await setFallbackUser();
+        }
+      } catch (e) {
+        console.error("[AuthContext] Initial auth check failed:", e);
+        if (isSubscribed) {
+          setSession(null);
+          await setFallbackUser();
+        }
+      }
+    };
 
     // Listen to auth changes (including initial session load)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isSubscribed) return;
+      authEventHandled = true;
 
-      console.log("[AuthContext] onAuthStateChange event:", event, "session user ID:", newSession?.user?.id);
+      console.log("[AuthContext] Authentication state changed:", event);
 
       if (newSession?.user) {
         const u = newSession.user;
         const authProvider = u.app_metadata?.provider || "email";
-        const role = (u.user_metadata?.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
+        const role: AppRole = "Student";
         const name = u.user_metadata?.name || u.email?.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
 
         // Set session and default user state synchronously in one rendering cycle
@@ -323,36 +416,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
       } else {
         setSession(null);
-        // Try to check local session fallback
-        try {
-          const localUser = await getCurrentUser();
-          if (localUser && isSubscribed) {
-            const finalRole = (localUser.role?.toLowerCase() === "admin" ? "Admin" : "Student") as "Admin" | "Student";
-            setUser({
-              id: localUser.id,
-              name: localUser.name,
-              email: localUser.email,
-              role: finalRole,
-              enrolled_videos: localUser.enrolled_videos || [],
-              purchased_ebooks: localUser.purchased_ebooks || [],
-              provider: localUser.provider,
-              hasProfile: true
-            });
-          } else if (isSubscribed) {
-            setUser(null);
-          }
-        } catch (e) {
-          console.error("Local session fetch failed:", e);
-          if (isSubscribed) {
-            setUser(null);
-          }
-        } finally {
-          if (isSubscribed) {
-            setIsLoading(false);
-          }
-        }
+        await setFallbackUser();
       }
     });
+
+    resolveInitialAuth();
 
     return () => {
       isSubscribed = false;
@@ -360,9 +428,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    console.log("[AuthContext] signIn started for email:", email);
+  const signIn = async (email: string, password: string, portal: "Student" | "Teacher" = "Student") => {
+    console.log("[AuthContext] Sign-in started.");
     const loginStart = performance.now();
+    let authenticatedRole: AppRole = "Student";
     setIsLoading(true);
     // Prevent the onAuthStateChange listener from triggering concurrent loadProfile calls
     profileLoadingRef.current = true;
@@ -374,9 +443,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn("[AuthContext] Supabase signIn failed:", error.message);
         console.log("[AuthContext] Trying local fallback loginUser...");
         const localRes = await loginUser({ email, password });
-        console.log("[AuthContext] local fallback loginUser response:", localRes);
         if (localRes.success && localRes.user) {
-          const finalRole = (localRes.user.role?.toLowerCase() === 'admin' ? 'Admin' as const : 'Student' as const);
+          const finalRole = normalizeRole(localRes.user.role);
+          if (portal === "Teacher" && !isTeacherRole(finalRole)) {
+            await logoutUser();
+            profileLoadingRef.current = false;
+            setIsLoading(false);
+            return { error: "This account has student access. Please use Student login or ask an administrator to assign the Teacher role." };
+          }
           setUser({
             id: localRes.user.id,
             email: localRes.user.email,
@@ -392,7 +466,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoading(false);
           const loginDuration = performance.now() - loginStart;
           console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms (local fallback)`);
-          return { success: true };
+          return { success: true, role: finalRole };
         } else {
           console.warn("[AuthContext] Local fallback sign in failed:", localRes.error);
           profileLoadingRef.current = false;
@@ -401,18 +475,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      console.log("[AuthContext] Supabase signInWithPassword succeeded. data.user:", data.user?.id);
+      console.log("[AuthContext] Supabase sign-in succeeded.");
       console.log("[AuthContext] Setting session...");
       setSession(data.session ?? null);
 
       if (data.user) {
-        const rawRole = data.user.user_metadata?.role || 'Student';
-        const role = (rawRole.toLowerCase() === 'admin' ? 'Admin' : 'Student') as "Admin" | "Student";
         const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
         
         console.log("[AuthContext] Calling createLocalSessionForSupabaseUser...");
-        const localSessionRes = await createLocalSessionForSupabaseUser(data.user.id, data.user.email ?? '', name, role);
-        console.log("[AuthContext] createLocalSessionForSupabaseUser completed:", localSessionRes);
+        const localSessionRes = await createLocalSessionForSupabaseUser();
+        console.log("[AuthContext] Authenticated profile synchronization completed.");
+
+        if (!localSessionRes.success || !localSessionRes.user) {
+          await Promise.all([supabase.auth.signOut(), logoutUser()]);
+          setSession(null);
+          setUser(null);
+          profileLoadingRef.current = false;
+          setIsLoading(false);
+          return { error: localSessionRes.error || "Unable to load your learning profile." };
+        }
+
+        const role = normalizeRole(localSessionRes.user?.role);
+        authenticatedRole = role;
+
+        if (portal === "Teacher" && !isTeacherRole(role)) {
+          await Promise.all([supabase.auth.signOut(), logoutUser()]);
+          setSession(null);
+          setUser(null);
+          profileLoadingRef.current = false;
+          setIsLoading(false);
+          return { error: "This account has student access. Please use Student login or ask an administrator to assign the Teacher role." };
+        }
 
         // Update authenticated state immediately so user sees UI change instantly
         setUser({
@@ -448,7 +541,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const loginDuration = performance.now() - loginStart;
       console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms`);
-      return { success: true };
+      return { success: true, role: authenticatedRole };
     } catch (err) {
       console.error("[AuthContext] signIn encountered unexpected error:", err);
       profileLoadingRef.current = false;
@@ -459,6 +552,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (name: string, email: string, password: string) => {
     setIsLoading(true);
+
+    if (!hasSupabaseEnv) {
+      try {
+        const localRes = await registerUser({ name, email, password });
+        if (localRes.success && localRes.user) {
+          const localUser = localRes.user;
+          const role = normalizeRole(localUser.role);
+
+          setUser({
+            id: localUser.id,
+            email: localUser.email,
+            name: localUser.name,
+            role,
+            enrolled_videos: localUser.enrolled_videos ?? [],
+            purchased_ebooks: localUser.purchased_ebooks ?? [],
+            provider: localUser.provider || 'email',
+            hasProfile: true
+          });
+          setIsLoading(false);
+          return { success: true };
+        }
+
+        setIsLoading(false);
+        return { error: localRes.error || "Unable to create account in local mode." };
+      } catch (err) {
+        console.error("Local JSON registerUser failed:", err);
+        setIsLoading(false);
+        return { error: err instanceof Error ? err.message : "Failed to create local account." };
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -467,78 +591,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
 
-    let localUser: Omit<User, 'password_hash'> | null = null;
-    try {
-      const localRes = await registerUser({ name, email, password });
-      if (localRes.success && localRes.user) {
-        localUser = localRes.user as Omit<User, 'password_hash'>;
-      }
-    } catch (err) {
-      console.error("Local JSON registerUser failed:", err);
-    }
-
     if (error) {
-      console.warn("Supabase signUp failed, trying local fallback signup:", error.message);
-      if (localUser) {
-        setUser({
-          id: localUser.id,
-          email: localUser.email,
-          name: localUser.name,
-          role: localUser.role as "Student" | "Admin",
-          enrolled_videos: localUser.enrolled_videos ?? [],
-          purchased_ebooks: localUser.purchased_ebooks ?? [],
-          provider: localUser.provider || 'email',
-          hasProfile: true
-        });
-        setIsLoading(false);
-        return { success: true };
-      } else {
-        setIsLoading(false);
-        return { error: error.message };
-      }
+      console.warn("Supabase signUp failed:", error.message);
+      setIsLoading(false);
+      return { error: error.message };
     }
 
-    // Create a matching profile row (best-effort; RLS must allow insert for anon signups).
+    // Create a matching profile row (best-effort; the database trigger also handles email signups).
     if (data.user) {
       try {
         await supabase.from("profiles").upsert({
           id: data.user.id,
           name,
+          full_name: name,
           email: email.trim().toLowerCase(),
           role: "Student",
           enrolled_videos: [],
           purchased_ebooks: [],
+          provider: data.user.app_metadata?.provider || "email",
         });
       } catch (err) {
         console.error("Supabase profiles write failed (can be skipped for dev/E2E):", err);
       }
 
       try {
-        await createLocalSessionForSupabaseUser(data.user.id, email, name, "Student");
+        await createLocalSessionForSupabaseUser();
       } catch (syncErr) {
         console.error("Local JSON db sync failed on signUp:", syncErr);
       }
-      
-      // If email confirmation is required, login automatically via the local user state
-      if (!data.session && localUser) {
+
+      if (data.session) {
+        setSession(data.session);
+        await loadProfile(data.user.id, email, name);
+      } else {
         setUser({
           id: data.user.id,
-          email: localUser.email,
-          name: localUser.name,
-          role: localUser.role as "Student" | "Admin",
-          enrolled_videos: localUser.enrolled_videos ?? [],
-          purchased_ebooks: localUser.purchased_ebooks ?? [],
-          provider: localUser.provider || 'email',
+          email: data.user.email ?? email,
+          name,
+          role: "Student",
+          enrolled_videos: [],
+          purchased_ebooks: [],
+          provider: data.user.app_metadata?.provider || 'email',
           hasProfile: true
         });
-      } else {
-        await loadProfile(data.user.id, email, name);
       }
     }
 
-    if (data.session) {
-      setSession(data.session);
-    }
     setIsLoading(false);
     return { success: true };
   };
@@ -676,6 +774,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     setIsLoading(true);
+    if (!hasSupabaseEnv) {
+      setIsLoading(false);
+      return { error: "Google sign-in is not available in local mode. Please use email and password." };
+    }
+
     try {
       const getURL = () => {
         if (typeof window !== 'undefined') {

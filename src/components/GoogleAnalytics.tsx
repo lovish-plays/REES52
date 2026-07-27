@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-E20N19X52L"; // REES52 fallback code
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 // Declare typescript global gtag function
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
+    dataLayer: unknown[];
+    gtag: (command: string, target: string, config?: Record<string, unknown>) => void;
   }
 }
 
@@ -19,7 +19,7 @@ export default function GoogleAnalytics() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.gtag) return;
+    if (!GA_MEASUREMENT_ID || typeof window === "undefined" || !window.gtag) return;
     
     const url = pathname + searchParams.toString();
     
@@ -28,6 +28,8 @@ export default function GoogleAnalytics() {
       page_path: url,
     });
   }, [pathname, searchParams]);
+
+  if (!GA_MEASUREMENT_ID) return null;
 
   return (
     <>

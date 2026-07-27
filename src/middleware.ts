@@ -1,21 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-
-function decodeJwtPayload(token: string) {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    let payload = parts[1];
-    const pad = 4 - (payload.length % 4);
-    if (pad < 4) {
-      payload += '='.repeat(pad);
-    }
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decoded);
-  } catch (e) {
-    return null;
-  }
-}
+import { decodeOpaquePath, opaquePathFor } from "@/lib/opaque-route";
 
 function addSecurityHeaders(response: NextResponse) {
   response.headers.set("X-Frame-Options", "DENY");
@@ -42,8 +27,69 @@ function addSecurityHeaders(response: NextResponse) {
   return response;
 }
 
+const publicPaths = new Set([
+  "/",
+  "/login",
+  "/ads.txt",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/cookie-policy",
+  "/auth/callback",
+]);
+const canonicalOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "https://rees52.tech").replace(/\/$/, "");
+
+function isPublicPath(pathname: string) {
+  return publicPaths.has(pathname) || [
+    "/courses",
+    "/projects",
+    "/ebooks",
+    "/videos",
+    "/learn",
+  ].some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+function shouldMaskPath(pathname: string) {
+  return (
+    !isPublicPath(pathname) &&
+    pathname !== "/ads.txt" &&
+    pathname !== "/robots.txt" &&
+    pathname !== "/sitemap.xml" &&
+    pathname !== "/auth/callback" &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next")
+  );
+}
+
+function copyResponseCookies(source: NextResponse, target: NextResponse) {
+  source.cookies.getAll().forEach((cookie) => target.cookies.set(cookie));
+  return target;
+}
+
+function rewriteOpaquePath(request: NextRequest, response: NextResponse, pathname: string, search: string) {
+  const targetUrl = new URL(`${pathname}${search}`, request.url);
+  return addSecurityHeaders(copyResponseCookies(response, NextResponse.rewrite(targetUrl, { request })));
+}
+
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
+  const { pathname: originalPathname } = request.nextUrl;
+  const opaqueToken = originalPathname.startsWith("/r/")
+    ? originalPathname.slice(3).split("/")[0]
+    : null;
+  const decodedOpaquePath = opaqueToken ? decodeOpaquePath(opaqueToken) : null;
+  const isOpaqueRequest = Boolean(opaqueToken);
+  const effectiveUrl = decodedOpaquePath ? new URL(decodedOpaquePath, request.url) : null;
+  const pathname = effectiveUrl?.pathname || originalPathname;
+  const search = effectiveUrl?.search || request.nextUrl.search;
+
+  if (isOpaqueRequest && !decodedOpaquePath) {
+    return addSecurityHeaders(NextResponse.rewrite(new URL("/_not-found", request.url), { request }));
+  }
+
   if (
     host.includes("rees-52.vercel.app") ||
     (host.endsWith(".vercel.app") && 
@@ -51,8 +97,7 @@ export async function middleware(request: NextRequest) {
      !host.includes("127.0.0.1") && 
      !host.includes("192.168."))
   ) {
-    console.log(`[Middleware] Legacy/subdomain host detected: ${host}. Redirecting to rees52.tech`);
-    const targetUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, "https://rees52.tech");
+    const targetUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, canonicalOrigin);
     return addSecurityHeaders(NextResponse.redirect(targetUrl, { status: 301 }));
   }
 
@@ -61,9 +106,32 @@ export async function middleware(request: NextRequest) {
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
+    if (process.env.NODE_ENV === "production" && !isPublicPath(pathname)) {
+      return addSecurityHeaders(
+        NextResponse.json(
+          { error: "Authentication service is not configured." },
+          { status: 503 }
+        )
+      );
+    }
+
+    if (request.method === "GET" && !request.headers.has("next-action")) {
+      if (isOpaqueRequest) {
+        return rewriteOpaquePath(request, supabaseResponse, pathname, search);
+      }
+      if (shouldMaskPath(pathname)) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = opaquePathFor(pathname, request.nextUrl.search);
+        redirectUrl.search = "";
+        return addSecurityHeaders(NextResponse.redirect(redirectUrl, { status: 307 }));
+      }
+    }
+
     return addSecurityHeaders(supabaseResponse);
   }
 
@@ -88,30 +156,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { pathname } = request.nextUrl;
-  console.log(`[Middleware] Request received for: ${pathname} [${request.method}]`);
-
-  // 1. Refresh Supabase session token
+  // Refresh and verify the Supabase session. Local development sessions are
+  // intentionally never accepted as production route-gating credentials.
   const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-  console.log(`[Middleware] Supabase user: ${supabaseUser ? `${supabaseUser.email} (${supabaseUser.id})` : 'None'}`);
-
-  // 2. Validate local fallback session token if present
-  let hasLocalSession = false;
-  const localSession = request.cookies.get("session")?.value;
-  if (localSession) {
-    const payload = decodeJwtPayload(localSession);
-    if (payload && payload.exp && payload.exp * 1000 > Date.now()) {
-      hasLocalSession = true;
-      console.log(`[Middleware] Valid local session cookie found for user ID: ${payload.userId || payload.id}`);
-    } else {
-      console.log(`[Middleware] Local session cookie found but is invalid or expired.`);
-    }
-  } else {
-    console.log(`[Middleware] No local session cookie found.`);
-  }
-
-  const isAuthenticated = !!supabaseUser || hasLocalSession;
-  console.log(`[Middleware] Path: ${pathname} | isAuthenticated: ${isAuthenticated}`);
+  const isAuthenticated = !!supabaseUser;
 
   // Exclude API routes and public metadata assets (ads.txt, robots.txt, sitemap.xml) from redirect checks
   if (
@@ -132,11 +180,10 @@ export async function middleware(request: NextRequest) {
     return addSecurityHeaders(supabaseResponse);
   }
 
-  if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage) {
-    console.log(`[Middleware] Redirecting unauthenticated user from ${pathname} to /login`);
+  if (!isAuthenticated && !isLoginPage && !isHomePage && !isInformationalPage && !isPublicPath(pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("redirect_to", pathname + request.nextUrl.search);
+    redirectUrl.searchParams.set("redirect_to", pathname + search);
     
     // Normalize domain for production redirect
     const redirectHost = redirectUrl.hostname;
@@ -145,8 +192,8 @@ export async function middleware(request: NextRequest) {
       !redirectHost.includes("127.0.0.1") &&
       !redirectHost.includes("192.168.")
     ) {
-      redirectUrl.protocol = "https:";
-      redirectUrl.host = "rees52.tech";
+      redirectUrl.protocol = new URL(canonicalOrigin).protocol;
+      redirectUrl.host = new URL(canonicalOrigin).host;
     }
     
     const redirectResponse = NextResponse.redirect(redirectUrl);
@@ -158,8 +205,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthenticated && isLoginPage) {
-    const redirectTo = request.nextUrl.searchParams.get("redirect_to") || "/";
-    console.log(`[Middleware] Redirecting authenticated user from /login to: ${redirectTo}`);
+    const redirectTo = new URLSearchParams(search).get("redirect_to") || "/";
     const redirectUrl = new URL(redirectTo, request.url);
     
     // Normalize domain for production redirect
@@ -169,8 +215,8 @@ export async function middleware(request: NextRequest) {
       !redirectHost.includes("127.0.0.1") &&
       !redirectHost.includes("192.168.")
     ) {
-      redirectUrl.protocol = "https:";
-      redirectUrl.host = "rees52.tech";
+      redirectUrl.protocol = new URL(canonicalOrigin).protocol;
+      redirectUrl.host = new URL(canonicalOrigin).host;
     }
     
     const redirectResponse = NextResponse.redirect(redirectUrl);
@@ -179,6 +225,17 @@ export async function middleware(request: NextRequest) {
       redirectResponse.cookies.set(cookie);
     });
     return addSecurityHeaders(redirectResponse);
+  }
+
+  if (isOpaqueRequest) {
+    return rewriteOpaquePath(request, supabaseResponse, pathname, search);
+  }
+
+  if (shouldMaskPath(pathname)) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = opaquePathFor(pathname, request.nextUrl.search);
+    redirectUrl.search = "";
+    return addSecurityHeaders(NextResponse.redirect(redirectUrl, { status: 307 }));
   }
 
   return addSecurityHeaders(supabaseResponse);

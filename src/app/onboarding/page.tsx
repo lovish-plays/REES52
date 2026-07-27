@@ -9,6 +9,11 @@ import { createLocalSessionForSupabaseUser } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { schoolClassOptions } from "@/lib/lms/class-categories";
+
+type ProfileWriteResult = {
+  error: { message: string } | null;
+};
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -16,6 +21,7 @@ export default function OnboardingPage() {
   
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [name, setName] = useState("");
+  const [classLevel, setClassLevel] = useState<(typeof schoolClassOptions)[number]>("Class 6");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -73,31 +79,36 @@ export default function OnboardingPage() {
       const provider = sessionUser.app_metadata?.provider || 'google';
 
       // 1. Create the profile row in Supabase
-      let { error: profileError } = await supabase
+      const profileInsert = (await supabase
         .from("profiles")
         .insert({
           id: sessionUser.id,
           name: name.trim(),
           email: sessionUser.email,
           role: "Student",
+          class_level: classLevel,
+          enrolled_courses: [],
           enrolled_videos: [],
           purchased_ebooks: [],
           provider: provider
-        });
+        })) as ProfileWriteResult;
+      let profileError = profileInsert.error;
 
       if (profileError && (profileError.message.includes("column") || profileError.message.includes("provider"))) {
         console.log("[Onboarding] Profiles table lacks provider column. Retrying insert without it.");
-        const { error: retryError } = await supabase
+        const retryInsert = (await supabase
           .from("profiles")
           .insert({
             id: sessionUser.id,
             name: name.trim(),
             email: sessionUser.email,
             role: "Student",
+            class_level: classLevel,
+            enrolled_courses: [],
             enrolled_videos: [],
             purchased_ebooks: []
-          });
-        profileError = retryError;
+          })) as ProfileWriteResult;
+        profileError = retryInsert.error;
       }
 
       if (profileError) {
@@ -107,17 +118,14 @@ export default function OnboardingPage() {
         return;
       }
 
-      // 2. Create the matching local session
-      const localSessionRes = await createLocalSessionForSupabaseUser(
-        sessionUser.id,
-        sessionUser.email ?? "",
-        name.trim(),
-        "Student",
-        provider
-      );
+      // 2. Synchronize the profile from the authenticated Supabase session.
+      const localSessionRes = await createLocalSessionForSupabaseUser();
 
-      if (!localSessionRes.success) {
-        console.error("[Onboarding] Local session creation failed.");
+      if (!localSessionRes.success || !localSessionRes.user) {
+        console.error("[Onboarding] Authenticated profile synchronization failed:", localSessionRes.error);
+        setError(localSessionRes.error || "Failed to finish your profile setup.");
+        setLoading(false);
+        return;
       }
 
       // 3. Refresh user state in Context & Redirect to '/'
@@ -175,6 +183,21 @@ export default function OnboardingPage() {
               disabled
               className="glass-input rounded-xl text-xs py-2.5 bg-slate-100/55 cursor-not-allowed opacity-75"
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="classLevel" className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              School Class
+            </Label>
+            <select
+              id="classLevel"
+              value={classLevel}
+              onChange={(event) => setClassLevel(event.target.value as (typeof schoolClassOptions)[number])}
+              disabled={loading}
+              className="glass-input w-full rounded-xl bg-white/70 px-3 py-2.5 text-xs font-semibold text-slate-800"
+            >
+              {schoolClassOptions.map((schoolClass) => <option key={schoolClass}>{schoolClass}</option>)}
+            </select>
           </div>
 
           <div className="space-y-1.5">

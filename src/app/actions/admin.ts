@@ -4,15 +4,16 @@ import { getCurrentUser } from './auth';
 import { createClient } from '@/lib/supabaseServer';
 import { randomUUID } from 'crypto';
 import { toUUID, fromUUID } from '@/lib/uuidHelper';
+import { isTeacherRole } from '@/lib/auth/roles';
 
 // Run auth check and DB client creation in parallel
-async function getAdminClient() {
+async function getTeacherClient() {
   const [user, supabase] = await Promise.all([
     getCurrentUser(),
     createClient(),
   ]);
-  if (!user || user.role !== 'Admin') {
-    throw new Error('Unauthorized. Admin privilege required.');
+  if (!user || !isTeacherRole(user.role)) {
+    throw new Error('Unauthorized. Teacher access is required.');
   }
   return supabase;
 }
@@ -22,7 +23,7 @@ async function getAdminClient() {
 export async function addCategory(name: string, slug: string) {
   if (!name || !slug) return { error: 'Missing required fields' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const newId = randomUUID();
     const cleanSlug = slug.toLowerCase().replace(/\s+/g, '-');
 
@@ -41,7 +42,7 @@ export async function addCategory(name: string, slug: string) {
 
 export async function deleteCategory(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('categories').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
@@ -62,7 +63,7 @@ export async function addProduct(formData: {
   if (!name || !external_purchase_url || !category_id)
     return { error: 'Missing required fields' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { data, error } = await supabase
       .from('products')
       .insert({
@@ -93,7 +94,7 @@ export async function addProduct(formData: {
 
 export async function deleteProduct(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('products').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
@@ -114,7 +115,7 @@ export async function addEbook(formData: {
   if (!title || !pdf_url || !category_id || !parent_product_id)
     return { error: 'Missing required fields' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('ebooks')
@@ -148,7 +149,7 @@ export async function addEbook(formData: {
 
 export async function deleteEbook(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('ebooks').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
@@ -169,7 +170,7 @@ export async function addVideo(formData: {
   if (!title || !youtube_url || !category_id || !parent_product_id)
     return { error: 'Missing required fields' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('videos')
@@ -203,7 +204,7 @@ export async function addVideo(formData: {
 
 export async function deleteVideo(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('videos').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
@@ -225,7 +226,7 @@ export async function addWebinar(formData: {
   if (!title || !description || !meeting_url || !schedule_date)
     return { error: 'Missing required fields' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { data, error } = await supabase
       .from('webinars')
       .insert({
@@ -258,7 +259,7 @@ export async function addWebinar(formData: {
 
 export async function deleteWebinar(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('webinars').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };
@@ -270,7 +271,7 @@ export async function deleteWebinar(id: string) {
 export async function addNotification(message: string, link?: string) {
   if (!message) return { error: 'Message is required' };
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { data, error } = await supabase
       .from('notifications')
       .insert({
@@ -297,7 +298,7 @@ export async function addNotification(message: string, link?: string) {
 
 export async function deleteNotification(id: string) {
   try {
-    const supabase = await getAdminClient();
+    const supabase = await getTeacherClient();
     const { error } = await supabase.from('notifications').delete().eq('id', toUUID(id));
     if (error) return { error: error.message };
     return { success: true };

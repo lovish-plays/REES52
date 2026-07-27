@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { ShieldAlert, Sparkles, CheckCircle2, Lock, Mail, Key, ArrowLeft } from "lucide-react";
+import { ShieldAlert, Sparkles, CheckCircle2, ArrowLeft, GraduationCap, UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sendPasswordResetOtpAction, verifyOtpAction, resetPasswordWithOtpAction } from "@/app/actions/auth";
+import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -18,8 +20,10 @@ type AuthMode = "signin" | "signup" | "forgot" | "otp" | "reset";
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signIn, signUp, signInWithGoogle } = useAuth();
+  const router = useRouter();
 
   const [mode, setMode] = useState<AuthMode>("signin");
+  const [portal, setPortal] = useState<"Student" | "Teacher">("Student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,18 +40,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   useEffect(() => {
     if (!isOpen) {
-      setMode("signin");
-      setName("");
-      setEmail("");
-      setPassword("");
-      setOtp("");
-      setNewPassword("");
-      setError(null);
-      setInfoMessage(null);
-      setMockOtpValue(null);
-      setLoading(false);
-      setShowSuccess(false);
-      setSuccessMsg("");
+      const resetTimer = window.setTimeout(() => {
+        setMode("signin");
+        setPortal("Student");
+        setName("");
+        setEmail("");
+        setPassword("");
+        setOtp("");
+        setNewPassword("");
+        setError(null);
+        setInfoMessage(null);
+        setMockOtpValue(null);
+        setLoading(false);
+        setShowSuccess(false);
+        setSuccessMsg("");
+      }, 0);
+
+      return () => window.clearTimeout(resetTimer);
     }
   }, [isOpen]);
 
@@ -80,16 +89,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }, 1800);
         }
       } else if (mode === "signin") {
-        const res = await signIn(cleanEmail, password);
+        const res = await signIn(cleanEmail, password, portal);
         if (res.error) {
           setError(res.error);
           setLoading(false);
         } else {
-          setSuccessMsg("Welcome Back!");
+          setSuccessMsg(portal === "Teacher" ? "Teacher Access Granted!" : "Welcome Back!");
           setShowSuccess(true);
           setLoading(false);
           setTimeout(() => {
             onClose();
+            if (portal === "Teacher") router.push("/admin");
           }, 300);
         }
       } else if (mode === "forgot") {
@@ -135,7 +145,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }, 1800);
         }
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
@@ -228,7 +238,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </div>
             <DialogDescription className="text-slate-600 font-semibold text-xs">
               {mode === "signup" && "Join REES52 Learning Hub in seconds."}
-              {mode === "signin" && "Sign in to access your learning dashboard."}
+              {mode === "signin" && (portal === "Teacher" ? "Sign in to create and manage learning content." : "Sign in to access your learning dashboard.")}
               {mode === "forgot" && "Receive a secure code to reset your account password."}
               {mode === "otp" && `Enter the OTP sent to ${email}.`}
               {mode === "reset" && "Enter a new secure password for your account."}
@@ -260,6 +270,26 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             )}
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {mode === "signin" && (
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white/50 p-1.5" aria-label="Choose login type">
+                  <button
+                    type="button"
+                    onClick={() => setPortal("Student")}
+                    className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Student" ? "bg-slate-950 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
+                  >
+                    <UserRound className="h-4 w-4" />
+                    Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPortal("Teacher")}
+                    className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Teacher" ? "bg-cyan-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
+                  >
+                    <GraduationCap className="h-4 w-4" />
+                    Teacher
+                  </button>
+                </div>
+              )}
               {mode === "signup" && (
                 <div className="space-y-1.5">
                   <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-500">Name</Label>
@@ -378,7 +408,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                  "RESET PASSWORD"}
               </Button>
 
-              {(mode === "signin" || mode === "signup") && (
+              {hasSupabaseEnv && (mode === "signin" || mode === "signup") && (
                 <>
                   <div className="relative my-4 flex items-center justify-center">
                     <div className="absolute inset-0 flex items-center">
@@ -432,7 +462,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setMode(mode === "signup" ? "signin" : "signup");
+                    const nextMode = mode === "signup" ? "signin" : "signup";
+                    setMode(nextMode);
+                    if (nextMode === "signup") setPortal("Student");
                     setError(null);
                     setInfoMessage(null);
                   }}

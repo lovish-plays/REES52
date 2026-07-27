@@ -3,13 +3,10 @@
 import { useEffect, useState } from "react";
 
 export default function CyberBackground() {
-  const [mounted, setMounted] = useState(false);
-  const [shouldAnimate, setShouldAnimate] = useState(true);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const screenQuery = window.matchMedia("(min-width: 1024px)");
     
@@ -18,21 +15,20 @@ export default function CyberBackground() {
       setShouldAnimate(!motionQuery.matches && screenQuery.matches);
     };
     
-    updateStates();
+    const initialTimer = window.setTimeout(updateStates, 0);
     
     motionQuery.addEventListener("change", updateStates);
     screenQuery.addEventListener("change", updateStates);
     
     return () => {
+      window.clearTimeout(initialTimer);
       motionQuery.removeEventListener("change", updateStates);
       screenQuery.removeEventListener("change", updateStates);
     };
   }, []);
 
-  if (!mounted) return null;
-
   return (
-    <div className="fixed inset-0 pointer-events-none select-none z-[-1] overflow-hidden bg-[#F7F4EB]">
+    <div className="fixed inset-0 pointer-events-none select-none z-[-1] overflow-hidden bg-[#f7fbff]">
       {/* Clean background subtle dot grid */}
       <div 
         className="absolute inset-0 opacity-[0.02]" 

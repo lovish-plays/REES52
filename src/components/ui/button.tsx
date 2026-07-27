@@ -6,14 +6,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/30 focus-visible:ring-offset-0",
+  "inline-flex min-w-0 items-center justify-center gap-2 rounded-lg text-center text-sm font-semibold leading-none transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/30 focus-visible:ring-offset-0",
   {
     variants: {
       variant: {
         default:
-          "bg-cyan-600/10 text-slate-900 border border-cyan-500/20 hover:bg-cyan-600/20 hover:border-cyan-400/40 shadow-sm",
+          "border border-slate-200 bg-white/85 text-slate-900 shadow-sm hover:border-sky-300 hover:bg-white hover:text-sky-900",
         primary:
-          "bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 shadow-md transition-all active:scale-[0.98]",
+          "border border-sky-500/20 bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-md shadow-sky-600/15 hover:from-sky-500 hover:to-blue-500 active:scale-[0.98]",
         ghost: "bg-transparent text-slate-800 hover:bg-slate-600/10",
         destructive:
           "bg-rose-600/10 text-rose-900 border border-rose-500/20 hover:bg-rose-600/20",
@@ -53,4 +53,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 export { Button, buttonVariants };
-

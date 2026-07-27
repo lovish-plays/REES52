@@ -25,7 +25,7 @@ export default function AelosChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "Greetings, Maker! I am AELOS, your cybernetic AI mentor. I am equipped to guide your learning journey! Click any of the quick actions below, or ask me any question about Arduino coding, electronics, and microcontrollers.",
+      text: "Hi Maker, I am your REES52 AI learning mentor. Use the quick actions below, or ask me about Arduino, electronics, robotics projects, components, or course progress.",
       timestamp: new Date(),
     },
   ]);
@@ -45,20 +45,20 @@ export default function AelosChatbot() {
     // ── Upgraded conversational EdTech quick actions ──
     if (q.includes("recommend a project") || q.includes("recommend")) {
       return {
-        text: "I highly recommend building the 'Mechanical Spider Robot Kit'! It is an immersive course that covers multi-servo calibration, robotics gait kinematics, and obstacle avoidance programming.",
+        text: "Start with the Line Follower Robot or Obstacle Avoiding Robot. Both are practical builds with components, circuit guidance, source code, and troubleshooting steps.",
         actions: [
-          { label: "View Spider Robot Kit", link: "/?type=products" },
-          { label: "Explore Prototyping kits", link: "/?type=products" }
+          { label: "View Line Follower Project", link: "/projects/line-follower-robot" },
+          { label: "Browse Project Library", link: "/projects" }
         ]
       };
     }
 
     if (q.includes("suggest beginner projects") || q.includes("beginner")) {
       return {
-        text: "For a smooth start, I suggest the 'Ultrasonic Obstacle Detector' video lecture. It's a beginner-friendly 2.5-hour build covering ping trigger frequencies, active piezo buzzer alerts, and simple hardware conditional loops.",
+        text: "For a smooth start, open the Arduino Beginner Course and build toward the Smart Distance Alert System. It covers outputs, sensors, code basics, and quizzes.",
         actions: [
-          { label: "View Obstacle Detector", link: "/?type=videos" },
-          { label: "Explore Videos catalog", link: "/?type=videos" }
+          { label: "Start Arduino Course", link: "/courses/arduino-beginner-course" },
+          { label: "Browse Courses", link: "/courses" }
         ]
       };
     }
@@ -67,7 +67,7 @@ export default function AelosChatbot() {
       return {
         text: "Arduino programming is extremely logical! Remember to structure your code with: \n1) 'void setup()' to initialize pinModes (INPUT/OUTPUT).\n2) 'void loop()' to execute conditional statements.\nCheck out our official 'Arduino Uno R3 Starter Kit' guide to see schematics!",
         actions: [
-          { label: "View Arduino Uno R3 Guide", link: "/?type=ebooks" },
+          { label: "Open Arduino Course", link: "/courses/arduino-beginner-course" },
           { label: "Get Arduino Kit on Store", link: "https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html", isExternal: true }
         ]
       };
@@ -75,9 +75,9 @@ export default function AelosChatbot() {
 
     if (q.includes("find robotics projects") || q.includes("robotics")) {
       return {
-        text: "Robotics and smart vehicle projects are featured in our active 'Robotics & Smart Vehicles' catalog. These include crawler bots, spider gait systems, line tracking vehicles, and flight controllers!",
+        text: "Robotics and smart vehicle projects are ready in the project library. You can start with line tracking, obstacle avoidance, sensors, drone assembly, and ESP32 automation.",
         actions: [
-          { label: "Explore Robotics Lectures", link: "/?type=videos" },
+          { label: "Open Project Library", link: "/projects" },
           { label: "Browse Drone components", link: "https://rees52.com/drones/101-rees52-f450-drone-diy-kit.html", isExternal: true }
         ]
       };
@@ -85,9 +85,9 @@ export default function AelosChatbot() {
 
     if (q.includes("track my progress") || q.includes("track") || q.includes("progress")) {
       return {
-        text: "You can track your enrolled courses, unlocked guide ebooks, bookmarked libraries, and resume in-progress videos dynamically on your premium 'My Space Dashboard'!",
+        text: "Your dashboard is the place for course progress, saved projects, ebooks, quiz results, and recommended learning paths.",
         actions: [
-          { label: "Go to My Space Dashboard", link: "/?type=dashboard" }
+          { label: "Go to Student Dashboard", link: "/dashboard" }
         ]
       };
     }
@@ -121,7 +121,7 @@ export default function AelosChatbot() {
 
     if (q.includes("hello") || q.includes("hi") || q.includes("hey") || q.includes("greetings")) {
       return {
-        text: "Hello maker! I am AELOS, your cybernetic AI learning companion. Select one of the quick actions below, or ask me any question about embedded engineering, electronics, or robotics coding!"
+        text: "Hello maker! I can help you choose a course, find a project, understand Arduino code, or locate the right REES52 component path."
       };
     }
 
@@ -133,9 +133,9 @@ export default function AelosChatbot() {
 
     // Default Fallback
     return {
-      text: "That sounds like an amazing engineering project! I recommend checking out our 'Arduino Uno R3 Starter Kit' or launching one of our free Live Masterclass webinars to dive deeper.",
+      text: "That sounds like a strong engineering project. I recommend starting with the Arduino Beginner Course, then opening the project library when you are ready to build.",
       actions: [
-        { label: "View Live Webinars", link: "/?type=live" },
+        { label: "Browse Courses", link: "/courses" },
         { label: "Visit REES52 Store", link: "https://rees52.com", isExternal: true }
       ]
     };
@@ -205,7 +205,7 @@ export default function AelosChatbot() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl premium-bot-btn cursor-pointer border border-cyan-400/40 group"
-        aria-label="Aelos AI Chatbot"
+        aria-label="REES52 AI learning mentor"
       >
         <span className="absolute -inset-1.5 rounded-full bg-cyan-500/20 animate-ping opacity-75 pointer-events-none"></span>
         <Bot className="w-7 h-7 transition-transform duration-300 premium-bot-icon" />
@@ -227,10 +227,10 @@ export default function AelosChatbot() {
                 <Cpu className="w-4.5 h-4.5 text-cyan-200 animate-pulse" />
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-xs font-black tracking-wider uppercase">AELOS AI COMPANION</span>
+                <span className="text-xs font-black tracking-wider uppercase">REES52 AI Mentor</span>
                 <span className="text-[9px] text-cyan-200 font-bold uppercase tracking-wider flex items-center gap-1">
                   <span className="h-1.5 w-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                  Active robot core
+                  Learning assistant active
                 </span>
               </div>
             </div>
@@ -340,7 +340,7 @@ export default function AelosChatbot() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask Aelos a question..."
+              placeholder="Ask about courses, projects, or components..."
               className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-850 placeholder:text-slate-500 focus:outline-none transition-all premium-input-pulse"
             />
             <Button

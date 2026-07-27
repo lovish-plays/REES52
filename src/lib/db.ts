@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import seedDb from './db-store.json';
+import type { AppRole } from '@/lib/auth/roles';
 
 // Define Interface Types matching our Supabase schema
 export interface Category {
@@ -45,8 +47,20 @@ export interface Webinar {
 export interface UserProgress {
   percentage: number;
   lastViewedLesson?: string;
+  completedLessons?: string[];
   updated_at: string;
   completed_at?: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  userId: string;
+  courseSlug: string;
+  quizTitle: string;
+  score: number;
+  totalQuestions: number;
+  passed: boolean;
+  attemptedAt: string;
 }
 
 export interface UserCertificate {
@@ -76,7 +90,9 @@ export interface User {
   name: string;
   email: string;
   password_hash?: string;
-  role: 'Student' | 'Admin';
+  role: AppRole;
+  classLevel?: string;
+  enrolled_courses: string[];
   enrolled_videos: string[]; // Video IDs
   purchased_ebooks: string[]; // Ebook IDs
   provider?: string;
@@ -96,6 +112,14 @@ export interface Review {
   created_at: string;
 }
 
+export interface AnalyticsEvent {
+  id: string;
+  userId: string;
+  eventType: string;
+  eventData: Record<string, unknown>;
+  timestamp: string;
+}
+
 export interface DatabaseStore {
   categories: Category[];
   products: Product[];
@@ -103,38 +127,29 @@ export interface DatabaseStore {
   videos: Video[];
   webinars: Webinar[];
   users: User[];
+  quiz_attempts?: QuizAttempt[];
   reviews?: Review[];
+  analytics_events?: AnalyticsEvent[];
 }
 
-// In-Memory database store for transient caching and type support
-let memoryDb: DatabaseStore = {
-  categories: [],
-  products: [],
-  ebooks: [],
-  videos: [],
-  webinars: [],
-  users: [
-    {
-      id: 'usr-admin',
-      name: 'REES52 Admin',
-      email: 'admin@rees52.com',
-      password_hash: '$2a$10$w5p3f2/Qy2r9yD5Hq6uMteP8C3uE/Z.6hH5f2d7zE3y1y3x4w.123',
-      role: 'Admin',
-      enrolled_videos: [],
-      purchased_ebooks: []
-    }
-  ],
-  reviews: []
+type LocalDatabaseRuntime = typeof globalThis & {
+  __rees52MemoryDb?: DatabaseStore;
 };
+
+const localDatabaseRuntime = globalThis as LocalDatabaseRuntime;
+
+// Development-only fallback store. Keeping it on globalThis prevents separate
+// server-action bundles from creating inconsistent copies during local testing.
+localDatabaseRuntime.__rees52MemoryDb ??= structuredClone(seedDb as DatabaseStore);
 
 // Deprecated local database file retriever
 export function getDB(): DatabaseStore {
-  return memoryDb;
+  return localDatabaseRuntime.__rees52MemoryDb!;
 }
 
 // Deprecated local database file saver
 export function saveDB(db: DatabaseStore): void {
-  memoryDb = db;
+  localDatabaseRuntime.__rees52MemoryDb = db;
 }
 
 // UUID helper

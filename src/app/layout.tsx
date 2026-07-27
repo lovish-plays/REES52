@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/Header";
@@ -11,40 +11,36 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SchemaMarkup from "@/components/SchemaMarkup";
 import StoreTransitionModal from "@/components/StoreTransitionModal";
 import MobileViewportHandler from "@/components/MobileViewportHandler";
-import { Suspense } from "react";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap"
-});
+import ScrollProgressBar from "@/components/ScrollProgressBar";
+import SplashLoader from "@/components/SplashLoader";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: {
-    default: "REES52 Learning Hub | Premium Robotics & STEM Education",
-    template: "%s | REES52 Learning Hub"
+    default: siteConfig.name,
+    template: "%s | REES52 Academy",
   },
-  description:
-    "REES52 Learning Hub is a premium educational Progressive Web App (PWA) for robotics, embedded systems, Arduino, IoT, sensors, and STEM learning — featuring ebooks, video lectures, and live webinars.",
+  metadataBase: new URL(siteConfig.url),
+  description: siteConfig.description,
   keywords: [
     "REES52",
+    "REES52 Academy",
     "Learning Hub",
     "robotics education",
     "embedded systems",
     "Arduino",
     "microcontrollers",
     "IoT",
+    "AI for students",
     "sensors",
     "STEM learning",
     "electronics",
     "DIY robotics",
     "drone building",
-    "FPV",
     "robotics workshops",
-    "video lectures",
+    "project based learning",
     "ebooks",
-    "live webinars",
-    "DIY electronics",
-    "robotics kits"
+    "robotics kits",
   ],
   authors: [{ name: "REES52 Learning Team" }],
   creator: "REES52",
@@ -53,26 +49,26 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "REES52 Learning",
+    title: "REES52 Academy",
   },
   icons: {
     apple: "/icon-192.png",
   },
   openGraph: {
-    title: "REES52 Learning Hub | Premium Robotics & STEM Education",
-    description:
-      "Master robotics, embedded systems, Arduino, IoT, and drone building with hands-on ebooks, video lectures, and live webinars.",
-    url: "https://rees52.tech",
-    siteName: "REES52 Learning Hub",
-    locale: "en_US",
-    type: "website"
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    type: "website",
+    images: [{ url: absoluteUrl("/icon-512.png"), width: 512, height: 512, alt: "REES52 Academy" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "REES52 Learning Hub | Robotics & STEM Education",
-    description:
-      "Explore ebooks, videos, and webinars to build robotics, embedded systems, and drone hardware projects.",
-    creator: "@rees52"
+    title: siteConfig.name,
+    description: siteConfig.description,
+    creator: "@rees52",
+    images: [absoluteUrl("/icon-512.png")],
   },
   robots: {
     index: true,
@@ -82,22 +78,23 @@ export const metadata: Metadata = {
       follow: true,
       "max-video-preview": -1,
       "max-image-preview": "large",
-      "max-snippet": -1
-    }
+      "max-snippet": -1,
+    },
   },
   alternates: {
-    canonical: "https://rees52.tech",
+    canonical: siteConfig.url,
   },
-  verification: {
-    google: "yoursiteconsoleverificationtoken",
-  }
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0D0E12",
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover"
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -108,8 +105,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
       <head>
-        {/* Explicit crossorigin so Vercel preview deployments pass session
-            cookies when fetching the PWA manifest — prevents 401 errors */}
         <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
         <meta name="google-adsense-account" content="ca-pub-4035712855313003" />
         <script
@@ -118,8 +113,10 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col antialiased`}>
+      <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
         <AuthProvider>
+          <SplashLoader />
+          <ScrollProgressBar />
           <MobileViewportHandler />
           <Suspense fallback={null}>
             <GoogleAnalytics />
@@ -128,7 +125,7 @@ export default function RootLayout({
           <RobotPeeker />
           <CyberBackground />
           <Header />
-          <main className="flex-1 flex flex-col page-loaded-entrance">
+          <main className="flex flex-1 flex-col page-loaded-entrance">
             {children}
           </main>
           <Footer />

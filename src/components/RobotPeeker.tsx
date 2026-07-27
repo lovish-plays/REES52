@@ -26,7 +26,7 @@ export default function RobotPeeker() {
     <div className={`premium-robot-peeker ${active ? "active" : ""}`}>
       {/* Speech bubble */}
       <div className="peeker-speech-bubble">
-        Aelos Active! ⚡
+        Learning Assistant
       </div>
 
       {/* SVG Interactive Wall-Peeking Robot */}
@@ -40,7 +40,7 @@ export default function RobotPeeker() {
         {/* Robot Head Shell (Rounded dome peeking upside down) */}
         <path 
           d="M 15 0 C 15 22, 45 22, 45 0 Z" 
-          fill="#F7F4EB" 
+          fill="#F8FBFF" 
           strokeWidth="2" 
           strokeLinejoin="round" 
         />

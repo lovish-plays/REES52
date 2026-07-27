@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { Shield } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | REES52",
+  title: "Privacy Policy",
   description: "Read the REES52 Privacy Policy to understand how we collect, use, and protect your personal data when using our services.",
   keywords: ["REES52 Privacy Policy", "Shopify cookies", "personal data protection"],
+  alternates: { canonical: absoluteUrl("/privacy") },
 };
 
 export default function PrivacyPage() {

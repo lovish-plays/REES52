@@ -1,12 +1,13 @@
 import { Metadata } from "next";
 import { Cookie, ShieldAlert, CheckCircle2, Info } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | REES52 Learning Hub",
+  title: "Cookie Policy",
   description: "Read the official Cookie Policy of REES52. Learn how we use essential, local storage fallback session cookies, and analytics cookies to deliver a secure learning experience.",
   keywords: ["REES52 Cookie Policy", "robotic portal cookies", "essential cookies", "analytics tracking"],
   alternates: {
-    canonical: "https://rees52.tech/cookie-policy",
+    canonical: absoluteUrl("/cookie-policy"),
   }
 };
 

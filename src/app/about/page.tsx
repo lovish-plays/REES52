@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { Sparkles, ShieldCheck, Users, Target, Heart, GraduationCap } from "lucide-react";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About REES52 | Leading Electronics & Robotics Distributor",
+  title: "About REES52",
   description: "Learn about REES52, a leading distributor of electronics & robotics components. Discover our core values of customer-centricity, innovation, and integrity, and meet our team.",
   keywords: ["About REES52", "Robotics distributor", "Electronics components distributor", "REES52 Values"],
+  alternates: { canonical: absoluteUrl("/about") },
 };
 
 export default function AboutPage() {

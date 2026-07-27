@@ -13,6 +13,7 @@ import {
 import { getVideoById, getProductById, getUnifiedFeed } from "@/app/actions/content";
 import { getItemMetadata } from "@/lib/projectMetadata";
 import VideoProgressChecklist from "@/components/VideoProgressChecklist";
+import { absoluteUrl } from "@/lib/site";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -33,12 +34,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${video.title} Video Guide`,
     description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}. Complete hardware code, blueprints, and assembly guides.`,
     alternates: {
-      canonical: `https://rees52.tech/videos/${id}`,
+      canonical: absoluteUrl(`/videos/${id}`),
     },
     openGraph: {
       title: `${video.title} Video Guide | REES52 Learning Hub`,
       description: meta?.overview || `Watch the official REES52 video tutorial for ${video.title}.`,
-      url: `https://rees52.tech/videos/${id}`,
+      url: absoluteUrl(`/videos/${id}`),
       type: "video.other",
     },
     twitter: {
@@ -88,7 +89,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
     "@type": "VideoObject",
     "name": video.title,
     "description": meta?.overview || `Video tutorial for ${video.title}`,
-    "thumbnailUrl": embedId ? `https://img.youtube.com/vi/${embedId}/0.jpg` : "https://rees52.tech/icon.png",
+    "thumbnailUrl": embedId ? `https://img.youtube.com/vi/${embedId}/0.jpg` : absoluteUrl("/icon.png"),
     "uploadDate": video.created_at || new Date().toISOString(),
     "embedUrl": embedUrl || video.youtube_url,
     "publisher": {
@@ -96,7 +97,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
       "name": "REES52",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://rees52.tech/icon.png"
+        "url": absoluteUrl("/icon.png")
       }
     }
   };
@@ -109,19 +110,19 @@ export default async function VideoDetailPage({ params }: PageProps) {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://rees52.tech"
+        "item": absoluteUrl()
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Videos",
-        "item": "https://rees52.tech/?type=videos"
+        "item": absoluteUrl("/?type=videos")
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": video.title,
-        "item": `https://rees52.tech/videos/${video.id}`
+        "item": absoluteUrl(`/videos/${video.id}`)
       }
     ]
   };

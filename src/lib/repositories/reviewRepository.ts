@@ -1,12 +1,15 @@
 import { supabasePublic } from '@/lib/supabasePublic';
-import { Review } from '@/lib/db';
+import { getDB, saveDB, Review } from '@/lib/db';
+import { hasSupabaseEnv } from '@/lib/supabaseConfig';
 
 export class ReviewRepository {
-  /**
-   * Fetches all reviews from Supabase PostgreSQL database.
-   * Fallback: Returns empty list if table or DB query fails.
-   */
   static async getReviews(): Promise<Review[]> {
+    if (!hasSupabaseEnv) {
+      return [...(getDB().reviews || [])].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+
     try {
       const { data, error } = await supabasePublic
         .from('reviews')
@@ -18,16 +21,7 @@ export class ReviewRepository {
         return [];
       }
 
-      interface ReviewRow {
-        id: string;
-        name: string;
-        email: string | null;
-        rating: number;
-        review: string;
-        created_at: string;
-      }
-
-      return ((data || []) as ReviewRow[]).map((item) => ({
+      return ((data || []) as Review[]).map((item) => ({
         id: item.id,
         name: item.name,
         email: item.email || '',
@@ -42,36 +36,47 @@ export class ReviewRepository {
     }
   }
 
-  /**
-   * Inserts a new review into the Supabase reviews table.
-   */
   static async addReview(
     name: string,
     email: string,
     rating: number,
     review: string
   ): Promise<{ success: boolean; review?: Review; error?: string }> {
+    const cleanName = (name || 'Anonymous Learner').trim();
+    const cleanEmail = (email || 'anonymous@rees52.tech').trim().toLowerCase();
+    const cleanReview = (review || '').trim();
+    const ratingVal = Math.min(5, Math.max(1, rating));
+
+    if (!cleanReview) {
+      return { success: false, error: 'Review text cannot be empty.' };
+    }
+
+    const newReview: Review = {
+      id: crypto.randomUUID(),
+      name: cleanName,
+      email: cleanEmail,
+      rating: ratingVal,
+      review: cleanReview,
+      created_at: new Date().toISOString()
+    };
+
+    if (!hasSupabaseEnv) {
+      const db = getDB();
+      db.reviews = [newReview, ...(db.reviews || [])];
+      saveDB(db);
+      return { success: true, review: newReview };
+    }
+
     try {
-      const cleanName = (name || 'Anonymous Learner').trim();
-      const cleanEmail = (email || 'anonymous@rees52.tech').trim().toLowerCase();
-      const cleanReview = (review || '').trim();
-      const ratingVal = Math.min(5, Math.max(1, rating));
-
-      if (!cleanReview) {
-        return { success: false, error: 'Review text cannot be empty.' };
-      }
-
-      const newReview = {
-        name: cleanName,
-        email: cleanEmail,
-        rating: ratingVal,
-        review: cleanReview,
-        created_at: new Date().toISOString()
-      };
-
       const { data, error } = await supabasePublic
         .from('reviews')
-        .insert(newReview)
+        .insert({
+          name: newReview.name,
+          email: newReview.email,
+          rating: newReview.rating,
+          review: newReview.review,
+          created_at: newReview.created_at
+        })
         .select()
         .single();
 
@@ -80,16 +85,7 @@ export class ReviewRepository {
         return { success: false, error: error.message };
       }
 
-      interface ReviewRow {
-        id: string;
-        name: string;
-        email: string | null;
-        rating: number;
-        review: string;
-        created_at: string;
-      }
-
-      const inserted = data as ReviewRow;
+      const inserted = data as Review;
 
       return {
         success: true,

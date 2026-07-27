@@ -4,10 +4,13 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import { createHash, randomBytes, randomInt, timingSafeEqual } from 'crypto';
 import { User, generateUUID, getDB, saveDB } from '@/lib/db';
 import { createClient } from '@/lib/supabaseServer';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { UserRepository } from '@/lib/repositories/userRepository';
+import { hasSupabaseEnv } from '@/lib/supabaseConfig';
+import { isTeacherRole } from '@/lib/auth/roles';
 
 // Helper to get Supabase Admin client for sensitive queries
 function getSupabaseAdmin() {
@@ -56,7 +59,64 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 5000,     // 5 seconds
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'rees52-cyber-vault-key-987654';
+type AuthRuntimeState = typeof globalThis & {
+  __rees52LocalJwtSecret?: string;
+  __rees52OtpSecret?: string;
+  __rees52OtpStore?: Map<string, OtpRecord>;
+};
+
+type OtpRecord = {
+  digest: string;
+  expires: number;
+  attempts: number;
+  lastSentAt: number;
+};
+
+const authRuntime = globalThis as AuthRuntimeState;
+
+function isLocalAuthEnabled() {
+  return process.env.NODE_ENV !== 'production' && !hasSupabaseEnv;
+}
+
+function getLocalJwtSecret() {
+  if (!isLocalAuthEnabled()) {
+    throw new Error('Local authentication is disabled.');
+  }
+
+  const configuredSecret = process.env.JWT_SECRET?.trim();
+  if (configuredSecret && configuredSecret.length >= 32) {
+    return configuredSecret;
+  }
+
+  authRuntime.__rees52LocalJwtSecret ??= randomBytes(32).toString('hex');
+  return authRuntime.__rees52LocalJwtSecret;
+}
+
+function getOtpSecret() {
+  const configuredSecret = process.env.OTP_SECRET?.trim() || process.env.JWT_SECRET?.trim();
+  if (configuredSecret && configuredSecret.length >= 32) {
+    return configuredSecret;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('OTP_SECRET must be configured in production.');
+  }
+
+  authRuntime.__rees52OtpSecret ??= randomBytes(32).toString('hex');
+  return authRuntime.__rees52OtpSecret;
+}
+
+function digestOtp(email: string, otp: string) {
+  return createHash('sha256')
+    .update(`${email}:${otp}:${getOtpSecret()}`)
+    .digest('hex');
+}
+
+function otpMatches(record: OtpRecord, email: string, otp: string) {
+  const expected = Buffer.from(record.digest, 'hex');
+  const actual = Buffer.from(digestOtp(email, otp), 'hex');
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
 
 // Helper to get cookies safely
 async function getCookieStore() {
@@ -64,6 +124,10 @@ async function getCookieStore() {
 }
 
 export async function registerUser(formData: any) {
+  if (!isLocalAuthEnabled()) {
+    return { error: 'Local account registration is disabled.' };
+  }
+
   const { name, email, password } = formData;
 
   if (!name || !email || !password) {
@@ -111,7 +175,7 @@ export async function registerUser(formData: any) {
   // Create JWT Token
   const token = jwt.sign(
     { userId: createRes.user.id, email: createRes.user.email, role: createRes.user.role },
-    JWT_SECRET,
+    getLocalJwtSecret(),
     { expiresIn: '7d' }
   );
 
@@ -129,6 +193,10 @@ export async function registerUser(formData: any) {
 }
 
 export async function loginUser(formData: any) {
+  if (!isLocalAuthEnabled()) {
+    return { error: 'Use the configured identity provider to sign in.' };
+  }
+
   const { email, password } = formData;
 
   if (!email || !password) {
@@ -140,24 +208,6 @@ export async function loginUser(formData: any) {
     return { error: emailResult.error };
   }
   const cleanEmail = emailResult.email!;
-
-  // Dynamic admin seed seeding if missing on remote DB
-  if (cleanEmail === 'admin@rees52.com') {
-    const adminExists = await UserRepository.getUserByEmail('admin@rees52.com');
-    if (!adminExists) {
-      const salt = bcrypt.genSaltSync(10);
-      const password_hash = bcrypt.hashSync('admin123', salt);
-      await UserRepository.createUser({
-        id: 'usr-admin',
-        name: 'REES52 Admin',
-        email: 'admin@rees52.com',
-        password_hash,
-        role: 'Admin',
-        enrolled_videos: [],
-        purchased_ebooks: []
-      });
-    }
-  }
 
   const user = await UserRepository.getUserByEmail(cleanEmail);
   if (!user) {
@@ -179,14 +229,6 @@ export async function loginUser(formData: any) {
     }
   }
 
-  // Fallback for seed admin user password 'admin123' if hash comparison fails
-  if (!isMatch && user.email === 'admin@rees52.com' && password === 'admin123') {
-    isMatch = true;
-    const salt = bcrypt.genSaltSync(10);
-    const newHash = bcrypt.hashSync('admin123', salt);
-    await UserRepository.updateUser(user.id, { password_hash: newHash });
-  }
-
   if (!isMatch) {
     return { error: 'Invalid email or password.' };
   }
@@ -194,7 +236,7 @@ export async function loginUser(formData: any) {
   // Create JWT Token
   const token = jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
-    JWT_SECRET,
+    getLocalJwtSecret(),
     { expiresIn: '7d' }
   );
 
@@ -219,20 +261,7 @@ export async function logoutUser() {
 
 export async function getCurrentUser() {
   try {
-    const cookieStore = await cookies();
-    const localToken = cookieStore.get('session')?.value;
-    
-    if (localToken) {
-      const decoded: any = jwt.verify(localToken, JWT_SECRET);
-      const user = await UserRepository.getUserById(decoded.userId);
-      if (user) {
-        const { password_hash: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      }
-    }
-    
-    // Fallback: Dynamic auth checks for Supabase user
-    try {
+    if (hasSupabaseEnv) {
       const supabase = await createClient();
       const { data: { user: supabaseUser } } = await supabase.auth.getUser();
       if (supabaseUser) {
@@ -242,9 +271,27 @@ export async function getCurrentUser() {
           return userWithoutPassword;
         }
       }
-    } catch {}
+      return null;
+    }
+
+    if (!isLocalAuthEnabled()) return null;
+
+    const cookieStore = await cookies();
+    const localToken = cookieStore.get('session')?.value;
+    if (!localToken) return null;
+
+    const decoded = jwt.verify(localToken, getLocalJwtSecret()) as { userId?: string };
+    if (!decoded.userId) return null;
+
+    const user = await UserRepository.getUserById(decoded.userId);
+    if (user) {
+      const { password_hash: _, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    }
   } catch (err) {
-    console.error("getCurrentUser error:", err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Unable to resolve the current user:', err);
+    }
   }
   return null;
 }
@@ -271,6 +318,58 @@ export async function enrollInVideoAction(videoId: string) {
   return { success: true, user: userWithoutPassword };
 }
 
+// Student Action: Enroll in an LMS course.
+export async function enrollInCourseAction(courseSlug: string) {
+  const cleanSlug = courseSlug?.trim().toLowerCase();
+  if (!cleanSlug) return { error: 'A course is required.' };
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { error: 'Unauthenticated. Please sign in.' };
+  }
+
+  const user = await UserRepository.getUserById(currentUser.id);
+  if (!user) return { error: 'User not found.' };
+
+  if (hasSupabaseEnv) {
+    try {
+      const supabase = await createClient();
+      const { data: course, error: courseError } = await supabase
+        .from('courses')
+        .select('id,is_published,is_free')
+        .eq('slug', cleanSlug)
+        .maybeSingle();
+
+      if (courseError || !course?.id || course.is_published === false) {
+        return { error: 'This course is not available for enrollment yet.' };
+      }
+      if (course.is_free === false) {
+        return { error: 'Paid checkout must be completed before enrolling in this course.' };
+      }
+
+      const { error: enrollmentError } = await supabase
+        .from('course_enrollments')
+        .upsert(
+          { user_id: user.id, course_id: course.id, progress_percentage: 0 },
+          { onConflict: 'user_id,course_id', ignoreDuplicates: true },
+        );
+      if (enrollmentError) return { error: enrollmentError.message };
+      return { success: true };
+    } catch {
+      return { error: 'Unable to enroll right now. Please try again.' };
+    }
+  }
+
+  const enrolledCourses = user.enrolled_courses || [];
+  if (!enrolledCourses.includes(cleanSlug)) {
+    const nextCourses = [...enrolledCourses, cleanSlug];
+    const updated = await UserRepository.updateUser(user.id, { enrolled_courses: nextCourses });
+    if (!updated) return { error: 'Unable to save enrollment.' };
+  }
+
+  return { success: true };
+}
+
 // Student Action: Unlock/Purchase Ebook
 export async function purchaseEbookAction(ebookId: string) {
   const currentUser = await getCurrentUser();
@@ -293,117 +392,112 @@ export async function purchaseEbookAction(ebookId: string) {
   return { success: true, user: userWithoutPassword };
 }
 
-export async function createLocalSessionForSupabaseUser(
-  id: string,
-  email: string,
-  name: string,
-  role: string = 'Student',
-  provider?: string
-) {
-  console.log("[authServerAction] createLocalSessionForSupabaseUser started. id:", id, "email:", email);
+export async function createLocalSessionForSupabaseUser() {
   try {
-    const emailResult = validateAndNormalizeEmail(email);
-    const cleanEmail = emailResult.email || email.trim().toLowerCase();
-    
-    let user = await UserRepository.getUserByEmail(cleanEmail);
-    if (!user) {
-      user = await UserRepository.getUserById(id);
+    if (!hasSupabaseEnv) {
+      return { error: 'Supabase authentication is not configured.' };
     }
-    
-    const finalRole = (role.toLowerCase() === 'admin' ? 'Admin' as const : 'Student' as const);
 
+    const supabase = await createClient();
+    const { data: { user: authenticatedUser }, error: authError } = await supabase.auth.getUser();
+    if (authError || !authenticatedUser?.id || !authenticatedUser.email) {
+      return { error: 'An authenticated Supabase session is required.' };
+    }
+
+    const cleanEmail = authenticatedUser.email.trim().toLowerCase();
+    const name =
+      (typeof authenticatedUser.user_metadata?.full_name === 'string' && authenticatedUser.user_metadata.full_name.trim()) ||
+      (typeof authenticatedUser.user_metadata?.name === 'string' && authenticatedUser.user_metadata.name.trim()) ||
+      cleanEmail.split('@')[0] ||
+      'Maker';
+    const provider =
+      typeof authenticatedUser.app_metadata?.provider === 'string'
+        ? authenticatedUser.app_metadata.provider
+        : 'email';
+
+    let user = await UserRepository.getUserById(authenticatedUser.id);
     if (!user) {
-      console.log("[authServerAction] User not found. Creating user record...");
-      user = {
-        id: id,
-        name: name || 'Maker',
+      const createResult = await UserRepository.createUser({
+        id: authenticatedUser.id,
+        name,
         email: cleanEmail,
-        password_hash: '',
-        role: finalRole,
+        role: 'Student',
+        enrolled_courses: [],
         enrolled_videos: [],
         purchased_ebooks: [],
-        provider: provider || 'google',
+        provider,
         progress: {},
         badges: [],
-        streak: undefined,
+        streak: { current: 0, longest: 0, lastActivityDate: '' },
         recently_viewed: [],
         certificates: []
-      };
-      await UserRepository.createUser(user);
-    } else {
-      console.log("[authServerAction] User found. Checking for changes...");
-      let changed = false;
-      const updates: Partial<User> = {};
+      });
 
-      if (user.id !== id) { updates.id = id; user.id = id; changed = true; }
-      if (user.role !== finalRole) { updates.role = finalRole; user.role = finalRole; changed = true; }
-      if (name && user.name !== name) { updates.name = name; user.name = name; changed = true; }
-      if (user.email !== cleanEmail) { updates.email = cleanEmail; user.email = cleanEmail; changed = true; }
-      if (provider && user.provider !== provider) { updates.provider = provider; user.provider = provider; changed = true; }
-      
-      if (changed) {
+      if (!createResult.success || !createResult.user) {
+        return { error: createResult.error || 'Unable to create the authenticated profile.' };
+      }
+      user = createResult.user;
+    } else {
+      const updates: Partial<User> = {};
+      if (user.name !== name) updates.name = name;
+      if (user.email !== cleanEmail) updates.email = cleanEmail;
+      if (user.provider !== provider) updates.provider = provider;
+
+      if (Object.keys(updates).length > 0) {
         await UserRepository.updateUser(user.id, updates);
+        user = { ...user, ...updates };
       }
     }
 
-    // Create JWT Token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
+    // Supabase is the production identity authority. Remove any stale local cookie
+    // instead of minting a second browser-supplied identity token.
     const cookieStore = await getCookieStore();
-    cookieStore.set('session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/'
-    });
+    cookieStore.delete('session');
 
     const { password_hash: _, ...userWithoutPassword } = user;
-    return { success: true, user: userWithoutPassword, token };
+    return { success: true, user: userWithoutPassword };
   } catch (err) {
-    console.error("createLocalSessionForSupabaseUser error:", err);
-    return { error: "Failed to establish active workspace session." };
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Unable to synchronize the authenticated profile:', err);
+    }
+    return { error: 'Failed to establish the authenticated workspace session.' };
   }
 }
 
-export async function syncUserByEmailFromSupabase(email: string) {
-  const emailResult = validateAndNormalizeEmail(email);
-  if (emailResult.error) return false;
-  const cleanEmail = emailResult.email!;
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_RESEND_DELAY_MS = 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+const otpStore = authRuntime.__rees52OtpStore ??= new Map<string, OtpRecord>();
 
-  try {
-    const user = await UserRepository.getUserByEmail(cleanEmail, true);
-    return !!user;
-  } catch (err) {
-    console.error("syncUserByEmailFromSupabase error:", err);
-  }
-  return false;
+function resetRequestMessage() {
+  return 'If an account exists for that email, a verification code has been sent.';
 }
-
-// In-memory store for reset password OTPs
-const otpStore = new Map<string, { otp: string; expires: number }>();
 
 export async function sendPasswordResetOtpAction(email: string) {
   const emailResult = validateAndNormalizeEmail(email);
   if (emailResult.error) return { error: emailResult.error };
   const cleanEmail = emailResult.email!;
 
-  const user = await UserRepository.getUserByEmail(cleanEmail);
+  const user = await UserRepository.getUserByEmail(cleanEmail, true);
   if (!user) {
-    return { error: "No account found with this email." };
+    return { success: true, message: resetRequestMessage() };
   }
 
-  // Generate 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+  const now = Date.now();
+  const existingRequest = otpStore.get(cleanEmail);
+  if (existingRequest && now - existingRequest.lastSentAt < OTP_RESEND_DELAY_MS) {
+    return { success: true, message: resetRequestMessage() };
+  }
 
-  otpStore.set(cleanEmail, { otp, expires });
+  const otp = randomInt(100000, 1000000).toString();
+  const expires = now + OTP_TTL_MS;
 
-  console.log(`[RESET PASSWORD] Generated OTP ${otp} for ${cleanEmail}. Will expire in 10 minutes.`);
+  otpStore.set(cleanEmail, {
+    digest: digestOtp(cleanEmail, otp),
+    expires,
+    attempts: 0,
+    lastSentAt: now,
+  });
 
   const otpSubject = process.env.SMTP_OTP_SUBJECT || "Password Reset Verification Code - REES52";
   const otpGreeting = process.env.SMTP_OTP_GREETING || "Hello Maker,";
@@ -434,22 +528,26 @@ export async function sendPasswordResetOtpAction(email: string) {
           </div>
         `,
       });
-      return { success: true, message: `OTP code sent successfully to ${cleanEmail}!` };
+      return { success: true, message: resetRequestMessage() };
     } catch (mailError: any) {
-      console.error("[NODEMAILER ERROR]", mailError);
-      return { 
-        success: true, 
-        message: `SMTP error: ${mailError.message}. Fell back to developer mode.`, 
-        mockOtp: otp 
-      };
+      otpStore.delete(cleanEmail);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Unable to send the password reset email:', mailError);
+      }
+      return { error: 'Unable to send a verification code right now. Please try again later.' };
     }
   }
 
-  return { 
-    success: true, 
-    message: `OTP code simulated. Add SMTP_USER and SMTP_PASS in .env for actual delivery.`, 
-    mockOtp: otp 
-  };
+  if (process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_OTP === 'true') {
+    return {
+      success: true,
+      message: 'Development verification code generated.',
+      mockOtp: otp,
+    };
+  }
+
+  otpStore.delete(cleanEmail);
+  return { error: 'Password recovery email is not configured.' };
 }
 
 export async function verifyOtpAction(email: string, otp: string) {
@@ -471,7 +569,14 @@ export async function verifyOtpAction(email: string, otp: string) {
     return { error: "OTP code has expired. Please request a new one." };
   }
 
-  if (cached.otp !== otp.trim()) {
+  if (cached.attempts >= OTP_MAX_ATTEMPTS) {
+    otpStore.delete(cleanEmail);
+    return { error: 'Too many incorrect attempts. Request a new verification code.' };
+  }
+
+  if (!otpMatches(cached, cleanEmail, otp.trim())) {
+    cached.attempts += 1;
+    otpStore.set(cleanEmail, cached);
     return { error: "Invalid OTP code. Please check and try again." };
   }
 
@@ -481,6 +586,10 @@ export async function verifyOtpAction(email: string, otp: string) {
 export async function resetPasswordWithOtpAction(email: string, otp: string, newPassword: string) {
   if (!email || !otp || !newPassword) {
     return { error: "Please fill in all fields." };
+  }
+
+  if (newPassword.length < 8) {
+    return { error: 'Password must contain at least 8 characters.' };
   }
 
   const emailResult = validateAndNormalizeEmail(email);
@@ -497,22 +606,23 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
     return { error: "OTP code has expired. Please request a new one." };
   }
 
-  if (cached.otp !== otp.trim()) {
+  if (cached.attempts >= OTP_MAX_ATTEMPTS) {
+    otpStore.delete(cleanEmail);
+    return { error: 'Too many incorrect attempts. Request a new verification code.' };
+  }
+
+  if (!otpMatches(cached, cleanEmail, otp.trim())) {
+    cached.attempts += 1;
+    otpStore.set(cleanEmail, cached);
     return { error: "Invalid OTP code. Please check and try again." };
   }
 
-  const user = await UserRepository.getUserByEmail(cleanEmail);
+  const user = await UserRepository.getUserByEmail(cleanEmail, true);
   if (!user) {
     return { error: "User account not found." };
   }
 
-  // Check if it's a Supabase user
-  const isTestUser = cleanEmail.endsWith('@rees52.com') && (cleanEmail.startsWith('student-') || cleanEmail.startsWith('temp-reset-'));
-  const isLocalAdmin = cleanEmail.toLowerCase() === 'admin@rees52.com';
-  const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-  const isSupabaseUser = !isLocalAdmin && !isTestUser && hasSupabaseUrl;
-  if (isSupabaseUser) {
+  if (hasSupabaseEnv) {
     const supabaseAdmin = getSupabaseAdmin();
     if (supabaseAdmin) {
       let supabaseUserId = user.id;
@@ -541,14 +651,14 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
           }
           if (authUser) {
             supabaseUserId = authUser.id;
-            user.id = authUser.id;
-            await UserRepository.updateUser(user.id, { id: authUser.id });
           } else {
-            return { error: "No matching authentication record found in Supabase Auth." };
+            return { error: 'Unable to locate the authentication record.' };
           }
         } catch (err: any) {
-          console.error("Failed to lookup Supabase user by email during reset:", err.message);
-          return { error: `Supabase lookup failed: ${err.message}` };
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Unable to locate the Supabase authentication record:', err);
+          }
+          return { error: 'Unable to locate the authentication record.' };
         }
       }
 
@@ -557,25 +667,28 @@ export async function resetPasswordWithOtpAction(email: string, otp: string, new
         { password: newPassword }
       );
       if (adminError) {
-        console.error("Supabase Admin password update failed:", adminError.message);
-        return { error: `Supabase password reset failed: ${adminError.message}` };
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Supabase password update failed:', adminError);
+        }
+        return { error: 'Unable to update the password right now.' };
       }
     } else {
-      console.error("Supabase Service Role Key missing. Cannot update password in Supabase Auth.");
-      return { error: "Configuration error: The server is missing the Supabase Service Role Key." };
+      return { error: 'Password recovery is not configured.' };
     }
+  } else if (isLocalAuthEnabled()) {
+    const salt = bcrypt.genSaltSync(10);
+    const password_hash = bcrypt.hashSync(newPassword, salt);
+    const updated = await UserRepository.updateUser(user.id, { password_hash });
+    if (!updated) {
+      return { error: 'Unable to update the password right now.' };
+    }
+  } else {
+    return { error: 'Password recovery is unavailable.' };
   }
-
-  // Hash new password using bcrypt
-  const salt = bcrypt.genSaltSync(10);
-  const password_hash = bcrypt.hashSync(newPassword, salt);
-  await UserRepository.updateUser(user.id, { password_hash });
 
   // Clear OTP
   otpStore.delete(cleanEmail);
 
-  console.log(`[RESET PASSWORD] Successfully updated password for ${cleanEmail}`);
-  
   return { success: true, message: "Password updated successfully." };
 }
 
@@ -692,7 +805,7 @@ export async function claimCertificateAction(courseId: string, courseName: strin
   }
 
   const newCert = {
-    id: 'cert-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+    id: 'cert-' + generateUUID().replace(/-/g, '').substring(0, 8).toUpperCase(),
     courseId,
     courseName,
     completionDate: prog.completed_at || new Date().toISOString(),
@@ -775,39 +888,63 @@ export async function addRecentlyViewedAction(courseId: string) {
   return { success: true, recently_viewed: finalRecentlyViewed };
 }
 
-export async function trackAnalyticsEventAction(eventType: string, eventData: any) {
+export async function trackAnalyticsEventAction(eventType: string, eventData: unknown) {
+  if (typeof eventType !== 'string') {
+    return { error: 'An event type is required.' };
+  }
+
+  const normalizedEventType = eventType.trim().slice(0, 64);
+  if (!normalizedEventType) {
+    return { error: 'An event type is required.' };
+  }
+
+  const normalizedEventData =
+    eventData && typeof eventData === 'object' && !Array.isArray(eventData)
+      ? eventData as Record<string, unknown>
+      : {};
+
+  try {
+    if (JSON.stringify(normalizedEventData).length > 4096) {
+      return { error: 'Analytics payload is too large.' };
+    }
+  } catch {
+    return { error: 'Analytics payload is invalid.' };
+  }
+
   const currentUser = await getCurrentUser();
   const db = getDB();
 
-  if (!(db as any).analytics_events) {
-    (db as any).analytics_events = [];
-  }
-
-  (db as any).analytics_events.push({
+  const analyticsEvents = db.analytics_events ?? [];
+  analyticsEvents.push({
     id: generateUUID(),
     userId: currentUser?.id || 'anonymous',
-    eventType,
-    eventData,
+    eventType: normalizedEventType,
+    eventData: normalizedEventData,
     timestamp: new Date().toISOString()
   });
-
+  db.analytics_events = analyticsEvents.slice(-1000);
   saveDB(db);
   return { success: true };
 }
 
 export async function getAnalyticsSummaryAction() {
-  const db = getDB();
-  const events = (db as any).analytics_events || [];
+  const currentUser = await getCurrentUser();
+  if (!currentUser || !isTeacherRole(currentUser.role)) {
+    return { error: 'Teacher access is required.' };
+  }
 
-  const totalViews = events.filter((e: any) => e.eventType === 'project_view').length;
-  const totalStarts = events.filter((e: any) => e.eventType === 'course_start').length;
-  const totalCompletions = events.filter((e: any) => e.eventType === 'course_complete').length;
-  const totalSearches = events.filter((e: any) => e.eventType === 'search').length;
-  const totalBuyClicks = events.filter((e: any) => e.eventType === 'buy_kit_click').length;
+  const db = getDB();
+  const events = db.analytics_events ?? [];
+
+  const totalViews = events.filter((event) => event.eventType === 'project_view').length;
+  const totalStarts = events.filter((event) => event.eventType === 'course_start').length;
+  const totalCompletions = events.filter((event) => event.eventType === 'course_complete').length;
+  const totalSearches = events.filter((event) => event.eventType === 'search').length;
+  const totalBuyClicks = events.filter((event) => event.eventType === 'buy_kit_click').length;
 
   const searchQueries: string[] = events
-    .filter((e: any) => e.eventType === 'search')
-    .map((e: any) => e.eventData?.query || '')
+    .filter((event) => event.eventType === 'search')
+    .map((event) => typeof event.eventData.query === 'string' ? event.eventData.query : '')
     .filter(Boolean);
 
   const queryCounts: Record<string, number> = {};

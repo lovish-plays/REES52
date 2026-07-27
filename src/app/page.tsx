@@ -23,6 +23,7 @@ import EbookCard from "@/components/lms/EbookCard";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
 import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
+import { getMonthlyLeaderboard, getMonthlyLeaderboardLabel } from "@/lib/lms/leaderboard";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -44,12 +45,13 @@ const institutionLogos = [
 ];
 
 export default async function HomePage() {
-  const [courses, projects, ebooks, reviews, quizzes] = await Promise.all([
+  const [courses, projects, ebooks, reviews, quizzes, leaderboard] = await Promise.all([
     getCourses(),
     getProjects(),
     getEbooks(),
     getReviewsAction(),
     getPublicQuizLinks(),
+    getMonthlyLeaderboard(3),
   ]);
   const learnerReview = reviews.find(
     (review) =>
@@ -225,6 +227,50 @@ export default async function HomePage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-slate-950 text-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-300">
+                {getMonthlyLeaderboardLabel()} rankings
+              </p>
+              <h2 className="mt-2 text-3xl font-black">Monthly Learner Leaderboard</h2>
+              <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-300">
+                Students earn verified points from lessons, quizzes, projects and completed courses. Rankings begin fresh every month.
+              </p>
+            </div>
+            <Link href="/leaderboard" className="inline-flex shrink-0 items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-300">
+              Full leaderboard
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          {leaderboard.length ? (
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {leaderboard.map((entry, index) => (
+                <article key={entry.userId} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-300/15 text-sm font-black text-amber-200">
+                      {entry.rank}
+                    </span>
+                    {index === 0 && <Trophy className="h-5 w-5 text-amber-300" />}
+                  </div>
+                  <h3 className="mt-4 text-lg font-black">{entry.displayName}</h3>
+                  <p className="mt-1 text-2xl font-black text-amber-300">{entry.points} points</p>
+                  <p className="mt-2 text-xs font-semibold text-slate-400">
+                    {entry.lessons} lessons · {entry.quizzes} quiz activities · {entry.projects} project activities
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-dashed border-white/20 bg-white/[0.04] p-7">
+              <p className="text-sm font-black">No points have been recorded for this month yet.</p>
+              <p className="mt-2 text-xs font-medium text-slate-400">The first signed-in student to complete a lesson or take a quiz will appear here.</p>
+            </div>
+          )}
         </div>
       </section>
 

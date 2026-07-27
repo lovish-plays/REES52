@@ -71,7 +71,7 @@ export async function getPublicQuizLinks(): Promise<QuizLinkItem[]> {
         id: row.id,
         topic: row.title.trim(),
         description: row.description!.trim(),
-        quizUrl: row.meeting_url!.trim(),
+        quizUrl: `/quiz-out/${row.id}`,
         source: 'teacher' as const,
       }));
 

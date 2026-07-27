@@ -6,6 +6,9 @@ import {
 import handler from "vinext/server/app-router-entry";
 
 interface Env {
+  DB?: {
+    prepare(query: string): unknown;
+  };
   ASSETS: {
     fetch(request: Request): Promise<Response>;
   };

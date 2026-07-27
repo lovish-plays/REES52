@@ -17,6 +17,7 @@ import {
   PackageCheck,
   Shield,
   ShoppingBag,
+  Trophy,
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -41,6 +42,7 @@ const NAV_LINKS = [
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/quizzes", label: "Quizzes", icon: FileQuestion },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
   { href: "/about", label: "About", icon: GraduationCap },
 ];
@@ -67,6 +69,14 @@ const DIRECTORY_LINKS = [
     label: "Quiz Library",
     description: "Topic-based knowledge checks and course quizzes",
     icon: FileQuestion,
+    iconWrap: "border-amber-300/40 bg-amber-500/10",
+    iconClass: "text-amber-700",
+  },
+  {
+    href: "/leaderboard",
+    label: "Leaderboard",
+    description: "Monthly learner points from verified activity",
+    icon: Trophy,
     iconWrap: "border-amber-300/40 bg-amber-500/10",
     iconClass: "text-amber-700",
   },
@@ -470,7 +480,7 @@ export default function Header() {
               REES52 Academy
             </h3>
             <p className="mb-8 text-center text-sm text-slate-600">
-              Jump into courses, projects, quizzes, ebooks, your dashboard, or the REES52 component store.
+              Jump into courses, projects, quizzes, the leaderboard, ebooks, your dashboard, or the REES52 component store.
             </p>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">

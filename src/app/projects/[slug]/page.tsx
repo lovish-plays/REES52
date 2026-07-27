@@ -3,9 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ArrowRight, CheckCircle2, Code2, Download, PackageCheck, Save, Timer, TriangleAlert, Wrench } from "lucide-react";
+import { ArrowRight, CheckCircle2, Code2, Download, PackageCheck, Timer, TriangleAlert, Wrench } from "lucide-react";
 import { getProjectBySlug } from "@/lib/lms/data";
 import { absoluteUrl } from "@/lib/site";
+import ProjectActivityButton from "@/components/lms/ProjectActivityButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -93,10 +94,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               View Required Products
               <ArrowRight className="h-4 w-4" />
             </a>
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-300 bg-cyan-50 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-cyan-900">
-              <Save className="h-4 w-4" />
-              Save Project
-            </button>
+            <ProjectActivityButton
+              projectSlug={project.slug}
+              type="save"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-300 bg-cyan-50 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-cyan-900 sm:w-auto"
+            />
           </div>
         </div>
         <div className="relative min-h-[340px] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-md">
@@ -147,12 +149,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             )}
           </Panel>
 
-          <form>
-            <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-emerald-500">
-              <CheckCircle2 className="h-4 w-4" />
-              Mark as Completed
-            </button>
-          </form>
+          <ProjectActivityButton
+            projectSlug={project.slug}
+            type="complete"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-emerald-500"
+          />
         </aside>
 
         <main className="space-y-6">

@@ -7,6 +7,12 @@ import { generateUUID, getDB, saveDB, type QuizAttempt } from "@/lib/db";
 import type { LmsQuiz } from "@/lib/lms/types";
 import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 import { createClient } from "@/lib/supabaseServer";
+import { isTeacherRole } from "@/lib/auth/roles";
+import {
+  getMonthKey,
+  LEADERBOARD_POINTS,
+  recordLeaderboardActivity,
+} from "@/lib/lms/leaderboard";
 
 export async function markLessonCompleteAction(courseSlug: string, lessonSlug: string) {
   const course = await getCourseBySlug(courseSlug);
@@ -17,14 +23,23 @@ export async function markLessonCompleteAction(courseSlug: string, lessonSlug: s
 
   const totalLessons = flattenLessons(course).length || 1;
 
-  if (hasSupabaseEnv) return markLessonCompleteInSupabase(courseSlug, lessonSlug, totalLessons);
-
   const user = await getCurrentUser();
   if (!user) {
     return { error: "Please sign in before marking lessons complete." };
   }
 
+  if (hasSupabaseEnv) {
+    return markLessonCompleteInSupabase(
+      courseSlug,
+      lessonSlug,
+      totalLessons,
+      !isTeacherRole(user.role),
+    );
+  }
+
   const currentProgress = user.progress?.[course.id || course.slug];
+  const wasLessonCompleted = Boolean(currentProgress?.completedLessons?.includes(lessonSlug));
+  const wasCourseCompleted = currentProgress?.percentage === 100;
   const completedLessons = new Set(currentProgress?.completedLessons || []);
   completedLessons.add(lessonSlug);
   const completedList = Array.from(completedLessons);
@@ -41,6 +56,28 @@ export async function markLessonCompleteAction(courseSlug: string, lessonSlug: s
     progress: userProgress,
   });
   if (!updated) return { error: "Unable to save lesson progress." };
+
+  if (!isTeacherRole(user.role)) {
+    if (!wasLessonCompleted) {
+      await recordLeaderboardActivity({
+        userId: user.id,
+        displayName: user.name,
+        activityType: "lesson_complete",
+        activityKey: `lesson:${course.slug}:${lessonSlug}`,
+        points: LEADERBOARD_POINTS.lessonComplete,
+      });
+    }
+    if (progressPercentage === 100 && !wasCourseCompleted) {
+      await recordLeaderboardActivity({
+        userId: user.id,
+        displayName: user.name,
+        activityType: "course_complete",
+        activityKey: `course:${course.slug}`,
+        points: LEADERBOARD_POINTS.courseComplete,
+      });
+    }
+  }
+  revalidateLeaderboard();
 
   return {
     success: true,
@@ -192,12 +229,40 @@ export async function submitQuizAction(input: {
     saveDB(db);
   }
 
+  if (!isTeacherRole(currentUser.role)) {
+    const quizKey = `${input.courseSlug}:${getMonthKey(new Date(attemptedAt))}`;
+    await recordLeaderboardActivity({
+      userId: currentUser.id,
+      displayName: currentUser.name,
+      activityType: "academy_quiz_attempt",
+      activityKey: `quiz-attempt:${quizKey}`,
+      points: LEADERBOARD_POINTS.academyQuizAttempt,
+      earnedAt: attemptedAt,
+    });
+    if (passed) {
+      await recordLeaderboardActivity({
+        userId: currentUser.id,
+        displayName: currentUser.name,
+        activityType: "academy_quiz_pass",
+        activityKey: `quiz-pass:${quizKey}`,
+        points: LEADERBOARD_POINTS.academyQuizPassBonus,
+        earnedAt: attemptedAt,
+      });
+    }
+  }
+
   revalidatePath("/dashboard/quiz-results");
   revalidatePath("/dashboard");
+  revalidateLeaderboard();
   return { success: true, score, totalQuestions, passed, attemptedAt };
 }
 
-async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: string, fallbackTotalLessons: number) {
+async function markLessonCompleteInSupabase(
+  courseSlug: string,
+  lessonSlug: string,
+  fallbackTotalLessons: number,
+  awardLeaderboardPoints: boolean,
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -254,7 +319,7 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
 
   const { data: existingEnrollment, error: existingEnrollmentError } = await supabase
     .from("course_enrollments")
-    .select("id")
+    .select("id,completed_at")
     .eq("user_id", user.id)
     .eq("course_id", courseRow.id)
     .maybeSingle();
@@ -286,6 +351,7 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
     const existingSlugs = Array.isArray(completedByCourse[courseSlug])
       ? completedByCourse[courseSlug].filter((value: unknown): value is string => typeof value === "string")
       : [];
+    const wasLessonCompleted = existingSlugs.includes(lessonSlug);
     const completedSlugs = Array.from(new Set([...existingSlugs, lessonSlug]));
     const progressPercentage = Math.min(
       100,
@@ -318,6 +384,27 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
 
     if (updateEnrollmentError) return { error: updateEnrollmentError.message };
 
+    if (awardLeaderboardPoints && !wasLessonCompleted) {
+      await recordLeaderboardActivity({
+        userId: user.id,
+        displayName: profileName,
+        activityType: "lesson_complete",
+        activityKey: `lesson:${courseSlug}:${lessonSlug}`,
+        points: LEADERBOARD_POINTS.lessonComplete,
+        earnedAt: completedAt,
+      });
+    }
+    if (awardLeaderboardPoints && progressPercentage >= 100 && !existingEnrollment?.completed_at) {
+      await recordLeaderboardActivity({
+        userId: user.id,
+        displayName: profileName,
+        activityType: "course_complete",
+        activityKey: `course:${courseSlug}`,
+        points: LEADERBOARD_POINTS.courseComplete,
+        earnedAt: completedAt,
+      });
+    }
+    revalidateLeaderboard();
     revalidatePath("/dashboard");
     revalidatePath(`/courses/${courseSlug}`);
     revalidatePath(`/learn/${courseSlug}/${lessonSlug}`);
@@ -327,6 +414,14 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
       progressPercentage,
     };
   }
+
+  const { data: existingProgress, error: existingProgressError } = await supabase
+    .from("student_progress")
+    .select("is_completed")
+    .eq("user_id", user.id)
+    .eq("lesson_id", lessonRow.id)
+    .maybeSingle();
+  if (existingProgressError) return { error: existingProgressError.message };
 
   const completedAt = new Date().toISOString();
   const { error: progressError } = await supabase
@@ -383,6 +478,27 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
     return { error: updateEnrollmentError.message };
   }
 
+  if (awardLeaderboardPoints && !existingProgress?.is_completed) {
+    await recordLeaderboardActivity({
+      userId: user.id,
+      displayName: profileName,
+      activityType: "lesson_complete",
+      activityKey: `lesson:${courseSlug}:${lessonSlug}`,
+      points: LEADERBOARD_POINTS.lessonComplete,
+      earnedAt: completedAt,
+    });
+  }
+  if (awardLeaderboardPoints && progressPercentage >= 100 && !existingEnrollment?.completed_at) {
+    await recordLeaderboardActivity({
+      userId: user.id,
+      displayName: profileName,
+      activityType: "course_complete",
+      activityKey: `course:${courseSlug}`,
+      points: LEADERBOARD_POINTS.courseComplete,
+      earnedAt: completedAt,
+    });
+  }
+  revalidateLeaderboard();
   revalidatePath("/dashboard");
   revalidatePath(`/courses/${courseSlug}`);
   revalidatePath(`/learn/${courseSlug}/${lessonSlug}`);
@@ -392,4 +508,9 @@ async function markLessonCompleteInSupabase(courseSlug: string, lessonSlug: stri
     message: "Lesson marked complete.",
     progressPercentage,
   };
+}
+
+function revalidateLeaderboard() {
+  revalidatePath("/leaderboard");
+  revalidatePath("/");
 }

@@ -40,6 +40,7 @@ export default function Footer() {
             <Link href="/courses" className="hover:text-sky-300">Courses</Link>
             <Link href="/projects" className="hover:text-sky-300">Projects</Link>
             <Link href="/quizzes" className="hover:text-sky-300">Quizzes</Link>
+            <Link href="/leaderboard" className="hover:text-sky-300">Leaderboard</Link>
             <Link href="/ebooks" className="hover:text-sky-300">Ebooks</Link>
             <a
               href="https://rees52.com/collections/stem-kits"

@@ -1,0 +1,28 @@
+{
+  "name": "REES52 Learning Hub",
+  "short_name": "REES52 Learning",
+  "description": "Premium robotics, embedded systems, and STEM learning portal by REES52.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "orientation": "portrait-primary",
+  "background_color": "#0D0E12",
+  "theme_color": "#0D0E12",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
+

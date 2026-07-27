@@ -1,0 +1,63 @@
+{
+  "name": "rees52-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:sites": "vinext build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
+    "axios": "^1.18.0",
+    "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.16.0",
+    "next": "^16.2.12",
+    "nodemailer": "^9.0.3",
+    "open-graph-scraper": "^6.11.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "react-server-dom-webpack": "19.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vinext": "0.0.50",
+    "vite": "8.0.13",
+    "wrangler": "4.92.0"
+  },
+  "overrides": {
+    "form-data": "4.0.6",
+    "postcss": "8.5.18",
+    "sharp": "0.35.0",
+    "undici": "7.28.0"
+  },
+  "type": "module"
+}

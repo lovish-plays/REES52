@@ -1,0 +1,110 @@
+{
+  "categories": [
+    { "id": "cat-1", "name": "Robotics & Smart Cars", "slug": "robotics-smart-cars" },
+    { "id": "cat-2", "name": "Arduino & Microcontrollers", "slug": "arduino-microcontrollers" },
+    { "id": "cat-3", "name": "IoT & Sensors", "slug": "iot-sensors" },
+    { "id": "cat-4", "name": "Drones & Quadcopters", "slug": "drones-quadcopters" }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "REES52 Uno R3 Starter Kit",
+      "external_purchase_url": "https://rees52.com/microcontroller/123-rees52-uno-r3-starter-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1608564697071-ddf911d81370?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-2"
+    },
+    {
+      "id": "prod-2",
+      "name": "REES52 4WD Smart Robot Car Kit v2.0",
+      "external_purchase_url": "https://rees52.com/robotics/456-rees52-4wd-smart-robot-car-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-1"
+    },
+    {
+      "id": "prod-3",
+      "name": "REES52 Ultimate Sensor Kit (37 in 1)",
+      "external_purchase_url": "https://rees52.com/sensors/789-rees52-ultimate-sensor-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-3"
+    },
+    {
+      "id": "prod-4",
+      "name": "REES52 F450 Drone DIY Builder Kit",
+      "external_purchase_url": "https://rees52.com/drones/101-rees52-f450-drone-diy-kit.html",
+      "image_url": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600&auto=format&fit=crop&q=60",
+      "category_id": "cat-4"
+    }
+  ],
+  "ebooks": [
+    {
+      "id": "ebk-1",
+      "title": "Getting Started with Arduino Uno R3",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-2",
+      "parent_product_id": "prod-1",
+      "created_at": "2026-05-10T10:00:00Z"
+    },
+    {
+      "id": "ebk-2",
+      "title": "DIY 4WD Smart Car Building Guide",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-1",
+      "parent_product_id": "prod-2",
+      "created_at": "2026-05-12T12:00:00Z"
+    },
+    {
+      "id": "ebk-3",
+      "title": "Comprehensive Sensors Handbook (37-in-1)",
+      "pdf_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "category_id": "cat-3",
+      "parent_product_id": "prod-3",
+      "created_at": "2026-05-15T08:30:00Z"
+    }
+  ],
+  "videos": [
+    {
+      "id": "vid-1",
+      "title": "Arduino Uno Setup and Blink Tutorial",
+      "youtube_url": "https://www.youtube.com/watch?v=d8_xXNcGYgo",
+      "category_id": "cat-2",
+      "parent_product_id": "prod-1",
+      "created_at": "2026-05-11T09:00:00Z"
+    },
+    {
+      "id": "vid-2",
+      "title": "Assembling your 4WD Smart Robot Car Step-by-Step",
+      "youtube_url": "https://www.youtube.com/watch?v=hBwslH_Wn4I",
+      "category_id": "cat-1",
+      "parent_product_id": "prod-2",
+      "created_at": "2026-05-13T14:20:00Z"
+    },
+    {
+      "id": "vid-3",
+      "title": "Interfacing Temperature Sensor (DHT11) with Arduino",
+      "youtube_url": "https://www.youtube.com/watch?v=yG0-nle3rO8",
+      "category_id": "cat-3",
+      "parent_product_id": "prod-3",
+      "created_at": "2026-05-16T11:00:00Z"
+    }
+  ],
+  "webinars": [
+    {
+      "id": "web-1",
+      "title": "Live Masterclass: Building Autonomous Drones at Home",
+      "description": "Learn the principles of aeronautics, flight controllers, and assembling drone parts from scratch with REES52 engineers.",
+      "meeting_url": "https://meet.google.com/abc-defg-hij",
+      "schedule_date": "2026-06-15T15:00:00Z",
+      "is_live": true
+    },
+    {
+      "id": "web-2",
+      "title": "IoT Sensors Integration with Dashboard Apps",
+      "description": "A deep-dive workshop on piping sensor readings from ESP8266/ESP32 into Next.js applications and web databases.",
+      "meeting_url": "https://meet.google.com/xyz-pdqr-lmn",
+      "schedule_date": "2026-06-20T17:00:00Z",
+      "is_live": false
+    }
+  ],
+  "users": [],
+  "reviews": []
+}

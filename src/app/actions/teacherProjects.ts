@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/app/actions/auth';
 import { isTeacherRole } from '@/lib/auth/roles';
 import { deleteLocalProject, getLocalProjects, isLocalProjectPublished, upsertLocalProject } from '@/lib/lms/local-content-store';
-import type { LmsLevel, LmsProject } from '@/lib/lms/types';
+import type { LmsComponent, LmsLevel, LmsProject } from '@/lib/lms/types';
 import { normalizeSchoolClass, type SchoolClass } from '@/lib/lms/class-categories';
 import { hasSupabaseEnv } from '@/lib/supabaseConfig';
 import { createClient } from '@/lib/supabaseServer';
@@ -26,6 +26,7 @@ export type TeacherProject = {
   sourceCode: string;
   steps: string[];
   troubleshooting: string[];
+  products: LmsComponent[];
   isPublished: boolean;
 };
 
@@ -50,6 +51,14 @@ type ProjectRow = {
   is_published: boolean | null;
 };
 
+type ProjectComponentRow = {
+  id: string;
+  project_id: string;
+  component_name: string;
+  quantity: number | null;
+  product_url: string | null;
+};
+
 async function requireTeacher() {
   const user = await getCurrentUser();
   if (!user || !isTeacherRole(user.role)) throw new Error('Teacher access is required to manage projects.');
@@ -67,7 +76,27 @@ export async function getTeacherProjectsAction(): Promise<{ projects?: TeacherPr
       .select('id,title,slug,short_description,description,category,class_level,level,estimated_time,thumbnail_url,video_url,circuit_diagram_url,source_code,steps,troubleshooting,is_published')
       .order('created_at', { ascending: false });
     if (error) return { error: error.message };
-    return { projects: (data as ProjectRow[]).map(mapProjectRow) };
+
+    const projectRows = data as ProjectRow[];
+    const projectIds = projectRows.map((project) => project.id);
+    const { data: componentData, error: componentError } = projectIds.length
+      ? await supabase
+          .from('project_components')
+          .select('id,project_id,component_name,quantity,product_url')
+          .in('project_id', projectIds)
+          .order('created_at', { ascending: true })
+      : { data: [], error: null };
+
+    if (componentError) return { error: componentError.message };
+    const components = (componentData || []) as ProjectComponentRow[];
+    return {
+      projects: projectRows.map((project) =>
+        mapProjectRow(
+          project,
+          components.filter((component) => component.project_id === project.id),
+        ),
+      ),
+    };
   } catch (error) {
     return { error: getErrorMessage(error) };
   }
@@ -95,7 +124,7 @@ export async function createProjectAction(input: TeacherProjectInput): Promise<{
         sourceCode: project.sourceCode,
         steps: project.steps,
         troubleshooting: project.troubleshooting,
-        components: [],
+        components: project.products,
       };
       upsertLocalProject(localProject, project.isPublished);
       revalidateProject(project.slug);
@@ -109,8 +138,15 @@ export async function createProjectAction(input: TeacherProjectInput): Promise<{
       .select('id,title,slug,short_description,description,category,class_level,level,estimated_time,thumbnail_url,video_url,circuit_diagram_url,source_code,steps,troubleshooting,is_published')
       .single();
     if (error) return { error: error.message };
+
+    const componentError = await replaceProjectProducts(supabase, data.id, project.products);
+    if (componentError) {
+      await supabase.from('projects').delete().eq('id', data.id);
+      return { error: componentError };
+    }
+
     revalidateProject(project.slug);
-    return { project: mapProjectRow(data as ProjectRow) };
+    return { project: mapProjectRow(data as ProjectRow, toProjectComponentRows(data.id, project.products)) };
   } catch (error) {
     return { error: getErrorMessage(error) };
   }
@@ -140,8 +176,12 @@ export async function updateProjectAction(input: TeacherProjectInput): Promise<{
       .select('id,title,slug,short_description,description,category,class_level,level,estimated_time,thumbnail_url,video_url,circuit_diagram_url,source_code,steps,troubleshooting,is_published')
       .single();
     if (error) return { error: error.message };
+
+    const componentError = await replaceProjectProducts(supabase, data.id, project.products);
+    if (componentError) return { error: componentError };
+
     revalidateProject(project.slug);
-    return { project: mapProjectRow(data as ProjectRow) };
+    return { project: mapProjectRow(data as ProjectRow, toProjectComponentRows(data.id, project.products)) };
   } catch (error) {
     return { error: getErrorMessage(error) };
   }
@@ -187,6 +227,7 @@ function validateProjectInput(input: TeacherProjectInput): Omit<TeacherProject, 
     sourceCode: input.sourceCode?.trim() || '',
     steps: input.steps || [],
     troubleshooting: input.troubleshooting || [],
+    products: normalizeProducts(input.products),
     isPublished: Boolean(input.isPublished),
   };
 }
@@ -194,7 +235,7 @@ function validateProjectInput(input: TeacherProjectInput): Omit<TeacherProject, 
 function toLmsProject(project: Omit<TeacherProject, 'id'>): LmsProject {
   return {
     ...project,
-    components: [],
+    components: project.products,
   };
 }
 
@@ -218,7 +259,7 @@ function toProjectRow(project: Omit<TeacherProject, 'id'>) {
   };
 }
 
-function mapProjectRow(row: ProjectRow): TeacherProject {
+function mapProjectRow(row: ProjectRow, components: ProjectComponentRow[] = []): TeacherProject {
   return {
     id: row.id,
     title: row.title,
@@ -235,6 +276,12 @@ function mapProjectRow(row: ProjectRow): TeacherProject {
     sourceCode: row.source_code || '',
     steps: splitLines(row.steps),
     troubleshooting: splitLines(row.troubleshooting),
+    products: components.map((component) => ({
+      id: component.id,
+      name: component.component_name,
+      quantity: Math.max(1, Number(component.quantity) || 1),
+      productUrl: component.product_url || '',
+    })),
     isPublished: Boolean(row.is_published),
   };
 }
@@ -256,8 +303,79 @@ function mapLocalProject(project: LmsProject): TeacherProject {
     sourceCode: project.sourceCode,
     steps: project.steps,
     troubleshooting: project.troubleshooting,
+    products: project.components,
     isPublished: isLocalProjectPublished(project),
   };
+}
+
+async function replaceProjectProducts(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string,
+  products: LmsComponent[],
+) {
+  const { error: deleteError } = await supabase
+    .from('project_components')
+    .delete()
+    .eq('project_id', projectId);
+
+  if (deleteError) return deleteError.message;
+  if (!products.length) return null;
+
+  const { error: insertError } = await supabase
+    .from('project_components')
+    .insert(
+      products.map((product) => ({
+        project_id: projectId,
+        component_name: product.name,
+        quantity: product.quantity,
+        product_url: product.productUrl,
+      })),
+    );
+
+  return insertError?.message || null;
+}
+
+function toProjectComponentRows(projectId: string, products: LmsComponent[]): ProjectComponentRow[] {
+  return products.map((product, index) => ({
+    id: product.id || `${projectId}-${index}`,
+    project_id: projectId,
+    component_name: product.name,
+    quantity: product.quantity,
+    product_url: product.productUrl,
+  }));
+}
+
+function normalizeProducts(products?: LmsComponent[]) {
+  const normalized = (products || []).map((product, index) => {
+    const name = product.name?.trim();
+    const productUrl = product.productUrl?.trim();
+    const quantity = Math.min(999, Math.max(1, Math.round(Number(product.quantity) || 1)));
+
+    if (!name) throw new Error(`Product ${index + 1} needs a display name.`);
+    if (name.length > 120) throw new Error(`Product ${index + 1} name is too long.`);
+    if (!isHttpsUrl(productUrl)) {
+      throw new Error(`Product ${index + 1} needs a valid https:// purchase link.`);
+    }
+
+    return { name, quantity, productUrl };
+  });
+
+  const uniqueNames = new Set(normalized.map((product) => product.name.toLowerCase()));
+  if (uniqueNames.size !== normalized.length) {
+    throw new Error('Each product needs a unique display name.');
+  }
+
+  return normalized;
+}
+
+function isHttpsUrl(value?: string) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password;
+  } catch {
+    return false;
+  }
 }
 
 function splitLines(value?: string | null) {

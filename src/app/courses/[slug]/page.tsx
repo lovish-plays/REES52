@@ -160,19 +160,13 @@ export default async function CourseDetailPage({ params }: PageProps) {
               {course.requiredComponents.map((component) => (
                 <a key={component.name} href={component.productUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-cyan-50">
                   <span>{component.quantity}x {component.name}</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-cyan-700" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-cyan-800">
+                    Buy
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </a>
               ))}
             </div>
-            <a
-              href={course.relatedProducts[0]?.productUrl || course.requiredComponents[0]?.productUrl || "https://rees52.com"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-sky-500"
-            >
-              Buy Course Kit
-              <ArrowRight className="h-4 w-4" />
-            </a>
           </InfoBlock>
 
           <InfoBlock title="Downloadable PDFs" icon={<Download className="h-5 w-5" />}>

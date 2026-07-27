@@ -35,7 +35,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
-  const primaryStoreLink = project.components[0]?.productUrl || "https://rees52.com";
   const projectUrl = absoluteUrl(`/projects/${project.slug}`);
   const projectJsonLd = {
     "@context": "https://schema.org",
@@ -88,12 +87,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </div>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <a
-              href={primaryStoreLink}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#required-products"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-sky-500/20 transition-all hover:bg-sky-500"
             >
-              Buy Components from REES52.com
+              View Required Products
               <ArrowRight className="h-4 w-4" />
             </a>
             <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-300 bg-cyan-50 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-cyan-900">
@@ -109,20 +106,21 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
       <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
         <aside className="space-y-5">
-          <Panel title="Components Required" icon={<PackageCheck className="h-5 w-5" />}>
-            <div className="space-y-2">
-              {project.components.length ? project.components.map((component) => (
+          <div id="required-products" className="scroll-mt-28">
+            <Panel title="Components Required" icon={<PackageCheck className="h-5 w-5" />}>
+              <div className="space-y-2">
+                {project.components.map((component) => (
                 <a key={component.name} href={component.productUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-cyan-50">
                   <span>{component.quantity}x {component.name}</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-cyan-700" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-cyan-800">
+                    Buy
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </a>
-              )) : (
-                <div className="rounded-xl bg-slate-50 px-3 py-3 text-xs font-bold text-slate-600">
-                  Component links will appear here after the admin adds them.
-                </div>
-              )}
-            </div>
-          </Panel>
+                ))}
+              </div>
+            </Panel>
+          </div>
 
           <Panel title="Circuit Diagram" icon={<Download className="h-5 w-5" />}>
             {project.circuitDiagramUrl && (

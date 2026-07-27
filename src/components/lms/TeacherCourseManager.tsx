@@ -11,6 +11,7 @@ import {
   type TeacherCourseInput,
 } from '@/app/actions/teacherContent';
 import AdminImageUpload from '@/components/admin/AdminImageUpload';
+import RequiredProductsEditor from '@/components/lms/RequiredProductsEditor';
 import { schoolClassOptions } from '@/lib/lms/class-categories';
 
 const emptyCourse: TeacherCourseInput = {
@@ -25,6 +26,7 @@ const emptyCourse: TeacherCourseInput = {
   thumbnailUrl: '',
   pricing: 'Free',
   price: 0,
+  products: [],
   isPublished: false,
 };
 
@@ -192,6 +194,12 @@ export default function TeacherCourseManager({ initialCourses }: { initialCourse
             <textarea rows={5} value={form.description} onChange={(event) => updateField('description', event.target.value)} className={inputClass} placeholder="Describe what students will learn…" />
           </Field>
 
+          <RequiredProductsEditor
+            value={form.products}
+            onChange={(products) => updateField('products', products)}
+            noun="course"
+          />
+
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 md:col-span-2">
             <input type="checkbox" checked={form.isPublished} onChange={(event) => updateField('isPublished', event.target.checked)} className="h-4 w-4 accent-cyan-700" />
             Publish now so students can access this course
@@ -221,6 +229,9 @@ export default function TeacherCourseManager({ initialCourses }: { initialCourse
                   </div>
                   <h3 className="mt-3 text-lg font-black text-slate-950">{course.title}</h3>
                   <p className="mt-1 text-xs font-semibold text-slate-500">/{course.slug}</p>
+                  <p className="mt-2 text-xs font-bold text-cyan-800">
+                    {course.products.length} linked {course.products.length === 1 ? 'product' : 'products'}
+                  </p>
                 </div>
               </div>
               <p className="mt-4 line-clamp-2 text-sm font-medium leading-relaxed text-slate-600">{course.shortDescription || course.description || 'No description yet.'}</p>

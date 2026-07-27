@@ -510,8 +510,12 @@ async function hydrateCourses(rows: CourseRow[]): Promise<LmsCourse[]> {
     const modules = row.id ? modulesByCourse.get(row.id) ?? [] : [];
     const fallbackModules = modules.length ? modules : mock?.modules ?? [];
     const courseComponents = row.id ? componentsByCourse.get(row.id) ?? [] : [];
-    const requiredComponents = courseComponents.filter((component) => component.role !== "related").map(({ role, ...component }) => component);
-    const relatedProducts = courseComponents.filter((component) => component.role === "related").map(({ role, ...component }) => component);
+    const requiredComponents = courseComponents
+      .filter((component) => component.role !== "related")
+      .map(toComponentWithoutRole);
+    const relatedProducts = courseComponents
+      .filter((component) => component.role === "related")
+      .map(toComponentWithoutRole);
 
     return mapCourseRow(row, {
       modules: fallbackModules,
@@ -813,6 +817,16 @@ function mapCourseComponentRow(row: CourseComponentRow): LmsComponent & { role?:
   };
 }
 
+function toComponentWithoutRole(component: LmsComponent & { role?: "required" | "related" }): LmsComponent {
+  return {
+    id: component.id,
+    name: component.name,
+    quantity: component.quantity,
+    productUrl: component.productUrl,
+    price: component.price,
+  };
+}
+
 function mapEbookRow(row: EbookRow): LmsEbook {
   return {
     id: row.id,
@@ -924,7 +938,7 @@ function isCompleteCourse(course: LmsCourse) {
         (pdf) => isSubstantialText(pdf.title, 6) && isSafePdf(pdf.url),
       ) &&
       course.whatYouWillLearn.length >= 4 &&
-      course.requiredComponents.length >= 3 &&
+      course.requiredComponents.length >= 1 &&
       course.projects.length >= 1 &&
       course.faqs.length >= 1 &&
       quiz &&
@@ -944,7 +958,7 @@ function isCompleteProject(project: LmsProject) {
       project.steps.length >= 4 &&
       project.steps.every((step) => isSubstantialText(step, 20)) &&
       project.troubleshooting.length >= 3 &&
-      project.components.length >= 3
+      project.components.length >= 1
   );
 }
 

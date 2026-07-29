@@ -2,11 +2,11 @@ import { MetadataRoute } from 'next';
 import { supabasePublic } from '@/lib/supabasePublic';
 import { fromUUID } from '@/lib/uuidHelper';
 import { getCourses, getEbooks, getProjects } from '@/lib/lms/data';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, siteContentLastModified } from '@/lib/site';
 import { getPublishedArticles } from '@/lib/articles';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+  const catalogLastModified = siteContentLastModified();
   const staticPages = [
     "",
     "/about",
@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   
   const sitemapEntries: MetadataRoute.Sitemap = staticPages.map((route) => ({
     url: absoluteUrl(route),
-    lastModified: now,
+    lastModified: catalogLastModified,
     changeFrequency: 'weekly' as const,
     priority: route === "" ? 1 : 0.8,
   }));
@@ -41,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     courses.forEach((course) => {
       sitemapEntries.push({
         url: absoluteUrl(`/courses/${course.slug}`),
-        lastModified: now,
+        lastModified: catalogLastModified,
         changeFrequency: 'weekly',
         priority: 0.9,
       });
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     projects.forEach((project) => {
       sitemapEntries.push({
         url: absoluteUrl(`/projects/${project.slug}`),
-        lastModified: now,
+        lastModified: catalogLastModified,
         changeFrequency: 'weekly',
         priority: 0.85,
       });
@@ -61,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const readableId = fromUUID(ebook.id);
       sitemapEntries.push({
         url: absoluteUrl(`/ebooks/${readableId}`),
-        lastModified: now,
+        lastModified: catalogLastModified,
         changeFrequency: 'weekly',
         priority: 0.75,
       });
@@ -81,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const readableId = fromUUID(v.id);
         sitemapEntries.push({
           url: absoluteUrl(`/videos/${readableId}`),
-          lastModified: v.created_at ? new Date(v.created_at) : now,
+          lastModified: v.created_at ? new Date(v.created_at) : catalogLastModified,
           changeFrequency: 'weekly' as const,
           priority: 0.7,
         });

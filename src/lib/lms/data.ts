@@ -49,6 +49,7 @@ type LessonRow = {
   slug?: string;
   lesson_type?: string;
   video_url?: string;
+  circuit_diagram_url?: string;
   content?: string;
   code?: string;
   pdf_url?: string;
@@ -131,6 +132,7 @@ type EbookRow = {
   cover_url?: string;
   file_url?: string;
   is_free?: boolean;
+  pages?: number | string;
 };
 
 type QuizAttemptRow = {
@@ -233,7 +235,7 @@ export async function getEbooks(): Promise<LmsEbook[]> {
   try {
     const { data, error } = await supabasePublic
       .from("ebooks")
-      .select("id,title,slug,description,category,level,cover_url,file_url,is_free")
+      .select("id,title,slug,description,category,level,cover_url,file_url,is_free,pages")
       .eq("is_published", true)
       .order("created_at", { ascending: false });
 
@@ -575,7 +577,7 @@ async function fetchCourseLessons(courseIds: string[]): Promise<LessonRow[]> {
   try {
     const { data, error } = await supabasePublic
       .from("lessons")
-      .select("id,module_id,course_id,title,slug,lesson_type,video_url,content,code,pdf_url,duration,position,is_preview")
+      .select("id,module_id,course_id,title,slug,lesson_type,video_url,circuit_diagram_url,content,code,pdf_url,duration,position,is_preview")
       .in("course_id", courseIds)
       .eq("is_published", true)
       .order("position", { ascending: true });
@@ -768,6 +770,7 @@ function mapLessonRow(row: LessonRow): LmsLesson {
     type: normalizeLessonType(row.lesson_type),
     duration: row.duration || "",
     videoUrl: row.video_url,
+    circuitDiagramUrl: row.circuit_diagram_url,
     content: row.content || "",
     code: row.code,
     pdfUrl: row.pdf_url,
@@ -834,7 +837,7 @@ function mapEbookRow(row: EbookRow): LmsEbook {
     slug: row.slug || slugify(row.title || ""),
     description: row.description || "",
     category: row.category || "",
-    pages: 0,
+    pages: Math.max(0, Math.round(toNumber(row.pages) || 0)),
     level: normalizeLevel(row.level),
     coverUrl: row.cover_url || "",
     fileUrl: row.file_url || "",
@@ -979,7 +982,15 @@ function isSubstantialText(value?: string, minimumLength = 1) {
 
 function isSafeAsset(value?: string) {
   if (!value || value === "#") return false;
-  return !hasIncompleteMarker(value);
+  if (hasIncompleteMarker(value)) return false;
+  if (value.startsWith("/")) return !value.startsWith("//");
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  } catch {
+    return false;
+  }
 }
 
 function isSafePdf(value?: string) {

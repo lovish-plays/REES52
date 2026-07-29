@@ -19,3 +19,9 @@ export const siteConfig = {
 export function absoluteUrl(path = "") {
   return `${siteConfig.url}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+export function siteContentLastModified() {
+  const configured = process.env.CONTENT_LAST_MODIFIED || "2026-07-29T00:00:00.000Z";
+  const parsed = new Date(configured);
+  return Number.isNaN(parsed.getTime()) ? new Date("2026-07-29T00:00:00.000Z") : parsed;
+}

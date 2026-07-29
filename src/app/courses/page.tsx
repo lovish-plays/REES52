@@ -29,8 +29,12 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
-      <StartHerePaths />
-      <CourseExplorer courses={courses} initialClassLevel={requestedClass ? normalizeSchoolClass(requestedClass) : undefined} />
+      <div className="order-2 lg:order-1">
+        <StartHerePaths />
+      </div>
+      <div className="order-1 lg:order-2">
+        <CourseExplorer courses={courses} initialClassLevel={requestedClass ? normalizeSchoolClass(requestedClass) : undefined} />
+      </div>
     </div>
   );
 }

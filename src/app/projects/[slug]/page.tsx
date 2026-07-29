@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ArrowRight, CheckCircle2, Code2, Download, PackageCheck, Timer, TriangleAlert, Wrench } from "lucide-react";
+import { ArrowRight, CheckCircle2, Code2, Download, PackageCheck, PlayCircle, Timer, TriangleAlert, Wrench } from "lucide-react";
 import { getProjectBySlug } from "@/lib/lms/data";
 import { absoluteUrl } from "@/lib/site";
 import ProjectActivityButton from "@/components/lms/ProjectActivityButton";
@@ -37,6 +37,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   if (!project) notFound();
 
   const projectUrl = absoluteUrl(`/projects/${project.slug}`);
+  const videoEmbedUrl = toVideoEmbedUrl(project.videoUrl);
   const projectJsonLd = {
     "@context": "https://schema.org",
     "@type": "HowTo",
@@ -44,6 +45,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     description: project.description,
     image: project.thumbnailUrl,
     totalTime: project.estimatedTime,
+    video: videoEmbedUrl
+      ? {
+          "@type": "VideoObject",
+          name: `${project.title} tutorial`,
+          description: project.shortDescription,
+          embedUrl: videoEmbedUrl,
+          thumbnailUrl: project.thumbnailUrl,
+        }
+      : undefined,
     supply: project.components.map((component) => ({
       "@type": "HowToSupply",
       name: component.name,
@@ -71,8 +81,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-10 lg:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
+      <section className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+        <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-widest text-cyan-700">{project.classLevel} · {project.category}</p>
           <h1 className="mt-3 text-3xl font-black uppercase tracking-wide text-slate-950 md:text-5xl">{project.title}</h1>
           <p className="mt-4 max-w-3xl text-sm font-semibold leading-relaxed text-slate-600">{project.description}</p>
@@ -106,8 +116,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr]">
-        <aside className="space-y-5">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
+        <aside className="min-w-0 space-y-5">
           <div id="required-products" className="scroll-mt-28">
             <Panel title="Components Required" icon={<PackageCheck className="h-5 w-5" />}>
               <div className="space-y-2">
@@ -156,7 +166,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           />
         </aside>
 
-        <main className="space-y-6">
+        <main className="min-w-0 space-y-6">
           <Panel title="Overview" icon={<Wrench className="h-5 w-5" />}>
             <p className="text-sm font-medium leading-relaxed text-slate-700">{project.description}</p>
           </Panel>
@@ -173,7 +183,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </Panel>
 
           <Panel title="Source Code" icon={<Code2 className="h-5 w-5" />}>
-            <pre className="max-h-96 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-cyan-50">
+            <pre className="max-h-96 max-w-full overflow-x-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-cyan-50">
               <code>{project.sourceCode}</code>
             </pre>
           </Panel>
@@ -189,13 +199,19 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             </ul>
           </Panel>
 
-          <Panel title="Video Tutorial" icon={<Download className="h-5 w-5" />}>
-            <div className="flex aspect-video items-center justify-center rounded-xl bg-slate-950 p-6 text-center text-white">
-              <p className="text-xs font-black uppercase tracking-widest text-cyan-100">
-                Add YouTube, Vimeo, Bunny Stream, or another hosted video URL in video_url.
-              </p>
-            </div>
-          </Panel>
+          {videoEmbedUrl && (
+            <Panel title="Video Tutorial" icon={<PlayCircle className="h-5 w-5" />}>
+              <div className="relative aspect-video min-w-0 max-w-full overflow-hidden rounded-xl bg-slate-950">
+                <iframe
+                  src={videoEmbedUrl}
+                  title={`${project.title} video tutorial`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full"
+                />
+              </div>
+            </Panel>
+          )}
 
           <Link href="/projects" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-cyan-800 hover:text-cyan-600">
             Back to Project Library
@@ -209,7 +225,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
 function Panel({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="min-w-0 max-w-full rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2 text-cyan-700">
         {icon}
         <h2 className="text-sm font-black uppercase tracking-widest text-slate-950">{title}</h2>
@@ -217,4 +233,37 @@ function Panel({ title, icon, children }: { title: string; icon: ReactNode; chil
       {children}
     </section>
   );
+}
+
+function toVideoEmbedUrl(value?: string) {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return null;
+
+    if (url.hostname === "youtu.be") {
+      const videoId = url.pathname.split("/").filter(Boolean)[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    }
+
+    if (url.hostname === "youtube.com" || url.hostname === "www.youtube.com") {
+      if (url.pathname.startsWith("/embed/")) return url.toString();
+      const videoId = url.searchParams.get("v");
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    }
+
+    if (url.hostname === "vimeo.com" || url.hostname === "www.vimeo.com") {
+      const videoId = url.pathname.split("/").filter(Boolean)[0];
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+    }
+
+    if (url.hostname === "player.vimeo.com" || url.hostname === "iframe.mediadelivery.net") {
+      return url.toString();
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }

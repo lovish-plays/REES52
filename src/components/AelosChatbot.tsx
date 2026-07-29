@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { X, Send, Cpu, Bot, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { askAelosAiAction } from "@/app/actions/chatbot";
@@ -21,6 +22,7 @@ const SUGGESTIONS = [
 ];
 
 export default function AelosChatbot() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -38,6 +40,10 @@ export default function AelosChatbot() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
+
+  if (pathname.startsWith("/learn/")) {
+    return null;
+  }
 
   const getBotResponse = (input: string): Omit<Message, "sender" | "timestamp"> => {
     const q = input.toLowerCase();
@@ -204,11 +210,11 @@ export default function AelosChatbot() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40 w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 text-white rounded-full flex items-center justify-center shadow-2xl premium-bot-btn cursor-pointer border border-cyan-400/40 group"
+        className="fixed bottom-3 right-3 z-40 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-cyan-400/40 bg-gradient-to-br from-cyan-600 to-blue-600 text-white shadow-2xl premium-bot-btn group sm:bottom-6 sm:right-6 sm:h-14 sm:w-14"
         aria-label="REES52 AI learning mentor"
       >
-        <span className="absolute -inset-1.5 rounded-full bg-cyan-500/20 animate-ping opacity-75 pointer-events-none"></span>
-        <Bot className="w-7 h-7 transition-transform duration-300 premium-bot-icon" />
+        <span className="absolute -inset-1.5 hidden rounded-full bg-cyan-500/20 opacity-75 pointer-events-none sm:block sm:animate-ping"></span>
+        <Bot className="h-6 w-6 transition-transform duration-300 premium-bot-icon sm:h-7 sm:w-7" />
       </button>
 
       {/* Chat Window Panel */}

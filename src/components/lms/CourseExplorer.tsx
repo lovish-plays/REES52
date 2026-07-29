@@ -50,6 +50,7 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
+              aria-label="Search courses"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search Arduino, robotics, sensors, free courses..."
@@ -117,7 +118,8 @@ function FilterButton({ active, children, onClick }: { active: boolean; children
     <button
       type="button"
       onClick={onClick}
-      className={`premium-btn-interactive rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+      aria-pressed={active}
+      className={`premium-btn-interactive min-h-11 rounded-full border px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
         active
           ? "border-sky-500 bg-sky-600 text-white shadow-sm shadow-sky-500/20"
           : "border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:text-sky-800"

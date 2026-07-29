@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -7,9 +8,40 @@ import LessonCompletionButton from "@/components/lms/LessonCompletionButton";
 import QuizRunner from "@/components/lms/QuizRunner";
 import { getCourseEnrollmentStatus } from "@/app/actions/lms";
 import { getCourseBySlug, getCourseLesson, getLessonNavigation, getQuizzes, toPublicQuiz } from "@/lib/lms/data";
+import { absoluteUrl } from "@/lib/site";
 
 interface PageProps {
   params: Promise<{ courseSlug: string; lessonSlug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { courseSlug, lessonSlug } = await params;
+  const course = await getCourseBySlug(courseSlug);
+  const lesson = course ? getCourseLesson(course, lessonSlug) : null;
+  if (!course || !lesson) return {};
+
+  const canonical = lesson.isPreview
+    ? absoluteUrl(`/learn/${course.slug}/${lesson.slug}`)
+    : absoluteUrl(`/courses/${course.slug}`);
+  const description = `${lesson.content.slice(0, 150).trim()}${lesson.content.length > 150 ? "…" : ""}`;
+
+  return {
+    title: `${lesson.title} – ${course.title}`,
+    description,
+    alternates: { canonical },
+    robots: lesson.isPreview
+      ? { index: true, follow: true }
+      : { index: false, follow: false, noarchive: true },
+    openGraph: lesson.isPreview
+      ? {
+          title: lesson.title,
+          description,
+          url: canonical,
+          type: "article",
+          images: [{ url: course.thumbnailUrl, alt: course.title }],
+        }
+      : undefined,
+  };
 }
 
 export default async function LessonPage({ params }: PageProps) {
@@ -24,6 +56,31 @@ export default async function LessonPage({ params }: PageProps) {
   const quiz = lesson.type === "quiz" ? getQuizzes().find((item) => item.courseSlug === course.slug) : null;
   const publicQuiz = quiz ? toPublicQuiz(quiz) : null;
   const enrollment = await getCourseEnrollmentStatus(course.slug);
+  const lessonUrl = absoluteUrl(`/learn/${course.slug}/${lesson.slug}`);
+  const learningResourceJsonLd = lesson.isPreview
+    ? {
+        "@context": "https://schema.org",
+        "@type": lesson.videoUrl ? ["LearningResource", "VideoObject"] : "LearningResource",
+        name: lesson.title,
+        description: lesson.content,
+        url: lessonUrl,
+        thumbnailUrl: course.thumbnailUrl,
+        contentUrl: lesson.videoUrl || undefined,
+        learningResourceType: lesson.type === "quiz" ? "Quiz" : "Lesson",
+        educationalLevel: course.classLevel,
+        inLanguage: course.language,
+        isPartOf: {
+          "@type": "Course",
+          name: course.title,
+          url: absoluteUrl(`/courses/${course.slug}`),
+        },
+        provider: {
+          "@type": "Organization",
+          name: "REES52",
+          url: absoluteUrl(),
+        },
+      }
+    : null;
 
   if (!lesson.isPreview && !enrollment.enrolled) {
     return (
@@ -39,11 +96,20 @@ export default async function LessonPage({ params }: PageProps) {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl flex-1 gap-6 px-4 py-8 lg:grid-cols-[320px_1fr] lg:px-8">
+    <div
+      className="mx-auto grid w-full max-w-7xl flex-1 grid-cols-[minmax(0,1fr)] gap-6 px-4 py-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:px-8"
+      data-testid="lesson-layout"
+    >
+      {learningResourceJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(learningResourceJsonLd) }}
+        />
+      )}
       <LessonSidebar course={course} activeLessonSlug={lesson.slug} />
 
-      <main className="space-y-6">
-        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-xl">
+      <main className="min-w-0 max-w-full space-y-6" data-testid="lesson-main">
+        <div className="min-w-0 max-w-full rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-xl">
           <p className="text-[10px] font-black uppercase tracking-widest text-cyan-700">
             Lesson {nav.currentIndex + 1} of {nav.totalLessons}
           </p>
@@ -60,8 +126,8 @@ export default async function LessonPage({ params }: PageProps) {
         </div>
 
         {lesson.videoUrl && (
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl">
-            <div className="relative aspect-video bg-black">
+          <section className="max-w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl">
+            <div className="relative aspect-video min-w-0 max-w-full bg-black">
               <iframe
                 src={lesson.videoUrl}
                 title={lesson.title}
@@ -83,7 +149,7 @@ export default async function LessonPage({ params }: PageProps) {
         )}
 
         {(lesson.circuitDiagramUrl || lesson.code) && (
-          <section className={`grid gap-6 ${lesson.circuitDiagramUrl && lesson.code ? "lg:grid-cols-2" : ""}`}>
+          <section className={`grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)] gap-6 ${lesson.circuitDiagramUrl && lesson.code ? "lg:grid-cols-2" : ""}`}>
           {lesson.circuitDiagramUrl && (
             <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-xl">
             <div className="flex items-center gap-2">
@@ -108,9 +174,9 @@ export default async function LessonPage({ params }: PageProps) {
           )}
 
           {lesson.code && (
-          <div className="rounded-2xl border border-slate-200/80 bg-slate-950 p-6 text-white shadow-sm">
+          <div className="min-w-0 max-w-full rounded-2xl border border-slate-200/80 bg-slate-950 p-6 text-white shadow-sm">
             <h2 className="text-sm font-black uppercase tracking-widest text-cyan-200">Code Section</h2>
-            <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/40 p-4 text-xs leading-relaxed text-cyan-50">
+            <pre className="mt-4 max-h-80 max-w-full overflow-x-auto rounded-xl bg-black/40 p-4 text-xs leading-relaxed text-cyan-50">
               <code>{lesson.code}</code>
             </pre>
           </div>
@@ -118,8 +184,8 @@ export default async function LessonPage({ params }: PageProps) {
         </section>
         )}
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex min-w-0 max-w-full flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
             {lesson.pdfUrl && (
               <a
                 href={lesson.pdfUrl}

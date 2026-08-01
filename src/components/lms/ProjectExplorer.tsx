@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import ProjectCard from "@/components/lms/ProjectCard";
 import { LmsProject } from "@/lib/lms/types";
-import { type SchoolClass } from "@/lib/lms/class-categories";
+import { schoolClassOptions, type SchoolClass } from "@/lib/lms/class-categories";
 
 const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 
@@ -15,7 +15,6 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
   const [level, setLevel] = useState("All Levels");
 
   const categories = useMemo(() => ["All", ...Array.from(new Set(projects.map((project) => project.category)))], [projects]);
-  const classOptions = useMemo(() => Array.from(new Set(projects.map((project) => project.classLevel))), [projects]);
   const filteredProjects = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -73,7 +72,7 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
           <FilterButton active={classLevel === "All Classes"} onClick={() => setClassLevel("All Classes")}>
             All Classes
           </FilterButton>
-          {classOptions.map((item) => (
+          {schoolClassOptions.map((item) => (
             <FilterButton key={item} active={classLevel === item} onClick={() => setClassLevel(item)}>
               {item}
             </FilterButton>
@@ -97,8 +96,14 @@ export default function ProjectExplorer({ projects, initialClassLevel }: { proje
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white/80 p-8 text-center">
-          <h2 className="text-lg font-black text-slate-950">No matching projects</h2>
-          <p className="mt-2 text-sm font-semibold text-slate-600">Try another category, level, or search term.</p>
+          <h2 className="text-lg font-black text-slate-950">
+            {classLevel === "All Classes" ? "No matching projects" : `No projects published for ${classLevel} yet`}
+          </h2>
+          <p className="mt-2 text-sm font-semibold text-slate-600">
+            {classLevel === "All Classes"
+              ? "Try another category, level, or search term."
+              : "This class remains available here while teachers prepare and publish its first project."}
+          </p>
         </div>
       )}
     </section>

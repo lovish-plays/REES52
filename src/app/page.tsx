@@ -26,6 +26,7 @@ import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
 import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
 import { getMonthlyLeaderboard, getMonthlyLeaderboardLabel } from "@/lib/lms/leaderboard";
 import { getPublishedArticles } from "@/lib/articles";
+import { schoolClassOptions } from "@/lib/lms/class-categories";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -147,6 +148,42 @@ export default async function HomePage() {
           </div>
 
           <ProgressDemo />
+        </div>
+      </section>
+
+      <section id="classes" className="relative z-10 border-b border-sky-100 bg-gradient-to-r from-white via-sky-50 to-cyan-50">
+        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-9 lg:grid-cols-[0.34fr_0.66fr] lg:items-center lg:px-8">
+          <div>
+            <div className="flex items-center gap-2 text-sky-700">
+              <span className="rounded-xl border border-sky-200 bg-white p-2 shadow-sm">
+                <School className="h-5 w-5" />
+              </span>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em]">School classes</p>
+            </div>
+            <h2 className="mt-3 text-2xl font-black text-slate-950">Choose your class</h2>
+            <p className="mt-2 max-w-md text-xs font-semibold leading-relaxed text-slate-600">
+              Classes 3–12 always stay visible. Open a class to see its published courses, or check back as teachers add new learning.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {schoolClassOptions.map((schoolClass, index) => (
+              <Link
+                key={schoolClass}
+                href={`/courses?class=${encodeURIComponent(schoolClass)}`}
+                aria-label={`Browse courses for ${schoolClass}`}
+                style={{ animationDelay: `${index * 35}ms` }}
+                className="group/class page-loaded-entrance flex min-h-14 items-center justify-between rounded-xl border border-sky-100 bg-white px-3 py-2 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-400 hover:bg-sky-600 hover:text-white hover:shadow-lg hover:shadow-sky-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+              >
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 transition-colors group-hover/class:text-sky-100">
+                  Class
+                </span>
+                <span className="text-lg font-black text-slate-950 transition-all duration-300 group-hover/class:translate-x-0.5 group-hover/class:text-white">
+                  {schoolClass.replace("Class ", "")}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

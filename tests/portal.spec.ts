@@ -12,11 +12,16 @@ test.describe('REES52 Academy', () => {
       }),
     ).toBeVisible();
     await expect(page.getByRole('link', { name: 'Explore courses' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Choose your class' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Browse courses for Class 3' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Browse courses for Class 12' })).toBeVisible();
 
     const moreNavigation = page.getByRole('button', { name: 'More navigation' });
     await expect(moreNavigation).toHaveCount(1);
     await moreNavigation.click();
     await expect(page.getByRole('link', { name: /Courses Structured robotics/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open Class 3 courses' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open Class 12 courses' })).toBeVisible();
 
     const dimensions = await page.evaluate(() => ({
       viewport: window.innerWidth,
@@ -141,6 +146,8 @@ test.describe('REES52 Academy', () => {
 
   test('catalogue filters are touch sized and expose their state', async ({ page }) => {
     await page.goto('/courses');
+    await expect(page.getByRole('button', { name: 'Class 3', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Class 12', exact: true })).toBeVisible();
     const filterButtons = page.locator('button[aria-pressed]');
     await expect(filterButtons).not.toHaveCount(0);
 
@@ -148,6 +155,9 @@ test.describe('REES52 Academy', () => {
       buttons.map((button) => Math.round(button.getBoundingClientRect().height)),
     );
     expect(Math.min(...heights)).toBeGreaterThanOrEqual(44);
+
+    await page.getByRole('button', { name: 'Class 12', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'No courses published for Class 12 yet' })).toBeVisible();
   });
 
   test('news and articles are available to every visitor', async ({ page }) => {

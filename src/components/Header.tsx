@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   BookOpen,
+  ChevronDown,
   ExternalLink,
   FileQuestion,
   FolderKanban,
@@ -16,8 +17,10 @@ import {
   MoreVertical,
   Newspaper,
   PackageCheck,
+  School,
   Shield,
   ShoppingBag,
+  Sparkles,
   Trophy,
   X,
 } from "lucide-react";
@@ -36,17 +39,20 @@ import {
 import { supabase } from "@/lib/supabaseClient";
 import { getNotifications } from "@/app/actions/content";
 import { isTeacherRole } from "@/lib/auth/roles";
+import { schoolClassOptions } from "@/lib/lms/class-categories";
 
 const STORE_URL = "https://rees52.com/collections/stem-kits";
 
-const NAV_LINKS = [
+const LEARNING_LINKS = [
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/quizzes", label: "Quizzes", icon: FileQuestion },
+  { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
+];
+
+const TOP_NAV_LINKS = [
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
-  { href: "/about", label: "About", icon: GraduationCap },
 ];
 
 const DIRECTORY_LINKS = [
@@ -224,15 +230,90 @@ export default function Header() {
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            {NAV_LINKS.map((link) => {
+          <nav className="hidden items-center gap-1 xl:flex">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={`group inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-sky-300 ${
+                    LEARNING_LINKS.some((link) => pathname === link.href || pathname.startsWith(`${link.href}/`))
+                      ? "border-sky-600 bg-sky-600 text-white shadow-sm shadow-sky-500/25"
+                      : "border-sky-200/80 bg-white/80 text-sky-900 shadow-sm hover:border-sky-300 hover:bg-white hover:shadow-md"
+                  }`}
+                  aria-label="Open classes and learning menu"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-500 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
+                  Classes &amp; Learn
+                  <ChevronDown className="h-3.5 w-3.5 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="w-[min(92vw,680px)] origin-top animate-in fade-in zoom-in-95 border border-sky-100 bg-white/95 p-3 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.2)] backdrop-blur-2xl"
+              >
+                <div className="grid gap-3 md:grid-cols-[1.15fr_0.85fr]">
+                  <div className="rounded-xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-50 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-700">School classes</p>
+                        <p className="mt-1 text-sm font-black text-slate-950">Choose Class 3–12</p>
+                      </div>
+                      <School className="h-5 w-5 text-cyan-600" />
+                    </div>
+                    <div className="mt-3 grid grid-cols-5 gap-2">
+                      {schoolClassOptions.map((schoolClass) => (
+                        <DropdownMenuItem key={schoolClass} asChild className="p-0 focus:bg-transparent">
+                          <Link
+                            href={`/courses?class=${encodeURIComponent(schoolClass)}`}
+                            aria-label={`View ${schoolClass} courses`}
+                            className="group/class flex min-h-11 items-center justify-center rounded-lg border border-sky-200 bg-white px-2 py-2 text-xs font-black text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-600 hover:text-white hover:shadow-md focus-visible:ring-2 focus-visible:ring-sky-400"
+                          >
+                            {schoolClass.replace("Class ", "")}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-[10px] font-semibold leading-relaxed text-slate-600">
+                      Every class stays visible, even while teachers are preparing its first course.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-2">
+                    <DropdownMenuLabel className="px-3 pb-2 pt-2 text-[9px] text-slate-500">
+                      Learning library
+                    </DropdownMenuLabel>
+                    {LEARNING_LINKS.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.href} asChild className="focus:bg-sky-50 focus:text-sky-950">
+                          <Link
+                            href={link.href}
+                            className="group/library flex w-full items-center justify-between px-3 py-2.5 text-slate-800"
+                          >
+                            <span className="flex items-center gap-3">
+                              <span className="rounded-lg bg-sky-50 p-2 text-sky-700 transition-all duration-200 group-hover/library:bg-sky-600 group-hover/library:text-white">
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span className="text-[10px] font-black uppercase tracking-widest">{link.label}</span>
+                            </span>
+                            <ArrowIndicator />
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {TOP_NAV_LINKS.map((link) => {
               const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 ${
                     isActive
                       ? "bg-sky-600 text-white shadow-sm shadow-sky-500/20"
                       : "text-slate-700 hover:bg-white/90 hover:text-sky-800"
@@ -259,7 +340,7 @@ export default function Header() {
               href={STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all hover:bg-white/90 hover:text-sky-800"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/90 hover:text-sky-800"
             >
               Kits
               <ExternalLink className="h-3 w-3" />
@@ -467,7 +548,7 @@ export default function Header() {
               variant="ghost"
               onClick={() => setDirectoryOpen(true)}
               aria-label="More navigation"
-              className="border border-slate-200 bg-white/70 text-slate-800 transition-all duration-300 hover:scale-105 hover:border-cyan-400/40 hover:bg-white hover:shadow-md"
+              className="group border border-slate-200 bg-white/70 text-slate-800 transition-all duration-300 hover:scale-105 hover:border-cyan-400/40 hover:bg-white hover:shadow-md"
             >
               <MoreVertical className="h-4 w-4 text-slate-700 transition-transform duration-300 group-hover:rotate-90" />
             </Button>
@@ -485,13 +566,36 @@ export default function Header() {
             <X className="h-6 w-6" />
           </button>
 
-          <div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-center px-6">
+          <div className="mx-auto flex h-full w-full max-w-3xl flex-col items-center justify-start overflow-y-auto px-6 py-20 md:justify-center">
             <h3 className="mb-2 text-center text-xl font-black tracking-wider text-slate-900">
               REES52 Academy
             </h3>
-            <p className="mb-8 text-center text-sm text-slate-600">
-              Jump into courses, projects, quizzes, Academy news, the leaderboard, ebooks, your dashboard, or the REES52 component store.
+            <p className="mb-5 text-center text-sm text-slate-600">
+              Choose your school class or jump into any Academy learning resource.
             </p>
+
+            <div className="mb-5 w-full rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-50 p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.22em] text-sky-700">School classes</p>
+                  <p className="mt-1 text-sm font-black text-slate-950">Browse learning for Class 3–12</p>
+                </div>
+                <School className="h-5 w-5 text-cyan-600" />
+              </div>
+              <div className="mt-3 grid grid-cols-5 gap-2">
+                {schoolClassOptions.map((schoolClass) => (
+                  <Link
+                    key={schoolClass}
+                    href={`/courses?class=${encodeURIComponent(schoolClass)}`}
+                    onClick={() => setDirectoryOpen(false)}
+                    aria-label={`Open ${schoolClass} courses`}
+                    className="flex min-h-11 items-center justify-center rounded-lg border border-sky-200 bg-white px-2 py-2 text-xs font-black text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-600 hover:text-white hover:shadow-md"
+                  >
+                    {schoolClass.replace("Class ", "")}
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               {DIRECTORY_LINKS.map((item) => {
@@ -549,5 +653,13 @@ export default function Header() {
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </>
+  );
+}
+
+function ArrowIndicator() {
+  return (
+    <span aria-hidden="true" className="text-sm text-sky-500 transition-transform duration-200 group-hover/library:translate-x-1">
+      →
+    </span>
   );
 }

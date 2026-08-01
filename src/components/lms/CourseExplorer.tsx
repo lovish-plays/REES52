@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import { LmsCourse } from "@/lib/lms/types";
-import { type SchoolClass } from "@/lib/lms/class-categories";
+import { schoolClassOptions, type SchoolClass } from "@/lib/lms/class-categories";
 
 const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 const pricing = ["All", "Free", "Paid"];
@@ -17,7 +17,6 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
   const [price, setPrice] = useState("All");
 
   const categories = useMemo(() => ["All", ...Array.from(new Set(courses.map((course) => course.category)))], [courses]);
-  const classOptions = useMemo(() => Array.from(new Set(courses.map((course) => course.classLevel))), [courses]);
   const filteredCourses = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -76,7 +75,7 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
           <FilterButton active={classLevel === "All Classes"} onClick={() => setClassLevel("All Classes")}>
             All Classes
           </FilterButton>
-          {classOptions.map((item) => (
+          {schoolClassOptions.map((item) => (
             <FilterButton key={item} active={classLevel === item} onClick={() => setClassLevel(item)}>
               {item}
             </FilterButton>
@@ -105,8 +104,14 @@ export default function CourseExplorer({ courses, initialClassLevel }: { courses
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-slate-300 bg-white/80 p-8 text-center">
-          <h2 className="text-lg font-black text-slate-950">No matching courses</h2>
-          <p className="mt-2 text-sm font-semibold text-slate-600">Try a different category, level, price, or search term.</p>
+          <h2 className="text-lg font-black text-slate-950">
+            {classLevel === "All Classes" ? "No matching courses" : `No courses published for ${classLevel} yet`}
+          </h2>
+          <p className="mt-2 text-sm font-semibold text-slate-600">
+            {classLevel === "All Classes"
+              ? "Try a different category, level, price, or search term."
+              : "This class remains available here while teachers prepare and publish its first course."}
+          </p>
         </div>
       )}
     </section>

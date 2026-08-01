@@ -43,6 +43,9 @@ const publicPaths = new Set([
 const canonicalOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "https://rees52.tech").replace(/\/$/, "");
 
 function isPublicPath(pathname: string) {
+  if (pathname.endsWith(".html") || pathname.endsWith(".txt") || pathname.startsWith("/google")) {
+    return true;
+  }
   return publicPaths.has(pathname) || [
     "/courses",
     "/projects",
@@ -60,6 +63,8 @@ function isPublicPath(pathname: string) {
 function shouldMaskPath(pathname: string) {
   return (
     !isPublicPath(pathname) &&
+    !pathname.endsWith(".html") &&
+    !pathname.endsWith(".txt") &&
     pathname !== "/ads.txt" &&
     pathname !== "/robots.txt" &&
     pathname !== "/sitemap.xml" &&
@@ -255,6 +260,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public images and PDF downloads
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|pdf)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|pdf|html|txt)$).*)",
   ],
 };

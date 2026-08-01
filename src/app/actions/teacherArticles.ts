@@ -10,6 +10,8 @@ import {
   slugifyArticle,
   type Article,
 } from "@/lib/articles";
+import { hasSupabaseEnv } from "@/lib/supabaseConfig";
+import { createClient } from "@/lib/supabaseServer";
 import { getD1Database } from "../../../db";
 
 export type TeacherArticleInput = {
@@ -49,32 +51,53 @@ export async function createTeacherArticleAction(
   try {
     const user = await requireTeacher();
     const article = validateArticle(input);
-    const database = await getD1Database();
     const now = new Date().toISOString();
     const id = randomUUID();
+    const authorName = user.name?.trim() || "REES52 Academy Teacher";
 
-    await database
-      .prepare(
-        `insert into articles
-          (id, title, slug, excerpt, content, category, cover_image_url, author_id, author_name, status, published_at, created_at, updated_at)
-         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .bind(
+    if (hasSupabaseEnv) {
+      const supabase = await createClient();
+      const { error } = await supabase.from("articles").insert({
         id,
-        article.title,
-        article.slug,
-        article.excerpt,
-        article.content,
-        article.category,
-        article.coverImageUrl || null,
-        user.id,
-        user.name?.trim() || "REES52 Academy Teacher",
-        article.isPublished ? "published" : "draft",
-        article.isPublished ? now : null,
-        now,
-        now,
-      )
-      .run();
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        content: article.content,
+        category: article.category,
+        cover_image_url: article.coverImageUrl || null,
+        author_id: user.id,
+        author_name: authorName,
+        status: article.isPublished ? "published" : "draft",
+        published_at: article.isPublished ? now : null,
+        created_at: now,
+        updated_at: now,
+      });
+      if (error) throw new Error(error.message);
+    } else {
+      const database = await getD1Database();
+      await database
+        .prepare(
+          `insert into articles
+            (id, title, slug, excerpt, content, category, cover_image_url, author_id, author_name, status, published_at, created_at, updated_at)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          id,
+          article.title,
+          article.slug,
+          article.excerpt,
+          article.content,
+          article.category,
+          article.coverImageUrl || null,
+          user.id,
+          authorName,
+          article.isPublished ? "published" : "draft",
+          article.isPublished ? now : null,
+          now,
+          now,
+        )
+        .run();
+    }
 
     revalidateArticles(article.slug);
     return { article: (await getArticleById(id)) || undefined };
@@ -93,30 +116,49 @@ export async function updateTeacherArticleAction(
     const existing = await getArticleById(input.id);
     if (!existing) return { error: "Article not found." };
 
-    const database = await getD1Database();
     const now = new Date().toISOString();
     const publishedAt = article.isPublished ? existing.publishedAt || now : null;
 
-    await database
-      .prepare(
-        `update articles
-         set title = ?, slug = ?, excerpt = ?, content = ?, category = ?, cover_image_url = ?,
-             status = ?, published_at = ?, updated_at = ?
-         where id = ?`,
-      )
-      .bind(
-        article.title,
-        article.slug,
-        article.excerpt,
-        article.content,
-        article.category,
-        article.coverImageUrl || null,
-        article.isPublished ? "published" : "draft",
-        publishedAt,
-        now,
-        input.id,
-      )
-      .run();
+    if (hasSupabaseEnv) {
+      const supabase = await createClient();
+      const { error } = await supabase
+        .from("articles")
+        .update({
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          content: article.content,
+          category: article.category,
+          cover_image_url: article.coverImageUrl || null,
+          status: article.isPublished ? "published" : "draft",
+          published_at: publishedAt,
+          updated_at: now,
+        })
+        .eq("id", input.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const database = await getD1Database();
+      await database
+        .prepare(
+          `update articles
+           set title = ?, slug = ?, excerpt = ?, content = ?, category = ?, cover_image_url = ?,
+               status = ?, published_at = ?, updated_at = ?
+           where id = ?`,
+        )
+        .bind(
+          article.title,
+          article.slug,
+          article.excerpt,
+          article.content,
+          article.category,
+          article.coverImageUrl || null,
+          article.isPublished ? "published" : "draft",
+          publishedAt,
+          now,
+          input.id,
+        )
+        .run();
+    }
 
     revalidateArticles(article.slug, existing.slug);
     return { article: (await getArticleById(input.id)) || undefined };
@@ -134,8 +176,14 @@ export async function deleteTeacherArticleAction(
     const existing = await getArticleById(id);
     if (!existing) return { error: "Article not found." };
 
-    const database = await getD1Database();
-    await database.prepare("delete from articles where id = ?").bind(id).run();
+    if (hasSupabaseEnv) {
+      const supabase = await createClient();
+      const { error } = await supabase.from("articles").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+    } else {
+      const database = await getD1Database();
+      await database.prepare("delete from articles where id = ?").bind(id).run();
+    }
     revalidateArticles(existing.slug);
     return { success: true };
   } catch (error) {

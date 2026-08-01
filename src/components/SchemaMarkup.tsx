@@ -26,7 +26,7 @@ export default function SchemaMarkup() {
     "@type": "WebSite",
     "@id": absoluteUrl("/#website"),
     name: siteConfig.name,
-    alternateName: siteConfig.shortName,
+    alternateName: [siteConfig.shortName, "REES52 Tech", "rees52.tech"],
     url: siteConfig.url,
     inLanguage: "en-IN",
     publisher: { "@id": absoluteUrl("/#organization") },

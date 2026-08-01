@@ -109,6 +109,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
       <head>
+        <meta name="site_name" content="REES52 Academy" />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.__REES52_SUPABASE__=${runtimeSupabaseConfig};`,

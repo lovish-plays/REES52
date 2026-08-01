@@ -32,7 +32,9 @@ import { absoluteUrl } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Complete Robotics and Electronics Courses",
+  title: {
+    absolute: "REES52 Academy - Complete Robotics & Electronics Platform",
+  },
   description:
     "Learn with complete REES52 Academy courses that include official videos, wiring diagrams, working code, downloadable workbooks, projects and quizzes.",
   alternates: { canonical: absoluteUrl("/") },

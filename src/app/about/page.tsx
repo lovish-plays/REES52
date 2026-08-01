@@ -54,7 +54,7 @@ export default function AboutPage() {
             {
               icon: Headphones,
               title: "Human support",
-              copy: "Learners and schools can contact the REES52 support team at support@rees52.com or +91 95995 94520 during published support hours.",
+              copy: "Learners and schools can contact the REES52 support team at info@rees52.tech or +91 95995 94520 during published support hours.",
             },
           ].map(({ icon: Icon, title, copy }) => (
             <article key={title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -85,7 +85,7 @@ export default function PrivacyPage() {
           Deleting an account may also remove saved course progress, quiz history and certificates.
         </p>
         <p>
-          Send privacy requests to <a href="mailto:support@rees52.com">support@rees52.com</a> with the subject “Academy privacy request”.
+          Send privacy requests to <a href="mailto:info@rees52.tech">info@rees52.tech</a> with the subject “Academy privacy request”.
           We may verify the request before changing or disclosing account information.
         </p>
       </PolicySection>
@@ -104,7 +104,7 @@ export default function PrivacyPage() {
         <p>
           Robotics Embedded Education Services Private Limited<br />
           G-9, Om Vihar Phase 5, Uttam Nagar, New Delhi, India<br />
-          Email: <a href="mailto:support@rees52.com">support@rees52.com</a><br />
+          Email: <a href="mailto:info@rees52.tech">info@rees52.tech</a><br />
           Phone: <a href="tel:+919599594520">+91 95995 94520</a>
         </p>
         <p>We will update the date below when material changes are made and will provide an additional notice when required.</p>

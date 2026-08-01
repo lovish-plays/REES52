@@ -50,7 +50,23 @@ type DevelopmentDatabaseGlobal = typeof globalThis & {
 
 function getDevelopmentDatabase(): D1DatabaseLike {
   const runtime = globalThis as DevelopmentDatabaseGlobal;
-  runtime.__rees52DevelopmentArticles ??= [];
+  runtime.__rees52DevelopmentArticles ??= [
+    {
+      id: "art-teacher-test-001",
+      title: "The Rise of Embedded Machine Learning in K-12 STEM Education (Test Article)",
+      slug: "rise-of-embedded-machine-learning-stem-education",
+      excerpt: "Discover how TinyML and low-power microcontrollers are transforming how high school students learn artificial intelligence.",
+      content: "Artificial intelligence is no longer restricted to cloud datacenters and high-performance GPUs. With TinyML, microcontrollers like the ESP32 and Raspberry Pi Pico can run compact neural network models directly at the edge.\n\nIn this article, we explore how hands-on sensor-based AI models—such as gesture recognition and acoustic keyword spotting—help students gain intuitive, practical understanding of machine learning principles.",
+      category: "AI & Embedded Systems",
+      coverImageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      authorId: "usr-teacher-test-001",
+      authorName: "Dr. Alex Vance (Test Teacher)",
+      status: "published",
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
 
   return {
     prepare(query: string) {

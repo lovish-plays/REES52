@@ -121,7 +121,7 @@ export default function TermsPage() {
           <p>
             Robotics Embedded Education Services Private Limited<br />
             G-9, Om Vihar Phase 5, Uttam Nagar, New Delhi, India<br />
-            <a href="mailto:support@rees52.com">support@rees52.com</a> · <a href="tel:+919599594520">+91 95995 94520</a>
+            <a href="mailto:info@rees52.tech">info@rees52.tech</a> · <a href="tel:+919599594520">+91 95995 94520</a>
           </p>
         </Section>
       </div>

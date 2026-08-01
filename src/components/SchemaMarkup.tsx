@@ -4,7 +4,9 @@ export default function SchemaMarkup() {
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "REES52 (Robotics Embedded Education Services Private Limited)",
+    "@id": absoluteUrl("/#organization"),
+    name: siteConfig.name,
+    legalName: "Robotics Embedded Education Services Private Limited",
     alternateName: "REES52",
     url: siteConfig.url,
     logo: absoluteUrl("/icon-512.png"),
@@ -22,9 +24,12 @@ export default function SchemaMarkup() {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": absoluteUrl("/#website"),
     name: siteConfig.name,
+    alternateName: siteConfig.shortName,
     url: siteConfig.url,
     inLanguage: "en-IN",
+    publisher: { "@id": absoluteUrl("/#organization") },
   };
 
   return (

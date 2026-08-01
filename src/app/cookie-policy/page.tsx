@@ -60,7 +60,7 @@ export default function CookiePolicyPage() {
             Blocking essential storage can sign a learner out, remove local preferences or prevent course progress from being associated with the account.
           </p>
           <p>
-            To ask what Academy storage applies to your account, email <a href="mailto:support@rees52.com">support@rees52.com</a>.
+            To ask what Academy storage applies to your account, email <a href="mailto:info@rees52.tech">info@rees52.tech</a>.
           </p>
         </Section>
 
@@ -71,7 +71,7 @@ export default function CookiePolicyPage() {
           <p>
             Robotics Embedded Education Services Private Limited<br />
             G-9, Om Vihar Phase 5, Uttam Nagar, New Delhi, India<br />
-            <a href="mailto:support@rees52.com">support@rees52.com</a> · <a href="tel:+919599594520">+91 95995 94520</a>
+            <a href="mailto:info@rees52.tech">info@rees52.tech</a> · <a href="tel:+919599594520">+91 95995 94520</a>
           </p>
         </Section>
       </div>

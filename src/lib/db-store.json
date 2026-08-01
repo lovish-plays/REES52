@@ -1,9 +1,25 @@
 {
   "categories": [
-    { "id": "cat-1", "name": "Robotics & Smart Cars", "slug": "robotics-smart-cars" },
-    { "id": "cat-2", "name": "Arduino & Microcontrollers", "slug": "arduino-microcontrollers" },
-    { "id": "cat-3", "name": "IoT & Sensors", "slug": "iot-sensors" },
-    { "id": "cat-4", "name": "Drones & Quadcopters", "slug": "drones-quadcopters" }
+    {
+      "id": "cat-1",
+      "name": "Robotics & Smart Cars",
+      "slug": "robotics-smart-cars"
+    },
+    {
+      "id": "cat-2",
+      "name": "Arduino & Microcontrollers",
+      "slug": "arduino-microcontrollers"
+    },
+    {
+      "id": "cat-3",
+      "name": "IoT & Sensors",
+      "slug": "iot-sensors"
+    },
+    {
+      "id": "cat-4",
+      "name": "Drones & Quadcopters",
+      "slug": "drones-quadcopters"
+    }
   ],
   "products": [
     {
@@ -88,6 +104,26 @@
     }
   ],
   "webinars": [],
-  "users": [],
+  "users": [
+    {
+      "id": "usr-teacher-test-001",
+      "name": "Dr. Alex Vance (Test Teacher)",
+      "email": "teacher.test@rees52.tech",
+      "password_hash": "$2b$10$KUSvz7fX/9bBDMOx82/YIO568Y1KIZN2aXJg4.FbgURj1YYSeQRCe",
+      "role": "Teacher",
+      "enrolled_courses": [],
+      "enrolled_videos": [],
+      "purchased_ebooks": [],
+      "progress": {},
+      "badges": [],
+      "streak": {
+        "current": 5,
+        "longest": 14,
+        "lastActivityDate": "2026-08-01T13:18:35.134Z"
+      },
+      "certificates": [],
+      "recently_viewed": []
+    }
+  ],
   "reviews": []
 }

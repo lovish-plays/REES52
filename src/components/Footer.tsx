@@ -23,9 +23,9 @@ export default function Footer() {
             Public courses are listed only when videos, diagrams, code, PDFs and quizzes are complete.
           </p>
           <div className="mt-5 flex flex-col gap-2 text-xs font-semibold">
-            <a href="mailto:support@rees52.com" className="inline-flex items-center gap-2 hover:text-sky-300">
+            <a href="mailto:info@rees52.tech" className="inline-flex items-center gap-2 hover:text-sky-300">
               <Mail className="h-4 w-4 text-sky-400" />
-              support@rees52.com
+              info@rees52.tech
             </a>
             <a href="tel:+919599594520" className="inline-flex items-center gap-2 hover:text-sky-300">
               <Phone className="h-4 w-4 text-sky-400" />

@@ -4,7 +4,7 @@ import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact REES52",
-  description: "Get in touch with REES52. Call us at +91 95995 94520 or email info@rees52.in for sales, support, and business inquiries.",
+  description: "Get in touch with REES52. Call us at +91 95995 94520 or email info@rees52.tech for sales, support, and business inquiries.",
   keywords: ["Contact REES52", "REES52 Phone Number", "REES52 Support Email", "Robotics customer care"],
   alternates: { canonical: absoluteUrl("/contact") },
 };
@@ -70,7 +70,7 @@ export default function ContactPage() {
 
           {/* Email card */}
           <a
-            href="mailto:info@rees52.in"
+            href="mailto:info@rees52.tech"
             className="glassmorphism bg-white/70 p-6 rounded-2xl shadow-md border border-slate-200/50 flex items-center gap-5 hover:scale-[1.02] transition-all group cursor-pointer"
           >
             <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl group-hover:bg-cyan-500/20 transition-colors">
@@ -79,7 +79,7 @@ export default function ContactPage() {
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mail Us</span>
               <span className="text-md md:text-lg font-black text-slate-900 block mt-0.5">
-                info@rees52.in
+                info@rees52.tech
               </span>
             </div>
           </a>

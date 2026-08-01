@@ -31,16 +31,16 @@ export default function EbookCard({ ebook }: { ebook: LmsEbook }) {
         </div>
         <div className="mt-auto grid grid-cols-2 gap-2">
           <a
-            href={ebook.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={ebook.isFree ? ebook.fileUrl : "/login?redirect_to=/ebooks"}
+            target={ebook.isFree ? "_blank" : undefined}
+            rel={ebook.isFree ? "noopener noreferrer" : undefined}
             className="premium-btn-interactive inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-800 transition-all hover:border-cyan-300 hover:text-cyan-700"
           >
             <Eye className="h-3.5 w-3.5" />
             Preview
           </a>
           <a
-            href={ebook.isFree ? ebook.fileUrl : "/login"}
+            href={ebook.isFree ? ebook.fileUrl : "/login?redirect_to=/ebooks"}
             className="premium-btn-shimmer inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-cyan-700"
           >
             <Download className="h-3.5 w-3.5" />

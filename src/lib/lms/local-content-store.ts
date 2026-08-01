@@ -2,9 +2,8 @@ import 'server-only';
 
 import fs from 'fs';
 import path from 'path';
-import { lmsCourses } from '@/lib/lms/mock-data';
-import { lmsProjects } from '@/lib/lms/mock-data';
-import type { LmsCourse, LmsProject } from '@/lib/lms/types';
+import { lmsCourses, lmsEbooks, lmsProjects } from '@/lib/lms/mock-data';
+import type { LmsCourse, LmsEbook, LmsProject } from '@/lib/lms/types';
 
 type LocalCourseRecord = { course: LmsCourse; isPublished: boolean };
 type LocalContentState = {
@@ -12,9 +11,12 @@ type LocalContentState = {
   deletedCourseIds: string[];
   projects: Record<string, LocalProjectRecord>;
   deletedProjectIds: string[];
+  ebooks: Record<string, LocalEbookRecord>;
+  deletedEbookIds: string[];
 };
 
 type LocalProjectRecord = { project: LmsProject; isPublished: boolean };
+type LocalEbookRecord = { ebook: LmsEbook; isPublished: boolean };
 
 const localStorePath = path.join(process.cwd(), 'scratch', 'local-lms-content.json');
 
@@ -93,6 +95,44 @@ export function deleteLocalProject(id: string): LmsProject | null {
   return existing;
 }
 
+export function getLocalEbooks(includeDrafts = false): LmsEbook[] {
+  const state = readState();
+  const deletedIds = new Set(state.deletedEbookIds);
+  const baseEbooks = lmsEbooks
+    .filter((ebook) => !deletedIds.has(ebook.id || ebook.slug))
+    .map((ebook) => state.ebooks[ebook.id || ebook.slug]?.ebook || ebook);
+  const baseIds = new Set(baseEbooks.map((ebook) => ebook.id || ebook.slug));
+  const addedEbooks = Object.values(state.ebooks)
+    .map((record) => record.ebook)
+    .filter((ebook) => !baseIds.has(ebook.id || ebook.slug));
+  const ebooks = [...addedEbooks, ...baseEbooks];
+
+  if (includeDrafts) return ebooks;
+  return ebooks.filter((ebook) => isLocalEbookPublished(ebook, state));
+}
+
+export function isLocalEbookPublished(ebook: LmsEbook, state = readState()): boolean {
+  return state.ebooks[ebook.id || ebook.slug]?.isPublished ?? true;
+}
+
+export function upsertLocalEbook(ebook: LmsEbook, isPublished: boolean): void {
+  const key = ebook.id || ebook.slug;
+  const state = readState();
+  state.ebooks[key] = { ebook, isPublished };
+  state.deletedEbookIds = state.deletedEbookIds.filter((id) => id !== key);
+  writeState(state);
+}
+
+export function deleteLocalEbook(id: string): LmsEbook | null {
+  const state = readState();
+  const existing = getLocalEbooks(true).find((ebook) => (ebook.id || ebook.slug) === id);
+  if (!existing) return null;
+  delete state.ebooks[id];
+  if (!state.deletedEbookIds.includes(id)) state.deletedEbookIds.push(id);
+  writeState(state);
+  return existing;
+}
+
 function readState(): LocalContentState {
   try {
     const parsed = JSON.parse(fs.readFileSync(localStorePath, 'utf8')) as Partial<LocalContentState>;
@@ -101,9 +141,18 @@ function readState(): LocalContentState {
       deletedCourseIds: parsed.deletedCourseIds || [],
       projects: parsed.projects || {},
       deletedProjectIds: parsed.deletedProjectIds || [],
+      ebooks: parsed.ebooks || {},
+      deletedEbookIds: parsed.deletedEbookIds || [],
     };
   } catch {
-    return { courses: {}, deletedCourseIds: [], projects: {}, deletedProjectIds: [] };
+    return {
+      courses: {},
+      deletedCourseIds: [],
+      projects: {},
+      deletedProjectIds: [],
+      ebooks: {},
+      deletedEbookIds: [],
+    };
   }
 }
 

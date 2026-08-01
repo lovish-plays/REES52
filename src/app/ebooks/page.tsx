@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/lib/site";
 export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Robotics & Electronics Ebooks",
-  description: "Download three complete REES52 Academy workbooks for Arduino, ESP32 IoT and mobile robotics.",
+  description: "Browse downloadable REES52 Academy workbooks and study guides for robotics, Arduino, ESP32, IoT and electronics.",
   alternates: { canonical: absoluteUrl("/ebooks") },
 };
 
@@ -19,10 +19,10 @@ export default async function EbooksPage() {
       <div className="border-b border-slate-200/70 pb-8">
         <p className="text-[10px] font-black uppercase tracking-widest text-cyan-700">Ebook Library</p>
         <h1 className="mt-3 text-balance text-3xl font-black tracking-wide text-slate-950 md:text-5xl">
-          Finished workbooks for every launch course
+          Workbooks and study guides for hands-on learning
         </h1>
         <p className="mt-3 max-w-3xl text-pretty text-sm font-semibold leading-relaxed text-slate-600">
-          Each eight-page PDF includes safety checks, wiring, code labs, troubleshooting, quiz questions and completion evidence.
+          Teachers publish classroom-ready PDFs with safety checks, wiring, code labs, troubleshooting, quiz questions and completion evidence.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {categories.map((category) => (

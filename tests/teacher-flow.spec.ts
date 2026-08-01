@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('teacher can add every supported content type and publish an article', async ({
+test('teacher can add, edit, publish, and delete every supported content type', async ({
   page,
   request,
 }, testInfo) => {
@@ -54,6 +54,28 @@ test('teacher can add every supported content type and publish an article', asyn
   await expect(page.getByRole('status')).toContainText('Project created.');
   await expect(page.getByRole('heading', { level: 3, name: projectTitle })).toBeVisible();
 
+  const ebookTitle = `${label} Robotics workbook`;
+  await page.goto('/admin/ebooks');
+  await page.getByLabel('Ebook title').fill(ebookTitle);
+  await page.getByLabel('Ebook category').fill('QA Workbooks');
+  await page.getByLabel('Number of pages').fill('8');
+  await page.getByLabel('PDF file address').fill('/downloads/arduino-foundations-workbook.pdf');
+  await page
+    .getByLabel('Ebook description')
+    .fill(
+      'A controlled classroom workbook used to verify teacher draft, editing, publishing, public visibility, and deletion controls.',
+    );
+  await page.getByLabel('Cover image address').fill('/diagrams/arduino-led-wiring.png');
+  await page.getByRole('button', { name: 'Add ebook' }).click();
+  await expect(page.getByRole('status')).toContainText('Ebook draft created.');
+  await expect(page.getByRole('heading', { level: 3, name: ebookTitle })).toBeVisible();
+
+  const ebookCard = page.locator('article').filter({ hasText: ebookTitle });
+  await ebookCard.getByRole('button', { name: 'Edit' }).click();
+  await page.getByRole('checkbox', { name: /Publish for students and teachers/ }).check();
+  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.getByRole('status')).toContainText('Ebook updated and published.');
+
   const quizTitle = `${label} Electronics quiz`;
   await page.goto('/admin/quizzes');
   await page.getByLabel('Topic name').fill(quizTitle);
@@ -84,4 +106,15 @@ test('teacher can add every supported content type and publish an article', asyn
 
   await page.goto('/quizzes');
   await expect(page.getByRole('heading', { level: 2, name: quizTitle })).toBeVisible();
+
+  await page.goto('/ebooks');
+  await expect(page.getByRole('heading', { level: 3, name: ebookTitle })).toBeVisible();
+
+  await page.goto('/admin/ebooks');
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.locator('article').filter({ hasText: ebookTitle }).getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByRole('status')).toContainText('Ebook deleted.');
+
+  await page.goto('/ebooks');
+  await expect(page.getByRole('heading', { level: 3, name: ebookTitle })).toHaveCount(0);
 });

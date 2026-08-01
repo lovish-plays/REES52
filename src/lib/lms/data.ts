@@ -3,7 +3,7 @@ import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 import { getCurrentUser } from "@/app/actions/auth";
 import { getDB } from "@/lib/db";
 import { lmsCourses, lmsEbooks, lmsProjects, lmsQuizzes } from "@/lib/lms/mock-data";
-import { getLocalCourses, getLocalProjects } from "@/lib/lms/local-content-store";
+import { getLocalCourses, getLocalEbooks, getLocalProjects } from "@/lib/lms/local-content-store";
 import { normalizeSchoolClass } from "@/lib/lms/class-categories";
 import {
   LessonNavigation,
@@ -230,7 +230,7 @@ export async function getProjectBySlug(slug: string): Promise<LmsProject | null>
 }
 
 export async function getEbooks(): Promise<LmsEbook[]> {
-  if (!hasSupabaseEnv) return lmsEbooks;
+  if (!hasSupabaseEnv) return resolvePublicEbooks(getLocalEbooks());
 
   try {
     const { data, error } = await supabasePublic

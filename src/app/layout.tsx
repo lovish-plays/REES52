@@ -80,9 +80,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteConfig.url,
   },
-  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
-    : undefined,
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "googlebca567fab628a840",
+  },
   formatDetection: { telephone: false },
 };
 

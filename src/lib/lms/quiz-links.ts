@@ -2,6 +2,7 @@ import 'server-only';
 
 import { hasSupabaseEnv } from '@/lib/supabaseConfig';
 import { supabasePublic } from '@/lib/supabasePublic';
+import { getLocalQuizLinks } from '@/lib/lms/local-quiz-links';
 
 export type QuizLinkItem = {
   id: string;
@@ -46,7 +47,13 @@ const academyQuizLinks: QuizLinkItem[] = [
 ];
 
 export async function getPublicQuizLinks(): Promise<QuizLinkItem[]> {
-  if (!hasSupabaseEnv) return academyQuizLinks;
+  if (!hasSupabaseEnv) {
+    const teacherQuizLinks = getLocalQuizLinks().map((quizLink) => ({
+      ...quizLink,
+      source: 'teacher' as const,
+    }));
+    return [...teacherQuizLinks, ...academyQuizLinks];
+  }
 
   try {
     // External quiz links use the existing public learning-event record shape.

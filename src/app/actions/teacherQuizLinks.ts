@@ -1,9 +1,16 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { randomUUID } from 'crypto';
 import { getCurrentUser } from '@/app/actions/auth';
 import { isTeacherRole } from '@/lib/auth/roles';
 import { isSafeExternalQuizUrl } from '@/lib/lms/quiz-links';
+import {
+  createLocalQuizLink,
+  deleteLocalQuizLink,
+  getLocalQuizLinks,
+  updateLocalQuizLink,
+} from '@/lib/lms/local-quiz-links';
 import { hasSupabaseEnv } from '@/lib/supabaseConfig';
 import { createClient } from '@/lib/supabaseServer';
 
@@ -36,7 +43,7 @@ export async function getTeacherQuizLinksAction(): Promise<{
 }> {
   try {
     await requireTeacher();
-    if (!hasSupabaseEnv) return { quizLinks: [] };
+    if (!hasSupabaseEnv) return { quizLinks: getLocalQuizLinks() };
 
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -59,7 +66,11 @@ export async function createTeacherQuizLinkAction(
   try {
     await requireTeacher();
     const quizLink = validateQuizLink(input);
-    if (!hasSupabaseEnv) return { error: 'Quiz-link storage is not configured.' };
+    if (!hasSupabaseEnv) {
+      const saved = createLocalQuizLink({ id: randomUUID(), ...quizLink });
+      revalidateQuizLinks();
+      return { quizLink: saved };
+    }
 
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -89,7 +100,12 @@ export async function updateTeacherQuizLinkAction(
     await requireTeacher();
     if (!input.id) return { error: 'Quiz link ID is required.' };
     const quizLink = validateQuizLink(input);
-    if (!hasSupabaseEnv) return { error: 'Quiz-link storage is not configured.' };
+    if (!hasSupabaseEnv) {
+      const saved = updateLocalQuizLink({ id: input.id, ...quizLink });
+      if (!saved) return { error: 'Quiz link not found.' };
+      revalidateQuizLinks();
+      return { quizLink: saved };
+    }
 
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -119,7 +135,11 @@ export async function deleteTeacherQuizLinkAction(
   try {
     await requireTeacher();
     if (!id) return { error: 'Quiz link ID is required.' };
-    if (!hasSupabaseEnv) return { error: 'Quiz-link storage is not configured.' };
+    if (!hasSupabaseEnv) {
+      if (!deleteLocalQuizLink(id)) return { error: 'Quiz link not found.' };
+      revalidateQuizLinks();
+      return { success: true };
+    }
 
     const supabase = await createClient();
     const { error } = await supabase

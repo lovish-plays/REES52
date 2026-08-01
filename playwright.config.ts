@@ -14,6 +14,8 @@ export default defineConfig({
     timeout: 120000,
     env: {
       ENABLE_DEV_OTP: 'true',
+      ENABLE_E2E_SEED: 'true',
+      E2E_SEED_SECRET: 'rees52-playwright-teacher-seed',
       JWT_SECRET: 'playwright-local-jwt-secret-32-characters-minimum',
       OTP_SECRET: 'playwright-local-otp-secret-32-characters-minimum',
     },

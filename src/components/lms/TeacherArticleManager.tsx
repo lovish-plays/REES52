@@ -97,7 +97,7 @@ export default function TeacherArticleManager({
   }
 
   function removeArticle(article: Article) {
-    if (!window.confirm(`Permanently delete “${article.title}”?`)) return;
+    if (!window.confirm(`Permanently delete "${article.title}"?`)) return;
     setMessage("");
     startTransition(async () => {
       const result = await deleteTeacherArticleAction(article.id);

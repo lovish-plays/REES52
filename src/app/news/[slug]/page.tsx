@@ -97,7 +97,7 @@ export default async function ArticlePage({
           <div className="mx-auto w-full max-w-5xl px-4 pt-10 lg:px-8">
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={article.coverImageUrl} alt="" className="max-h-[620px] w-full object-cover" />
+              <img src={article.coverImageUrl} alt={article.title} className="max-h-[620px] w-full object-cover" />
             </div>
           </div>
         )}

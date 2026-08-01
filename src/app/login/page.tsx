@@ -217,13 +217,13 @@ function LoginForm() {
                   <ArrowLeft className="w-4 h-4" />
                 </button>
               )}
-              <h2 className="text-slate-900 font-black tracking-wider uppercase text-lg md:text-xl">
+              <h1 className="text-slate-900 font-black tracking-wider uppercase text-lg md:text-xl">
                 {mode === "signup" && "CREATE ACCOUNT"}
                 {mode === "signin" && "WELCOME BACK"}
                 {mode === "forgot" && "RESET PASSWORD"}
                 {mode === "otp" && "ENTER OTP"}
                 {mode === "reset" && "SET NEW PASSWORD"}
-              </h2>
+              </h1>
             </div>
             <p className="text-slate-600 font-semibold text-xs">
               {mode === "signup" && "Create your REES52 Academy account."}
@@ -264,6 +264,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setPortal("Student")}
+                  aria-pressed={portal === "Student"}
                   className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Student" ? "bg-slate-950 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
                 >
                   <UserRound className="h-4 w-4" />
@@ -272,6 +273,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setPortal("Teacher")}
+                  aria-pressed={portal === "Teacher"}
                   className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Teacher" ? "bg-cyan-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
                 >
                   <GraduationCap className="h-4 w-4" />
@@ -299,6 +301,7 @@ function LoginForm() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={mode === "signup" ? "you@example.com" : "Enter email"}
@@ -328,6 +331,7 @@ function LoginForm() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -343,6 +347,7 @@ function LoginForm() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"

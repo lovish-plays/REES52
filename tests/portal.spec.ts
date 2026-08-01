@@ -8,10 +8,10 @@ test.describe('REES52 Academy', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Learn Robotics, AI, IoT & Electronics Through Real Projects',
+        name: 'Learn electronics by building something that works.',
       }),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Explore Courses' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Explore courses' })).toBeVisible();
 
     const moreNavigation = page.getByRole('button', { name: 'More navigation' });
     await expect(moreNavigation).toHaveCount(1);
@@ -37,7 +37,9 @@ test.describe('REES52 Academy', () => {
     await page.getByRole('button', { name: "DON'T HAVE AN ACCOUNT? SIGN UP" }).click();
     await page.getByPlaceholder('Your name').fill('Recovery Test User');
     await page.getByPlaceholder('you@example.com').fill(email);
-    await page.getByPlaceholder('••••••••').fill(originalPassword);
+    const passwordField = page.getByLabel('Password');
+    await passwordField.fill(originalPassword);
+    await passwordField.press('Tab');
     await page.getByRole('button', { name: 'SIGN UP' }).click();
 
     await expect(page.getByRole('dialog')).toBeHidden({ timeout: 10_000 });
@@ -56,15 +58,24 @@ test.describe('REES52 Academy', () => {
     const otp = (await developmentCode.innerText()).trim();
     expect(otp).toMatch(/^\d{6}$/);
 
-    await page.getByPlaceholder('Enter 6-digit OTP').fill(otp);
-    await page.getByRole('button', { name: 'VERIFY OTP' }).click();
-    await page.getByPlaceholder('••••••••').fill(newPassword);
-    await page.getByRole('button', { name: 'RESET PASSWORD' }).click();
+    const otpField = page.getByPlaceholder('Enter 6-digit OTP');
+    await otpField.fill(otp);
+    await otpField.press('Tab');
+    const verifyOtpButton = page.getByRole('button', { name: 'VERIFY OTP' });
+    await expect(verifyOtpButton).toBeEnabled();
+    await verifyOtpButton.click();
+    const newPasswordField = page.getByLabel('New Password');
+    await newPasswordField.fill(newPassword);
+    await newPasswordField.press('Tab');
+    const resetPasswordButton = page.getByRole('button', { name: 'RESET PASSWORD' });
+    await expect(resetPasswordButton).toBeEnabled();
+    await resetPasswordButton.click();
 
-    await expect(page.getByRole('heading', { name: 'PASSWORD RESET COMPLETE' })).toBeVisible();
-    await expect(page.getByPlaceholder('Enter email')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole('heading', { name: 'PASSWORD RESET COMPLETE' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByPlaceholder('Enter email')).toBeVisible({ timeout: 10_000 });
     await page.getByPlaceholder('Enter email').fill(email);
-    await page.getByPlaceholder('••••••••').fill(newPassword);
+    await passwordField.fill(newPassword);
+    await passwordField.press('Tab');
     await page.getByRole('button', { name: 'SIGN IN' }).click();
 
     await page.waitForURL(/\/$/, { timeout: 10_000 });
@@ -137,5 +148,28 @@ test.describe('REES52 Academy', () => {
       buttons.map((button) => Math.round(button.getBoundingClientRect().height)),
     );
     expect(Math.min(...heights)).toBeGreaterThanOrEqual(44);
+  });
+
+  test('news and articles are available to every visitor', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.premium-splash-overlay')).toBeHidden({ timeout: 10_000 });
+
+    const moreNavigation = page.getByRole('button', { name: 'More navigation' });
+    await moreNavigation.click();
+    await expect(page.getByRole('link', { name: /News/ }).first()).toHaveAttribute('href', '/news');
+
+    await page.goto('/news');
+    await expect(page.getByRole('heading', { level: 1, name: 'News & Articles' })).toBeVisible();
+    await expect(page).toHaveTitle(/News & Articles/);
+  });
+
+  test('article publishing is protected by teacher authentication', async ({ page }) => {
+    await page.goto('/admin/articles');
+
+    await expect(page.getByRole('heading', { name: 'Teacher sign-in required' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Teacher sign in' })).toHaveAttribute(
+      'href',
+      '/login?portal=teacher&redirect_to=/admin',
+    );
   });
 });

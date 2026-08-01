@@ -275,6 +275,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <button
                     type="button"
                     onClick={() => setPortal("Student")}
+                    aria-pressed={portal === "Student"}
                     className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Student" ? "bg-slate-950 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
                   >
                     <UserRound className="h-4 w-4" />
@@ -283,6 +284,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <button
                     type="button"
                     onClick={() => setPortal("Teacher")}
+                    aria-pressed={portal === "Teacher"}
                     className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${portal === "Teacher" ? "bg-cyan-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
                   >
                     <GraduationCap className="h-4 w-4" />
@@ -310,6 +312,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={mode === "signup" ? "you@example.com" : "Enter email"}
@@ -339,6 +342,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
@@ -354,6 +358,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"

@@ -9,7 +9,10 @@ import StoreTransitionModal from "@/components/StoreTransitionModal";
 import MobileViewportHandler from "@/components/MobileViewportHandler";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
+  applicationName: siteConfig.name,
   title: {
     default: siteConfig.name,
     template: "%s | REES52 Academy",
@@ -95,8 +98,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const runtimeSupabaseConfig = JSON.stringify({
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    anonKey:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+      "",
+  }).replace(/</g, "\\u003c");
+
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__REES52_SUPABASE__=${runtimeSupabaseConfig};`,
+          }}
+        />
+      </head>
       <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
         <AuthProvider>
           <MobileViewportHandler />

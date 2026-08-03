@@ -414,69 +414,75 @@ export default function Header() {
                   )}
 
                   {notifOpen && (
-                    <div className="notification-panel absolute right-0 top-12 z-50 flex max-h-96 w-80 flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-200/80 p-4 shadow-2xl glassmorphism animate-in fade-in zoom-in-95 duration-200">
-                      <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">
-                          Notifications ({notifications.length})
-                        </h4>
-                        <button
-                          onClick={() => setNotifications([])}
-                          className="cursor-pointer text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700"
-                        >
-                          Clear All
-                        </button>
-                      </div>
+                    <>
+                      <div
+                        className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[1px] sm:hidden"
+                        onClick={() => setNotifOpen(false)}
+                      />
+                      <div className="notification-panel fixed inset-x-3 top-16 z-50 flex max-h-[75vh] flex-col gap-3 overflow-y-auto rounded-2xl border border-slate-200/80 p-4 shadow-2xl glassmorphism animate-in fade-in zoom-in-95 duration-200 sm:absolute sm:inset-auto sm:right-0 sm:top-12 sm:w-80 sm:max-h-96">
+                        <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
+                          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+                            Notifications ({notifications.length})
+                          </h4>
+                          <button
+                            onClick={() => setNotifications([])}
+                            className="cursor-pointer text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-700"
+                          >
+                            Clear All
+                          </button>
+                        </div>
 
-                      <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
-                        {notifications.map((n) => {
-                          const isExpanded = expandedId === n.id;
-                          return (
-                            <div
-                              key={n.id}
-                              onClick={() => setExpandedId(isExpanded ? null : n.id)}
-                              className="group cursor-pointer rounded-xl border border-slate-100 bg-white/50 p-2.5 text-left transition-all hover:border-cyan-200 hover:bg-white"
-                            >
-                              <p className={`text-xs font-semibold leading-relaxed text-slate-800 ${isExpanded ? "" : "line-clamp-2"}`}>
-                                {n.message}
-                              </p>
+                        <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+                          {notifications.map((n) => {
+                            const isExpanded = expandedId === n.id;
+                            return (
+                              <div
+                                key={n.id}
+                                onClick={() => setExpandedId(isExpanded ? null : n.id)}
+                                className="group cursor-pointer rounded-xl border border-slate-100 bg-white/50 p-2.5 text-left transition-all hover:border-cyan-200 hover:bg-white"
+                              >
+                                <p className={`text-xs font-semibold leading-relaxed text-slate-800 ${isExpanded ? "" : "line-clamp-2"}`}>
+                                  {n.message}
+                                </p>
 
-                              {isExpanded && n.link && (
-                                <a
-                                  href={n.link}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="mt-2 flex w-fit items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-cyan-800 transition-colors hover:bg-cyan-100/80 hover:text-cyan-900"
-                                >
-                                  <span>Visit Link</span>
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
-                              )}
+                                {isExpanded && n.link && (
+                                  <a
+                                    href={n.link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="mt-2 flex w-fit items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-cyan-800 transition-colors hover:bg-cyan-100/80 hover:text-cyan-900"
+                                  >
+                                    <span>Visit Link</span>
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                )}
 
-                              <div className="mt-2 flex items-center justify-between text-[8px] font-extrabold uppercase tracking-wider text-slate-500">
-                                <span>
-                                  {new Date(n.created_at).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                                <span className="text-cyan-600 group-hover:underline">
-                                  {isExpanded ? "Show Less" : "Read More"}
-                                </span>
+                                <div className="mt-2 flex items-center justify-between text-[8px] font-extrabold uppercase tracking-wider text-slate-500">
+                                  <span>
+                                    {new Date(n.created_at).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                  <span className="text-cyan-600 group-hover:underline">
+                                    {isExpanded ? "Show Less" : "Read More"}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
 
-                        {notifications.length === 0 && (
-                          <div className="py-8 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                            No notifications yet
-                          </div>
-                        )}
+                          {notifications.length === 0 && (
+                            <div className="py-8 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                              No notifications yet
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
 

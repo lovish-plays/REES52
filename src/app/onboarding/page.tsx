@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { schoolClassOptions } from "@/lib/lms/class-categories";
+import { sanitizeErrorMessage } from "@/lib/utils";
 
 type ProfileWriteResult = {
   error: { message: string } | null;
@@ -113,7 +114,7 @@ export default function OnboardingPage() {
 
       if (profileError) {
         console.error("[Onboarding] Profile creation failed:", profileError.message);
-        setError(`Failed to save profile: ${profileError.message}`);
+        setError(sanitizeErrorMessage(profileError, "Unable to save your profile. Please try again."));
         setLoading(false);
         return;
       }
@@ -123,7 +124,7 @@ export default function OnboardingPage() {
 
       if (!localSessionRes.success || !localSessionRes.user) {
         console.error("[Onboarding] Authenticated profile synchronization failed:", localSessionRes.error);
-        setError(localSessionRes.error || "Failed to finish your profile setup.");
+        setError(sanitizeErrorMessage(localSessionRes.error, "Failed to finish your profile setup. Please try again."));
         setLoading(false);
         return;
       }
@@ -131,9 +132,9 @@ export default function OnboardingPage() {
       // 3. Refresh user state in Context & Redirect to '/'
       await refreshUser();
       router.push("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("[Onboarding] Error during onboarding:", err);
-      setError(err?.message || "An unexpected error occurred.");
+      setError(sanitizeErrorMessage(err, "An unexpected error occurred. Please try again."));
       setLoading(false);
     }
   };

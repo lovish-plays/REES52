@@ -53,7 +53,11 @@ export default function Footer() {
               <ExternalLink className="h-3 w-3" />
             </a>
             <Link href="/about" className="hover:text-sky-300">About</Link>
-            <Link href="/login" className="hover:text-sky-300">Sign In</Link>
+            {!user ? (
+              <Link href="/login" className="hover:text-sky-300">Sign In</Link>
+            ) : (
+              <Link href="/dashboard" className="hover:text-sky-300">My Dashboard</Link>
+            )}
             {isTeacherRole(user?.role) && (
               <Link href="/admin" className="font-black text-sky-300">Teacher Studio</Link>
             )}

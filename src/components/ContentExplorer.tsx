@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { sanitizeErrorMessage } from "@/lib/utils";
 import HeroSection from "@/components/HeroSection";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import LearnerDashboard from "@/components/LearnerDashboard";
@@ -184,7 +185,8 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
   const searchRef = useRef<HTMLDivElement>(null);
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
-    setToast({ message, type });
+    const finalMessage = type === "error" ? sanitizeErrorMessage(message, "An unexpected error occurred. Please try again.") : message;
+    setToast({ message: finalMessage, type });
   };
 
   useEffect(() => {

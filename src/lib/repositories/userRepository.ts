@@ -5,6 +5,8 @@ import { getDB, saveDB, User } from '@/lib/db';
 import { hasSupabaseEnv, supabaseUrl } from '@/lib/supabaseConfig';
 import { normalizeRole } from '@/lib/auth/roles';
 
+import { sanitizeErrorMessage } from '@/lib/utils';
+
 function getAdminClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (supabaseUrl && serviceRoleKey) {
@@ -154,13 +156,12 @@ export class UserRepository {
       }
 
       if (error) {
-        return { success: false, error: `${error.message} TODO: Supabase profile rows should use the authenticated user UUID.` };
+        return { success: false, error: sanitizeErrorMessage(error, "Failed to create user profile. Please try again.") };
       }
 
       return { success: true, user: this.mapProfileToUser(data) };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create database user.';
-      return { success: false, error: message };
+      return { success: false, error: sanitizeErrorMessage(err, "Failed to create user profile. Please try again.") };
     }
   }
 

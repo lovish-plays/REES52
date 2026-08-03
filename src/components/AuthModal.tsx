@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sendPasswordResetOtpAction, verifyOtpAction, resetPasswordWithOtpAction } from "@/app/actions/auth";
 import { hasSupabaseEnv } from "@/lib/supabaseConfig";
+import { sanitizeErrorMessage } from "@/lib/utils";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       if (mode === "signup") {
         const res = await signUp(name.trim(), cleanEmail, password);
         if (res.error) {
-          setError(res.error);
+          setError(sanitizeErrorMessage(res.error, "Failed to create account. Please try again."));
           setLoading(false);
         } else {
           setSuccessMsg("Account Created Successfully!");
@@ -91,7 +92,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (mode === "signin") {
         const res = await signIn(cleanEmail, password, portal);
         if (res.error) {
-          setError(res.error);
+          setError(sanitizeErrorMessage(res.error, "Failed to sign in. Please check your credentials."));
           setLoading(false);
         } else {
           setSuccessMsg(portal === "Teacher" ? "Teacher Access Granted!" : "Welcome Back!");
@@ -105,7 +106,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (mode === "forgot") {
         const res = await sendPasswordResetOtpAction(cleanEmail);
         if (res.error) {
-          setError(res.error);
+          setError(sanitizeErrorMessage(res.error, "Failed to send reset code. Please try again."));
         } else {
           setInfoMessage(res.message || "OTP Sent!");
           if (res.mockOtp) {
@@ -117,7 +118,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (mode === "otp") {
         const res = await verifyOtpAction(cleanEmail, otp.trim());
         if (res.error) {
-          setError(res.error);
+          setError(sanitizeErrorMessage(res.error, "Invalid or expired verification code."));
           setLoading(false);
         } else {
           setInfoMessage("OTP Code Verified! Please enter your new password.");
@@ -127,7 +128,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (mode === "reset") {
         const res = await resetPasswordWithOtpAction(cleanEmail, otp.trim(), newPassword);
         if (res.error) {
-          setError(res.error);
+          setError(sanitizeErrorMessage(res.error, "Failed to reset password. Please try again."));
           setLoading(false);
         } else {
           setSuccessMsg("Password Reset Complete!");
@@ -432,7 +433,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       setLoading(true);
                       const res = await signInWithGoogle();
                       if (res?.error) {
-                        setError(res.error);
+                        setError(sanitizeErrorMessage(res.error, "Google sign-in failed. Please try again."));
                         setLoading(false);
                       }
                     }}

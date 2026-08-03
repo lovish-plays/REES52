@@ -6,6 +6,7 @@ import { hasSupabaseEnv } from "@/lib/supabaseConfig";
 import type { Session } from "@supabase/supabase-js";
 import type { UserProgress, UserCertificate, UserBadge, UserStreak } from "@/lib/db";
 import { isTeacherRole, normalizeRole, type AppRole } from "@/lib/auth/roles";
+import { sanitizeErrorMessage } from "@/lib/utils";
 
 import {
   registerUser,
@@ -471,7 +472,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.warn("[AuthContext] Local fallback sign in failed:", localRes.error);
           profileLoadingRef.current = false;
           setIsLoading(false);
-          return { error: localRes.error || error.message };
+          return { error: sanitizeErrorMessage(localRes.error || error, "Failed to sign in. Please check your credentials.") };
         }
       }
 
@@ -594,7 +595,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       console.warn("Supabase signUp failed:", error.message);
       setIsLoading(false);
-      return { error: error.message };
+      return { error: sanitizeErrorMessage(error, "Failed to create account. Please check your details and try again.") };
     }
 
     // Create a matching profile row (best-effort; the database trigger also handles email signups).

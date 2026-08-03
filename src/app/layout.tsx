@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     canonical: siteConfig.url,
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "googlebca567fab628a840",
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "0rubCVEdWq9fmTulAGPA7e5rl7t0yJbW98tsWGFiR-w",
   },
   formatDetection: { telephone: false },
 };
@@ -109,6 +109,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth bg-background">
       <head>
+        <meta name="google-site-verification" content="0rubCVEdWq9fmTulAGPA7e5rl7t0yJbW98tsWGFiR-w" />
         <meta name="site_name" content="REES52 Academy" />
         <script
           dangerouslySetInnerHTML={{

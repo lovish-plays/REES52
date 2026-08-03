@@ -22,6 +22,7 @@ import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
 import ArticleCard from "@/components/news/ArticleCard";
 import HomeBottomCTA from "@/components/HomeBottomCTA";
+import Interactive3DHeroGraphic from "@/components/Interactive3DHeroGraphic";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
 import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
@@ -150,7 +151,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <ProgressDemo />
+          <Interactive3DHeroGraphic />
         </div>
       </section>
 

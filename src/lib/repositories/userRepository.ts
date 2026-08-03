@@ -180,12 +180,7 @@ export class UserRepository {
 
     try {
       const client = await this.getClient(forceAdmin);
-      const payload: Record<string, unknown> = {};
-      if (updates.name !== undefined) payload.full_name = updates.name;
-      if (updates.email !== undefined) payload.email = updates.email;
-      if (updates.role !== undefined) payload.role = normalizeProfileRole(updates.role);
-      if (updates.classLevel !== undefined) payload.class_level = updates.classLevel;
-      if (updates.enrolled_courses !== undefined) payload.enrolled_courses = updates.enrolled_courses;
+      const payload = this.buildProfilePayload(updates, false);
 
       let { error } = await client
         .from('profiles')
@@ -193,21 +188,7 @@ export class UserRepository {
         .eq('id', userId);
 
       if (error) {
-        const legacyPayload: Record<string, unknown> = {};
-        if (updates.name !== undefined) legacyPayload.name = updates.name;
-        if (updates.email !== undefined) legacyPayload.email = updates.email;
-        if (updates.role !== undefined) legacyPayload.role = updates.role;
-        if (updates.classLevel !== undefined) legacyPayload.class_level = updates.classLevel;
-        if (updates.enrolled_courses !== undefined) legacyPayload.enrolled_courses = updates.enrolled_courses;
-        if (updates.provider !== undefined) legacyPayload.provider = updates.provider;
-        if (updates.enrolled_videos !== undefined) legacyPayload.enrolled_videos = updates.enrolled_videos;
-        if (updates.purchased_ebooks !== undefined) legacyPayload.purchased_ebooks = updates.purchased_ebooks;
-        if (updates.progress !== undefined) legacyPayload.progress = updates.progress;
-        if (updates.badges !== undefined) legacyPayload.badges = updates.badges;
-        if (updates.streak !== undefined) legacyPayload.streak = updates.streak;
-        if (updates.certificates !== undefined) legacyPayload.certificates = updates.certificates;
-        if (updates.recently_viewed !== undefined) legacyPayload.recently_viewed = updates.recently_viewed;
-
+        const legacyPayload = this.buildProfilePayload(updates, true);
         const retry = await client
           .from('profiles')
           .update(legacyPayload)
@@ -244,6 +225,24 @@ export class UserRepository {
       certificates: this.parseJsonField(raw.certificates, []),
       recently_viewed: Array.isArray(raw.recently_viewed) ? raw.recently_viewed as string[] : []
     };
+  }
+
+  private static buildProfilePayload(updates: Partial<User>, useLegacy = false): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (updates.name !== undefined) payload[useLegacy ? 'name' : 'full_name'] = updates.name;
+    if (updates.email !== undefined) payload.email = updates.email;
+    if (updates.role !== undefined) payload.role = useLegacy ? updates.role : normalizeProfileRole(updates.role);
+    if (updates.classLevel !== undefined) payload.class_level = updates.classLevel;
+    if (updates.enrolled_courses !== undefined) payload.enrolled_courses = updates.enrolled_courses;
+
+    if (useLegacy) {
+      const keys = ['provider', 'enrolled_videos', 'purchased_ebooks', 'progress', 'badges', 'streak', 'certificates', 'recently_viewed'] as const;
+      keys.forEach((key) => {
+        if (updates[key] !== undefined) payload[key] = updates[key];
+      });
+    }
+
+    return payload;
   }
 
   private static parseJsonField<T>(value: unknown, fallback: T): T {

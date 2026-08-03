@@ -1,10 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function MobileViewportHandler() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Reset scroll to top (0, 0) whenever route or search parameters change
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Instant scroll to the header top
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Prevent browsers from restoring bottom scroll position on mobile page refresh/navigation
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
 
     const updateViewport = () => {
       const vv = window.visualViewport;
@@ -12,20 +31,19 @@ export default function MobileViewportHandler() {
         const height = vv.height;
         const offsetTop = vv.offsetTop;
         const layoutHeight = window.innerHeight;
-        
+
         document.documentElement.style.setProperty("--visual-viewport-height", `${height}px`);
         document.documentElement.style.setProperty("--visual-viewport-offsetTop", `${offsetTop}px`);
         document.documentElement.style.setProperty("--layout-viewport-height", `${layoutHeight}px`);
 
-        // If the visual viewport is shorter than the layout viewport (allowing a small toolbar margin),
-        // the virtual keyboard is likely open. Scroll the active input into view.
+        // Scroll active input into view when virtual keyboard pops up
         if (height < layoutHeight - 80) {
           const activeEl = document.activeElement as HTMLElement;
           if (
             activeEl &&
             (activeEl.tagName === "INPUT" ||
-             activeEl.tagName === "TEXTAREA" ||
-             activeEl.contentEditable === "true")
+              activeEl.tagName === "TEXTAREA" ||
+              activeEl.contentEditable === "true")
           ) {
             activeEl.scrollIntoView({ behavior: "smooth", block: "center" });
           }
@@ -38,10 +56,9 @@ export default function MobileViewportHandler() {
       if (
         target &&
         (target.tagName === "INPUT" ||
-         target.tagName === "TEXTAREA" ||
-         target.contentEditable === "true")
+          target.tagName === "TEXTAREA" ||
+          target.contentEditable === "true")
       ) {
-        // Delay slightly to let the OS keyboard start rendering
         setTimeout(() => {
           target.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 150);

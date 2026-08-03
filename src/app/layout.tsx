@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
@@ -119,7 +120,9 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-screen flex-col bg-background text-foreground antialiased">
         <AuthProvider>
-          <MobileViewportHandler />
+          <Suspense fallback={null}>
+            <MobileViewportHandler />
+          </Suspense>
           <SchemaMarkup />
           <Header />
           <main className="flex flex-1 flex-col page-loaded-entrance">

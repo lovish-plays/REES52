@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import {
   ArrowRight,
   Award,
+  Building2,
   Check,
+  CheckCircle2,
   ClipboardCheck,
   Code2,
   ExternalLink,
@@ -14,13 +16,14 @@ import {
   LockKeyhole,
   PlayCircle,
   School,
+  Sparkles,
   Star,
   Trophy,
+  Users,
   Wrench,
 } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
-import HomeBottomCTA from "@/components/HomeBottomCTA";
 import HeroLmsGraphicCard from "@/components/HeroLmsGraphicCard";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
@@ -108,119 +111,152 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqSchema) }}
       />
 
-      <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.34),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.2),transparent_38%)]" />
-        <div className="relative mx-auto grid min-h-[560px] w-full max-w-7xl items-center gap-10 px-4 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/30 bg-sky-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-sky-100">
-              <GraduationCap className="h-4 w-4" />
-              REES52 Academy
-            </div>
-            <h1 className="mt-6 max-w-3xl text-balance text-4xl font-black leading-[1.05] md:text-6xl">
-              Learn electronics by building something that works.
-            </h1>
-            <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed text-slate-300 md:text-lg">
-              Three complete launch courses combine official REES52 tutorials with checked wiring diagrams,
-              working code, printable workbooks, hands-on projects and scored quizzes.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/courses"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-sky-400"
-              >
-                Explore courses
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/projects"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-white/15"
-              >
-                View build guides
-              </Link>
-              <Link
-                href="/quizzes"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300/40 bg-amber-300/15 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-amber-100 transition-colors hover:bg-amber-300/25"
-              >
-                <FileQuestion className="h-4 w-4" />
-                Take a quiz
-              </Link>
-            </div>
+      <section className="relative overflow-hidden border-b border-indigo-900/60 bg-slate-950 text-white min-h-[640px] flex items-center">
+        {/* Full-Bleed High-Visibility LMS Graphic Background Layer */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <Image
+            src="/hero-lms-graphic.png"
+            alt="REES52 Tech LMS Platform Background"
+            fill
+            priority
+            className="object-cover opacity-70 transition-opacity duration-500"
+          />
+          {/* Lighter Gradient Overlay for Vivid Graphic Visibility & Text Contrast */}
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/75 via-slate-950/55 to-indigo-950/85" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(99,102,241,0.25),transparent_60%),radial-gradient(circle_at_bottom_center,rgba(245,158,11,0.2),transparent_55%)]" />
+        </div>
 
-            <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
-              {[
-                [courses.length, "complete courses"],
-                [projects.length, "complete projects"],
-                [ebooks.length, "PDF workbooks"],
-              ].map(([value, label]) => (
-                <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-2xl font-black text-white">{value}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
-                </div>
-              ))}
-            </div>
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 py-20 text-center lg:px-8 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          
+          {/* Centered Hero Header */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-slate-950/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300 shadow-xl backdrop-blur-md">
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            India's Premier Robotics &amp; STEM Platform
           </div>
 
-          <HeroLmsGraphicCard />
+          <h1 className="mt-6 max-w-4xl text-balance text-4xl font-black leading-[1.08] text-white sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-lg">
+            Build your future with <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent">Robotics, AI &amp; Electronics</span>.
+          </h1>
+
+          <p className="mt-6 max-w-3xl text-pretty text-base font-medium leading-relaxed text-indigo-100/90 md:text-lg">
+            Interactive courses, verified circuit schematics, hands-on STEM build guides, downloadable PDF workbooks, and certified learning paths for Classes 3–12.
+          </p>
+
+          {/* Quick Value Props Pills */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold text-slate-200">
+            <span className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/10 px-3.5 py-1.5 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Free PDF Workbooks
+            </span>
+            <span className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/10 px-3.5 py-1.5 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-amber-400" /> Live Circuit Diagrams
+            </span>
+            <span className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/10 px-3.5 py-1.5 backdrop-blur-sm">
+              <CheckCircle2 className="h-4 w-4 text-cyan-400" /> Verified Certificates
+            </span>
+          </div>
+
+          {/* Primary Action Buttons */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/courses"
+              className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-950 shadow-xl shadow-amber-500/25 transition-all duration-300 hover:scale-[1.03] hover:shadow-amber-500/40"
+            >
+              Explore Courses
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/projects"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-indigo-400/40 bg-indigo-900/40 px-7 py-4 text-xs font-black uppercase tracking-widest text-white backdrop-blur-md transition-all duration-300 hover:bg-indigo-800/60"
+            >
+              View Build Guides
+            </Link>
+            <Link
+              href="/quizzes"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-7 py-4 text-xs font-black uppercase tracking-widest text-indigo-100 backdrop-blur-md transition-all duration-300 hover:bg-white/15"
+            >
+              <FileQuestion className="h-4 w-4 text-amber-300" />
+              Take a Quiz
+            </Link>
+          </div>
+
+          {/* 4 Feature Cards inside Hero */}
+          <div className="mt-10 grid w-full max-w-5xl grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              [PlayCircle, "Official Videos", "REES52 tutorial videos are embedded inside the learning path."],
+              [Images, "Clear Diagrams", "Local, labelled wiring diagrams are available in lessons and PDFs."],
+              [Code2, "Working Code", "Every public course includes code that learners can inspect and change."],
+              [ClipboardCheck, "Measured Completion", "Lessons, quiz results and course progress are saved for registered learners."],
+            ].map(([Icon, title, description]) => {
+              const FeatureIcon = Icon as typeof PlayCircle;
+              return (
+                <div key={title as string} className="flex flex-col items-start rounded-2xl border border-white/15 bg-slate-900/80 p-4 text-left backdrop-blur-md transition-all duration-300 hover:border-amber-400/40 hover:bg-slate-900/95">
+                  <FeatureIcon className="h-5 w-5 text-amber-400" />
+                  <h3 className="mt-3 text-sm font-black text-white">{title as string}</h3>
+                  <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-300">{description as string}</p>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
       </section>
 
-      <section id="classes" className="relative z-10 border-b border-sky-100 bg-gradient-to-r from-white via-sky-50 to-cyan-50">
-        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-9 lg:grid-cols-[0.34fr_0.66fr] lg:items-center lg:px-8">
-          <div>
-            <div className="flex items-center gap-2 text-sky-700">
-              <span className="rounded-xl border border-sky-200 bg-white p-2 shadow-sm">
-                <School className="h-5 w-5" />
-              </span>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em]">School classes</p>
+      {/* BYJUs Inspired Class Grid Section */}
+      <section id="classes" className="relative z-10 border-b border-indigo-100 bg-gradient-to-b from-indigo-50/60 via-slate-50 to-white py-12">
+        <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-700">
+                <School className="h-4 w-4 text-indigo-600" />
+                Targeted Learning Paths
+              </div>
+              <h2 className="mt-3 text-3xl font-black text-slate-950 tracking-tight">
+                Select Your School Class
+              </h2>
+              <p className="mt-1 text-sm font-medium text-slate-600 max-w-xl">
+                Classes 3 through 12. Tailored robotics, coding, and STEM curriculum designed for every grade level.
+              </p>
             </div>
-            <h2 className="mt-3 text-2xl font-black text-slate-950">Choose your class</h2>
-            <p className="mt-2 max-w-md text-xs font-semibold leading-relaxed text-slate-600">
-              Classes 3–12 always stay visible. Open a class to see its published courses, or check back as teachers add new learning.
-            </p>
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-indigo-600 hover:text-indigo-800 transition"
+            >
+              View All Class Courses
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-5 lg:gap-4">
             {schoolClassOptions.map((schoolClass, index) => (
               <Link
                 key={schoolClass}
                 href={`/courses?class=${encodeURIComponent(schoolClass)}`}
                 aria-label={`Browse courses for ${schoolClass}`}
                 style={{ animationDelay: `${index * 35}ms` }}
-                className="group/class page-loaded-entrance flex min-h-14 items-center justify-between rounded-xl border border-sky-100 bg-white px-3 py-2 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-400 hover:bg-sky-600 hover:text-white hover:shadow-lg hover:shadow-sky-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                className="group/class page-loaded-entrance flex flex-col justify-between rounded-2xl border border-indigo-100 bg-white p-4 shadow-md shadow-indigo-100/70 transition-all duration-300 hover:-translate-y-1.5 hover:border-indigo-500 hover:bg-gradient-to-br hover:from-indigo-600 hover:to-indigo-700 hover:text-white hover:shadow-xl hover:shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 transition-colors group-hover/class:text-sky-100">
-                  Class
-                </span>
-                <span className="text-lg font-black text-slate-950 transition-all duration-300 group-hover/class:translate-x-0.5 group-hover/class:text-white">
-                  {schoolClass.replace("Class ", "")}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-indigo-700 transition-colors group-hover/class:bg-white/20 group-hover/class:text-white">
+                    Grade
+                  </span>
+                  <Sparkles className="h-4 w-4 text-amber-400 opacity-0 transition-opacity group-hover/class:opacity-100" />
+                </div>
+                <div className="mt-4">
+                  <span className="text-2xl font-black text-slate-950 transition-all duration-300 group-hover/class:text-white">
+                    {schoolClass}
+                  </span>
+                  <p className="mt-1 text-[10px] font-semibold text-slate-500 transition-colors group-hover/class:text-indigo-100">
+                    STEM &amp; Robotics
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-sky-50/60">
-        <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          {[
-            [PlayCircle, "Official videos", "REES52 tutorial videos are embedded inside the learning path."],
-            [Images, "Clear diagrams", "Local, labelled wiring diagrams are available in lessons and PDFs."],
-            [Code2, "Working code", "Every public course includes code that learners can inspect and change."],
-            [ClipboardCheck, "Measured completion", "Lessons, quiz results and course progress are saved for registered learners."],
-          ].map(([Icon, title, description]) => {
-            const FeatureIcon = Icon as typeof PlayCircle;
-            return (
-              <div key={title as string} className="rounded-2xl border border-sky-100 bg-white p-5 shadow-sm">
-                <FeatureIcon className="h-5 w-5 text-sky-700" />
-                <h2 className="mt-3 text-sm font-black text-slate-950">{title as string}</h2>
-                <p className="mt-2 text-xs font-medium leading-relaxed text-slate-600">{description as string}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+      {/* Featured Courses Showcase */}
+      <section className="mx-auto w-full max-w-7xl px-4 py-14 lg:px-8">
         <SectionHeading
           eyebrow="Launch library"
           title="Start with a complete course"
@@ -241,104 +277,6 @@ export default async function HomePage() {
             </p>
           </div>
         )}
-      </section>
-
-      <section className="border-y border-slate-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Test your knowledge</p>
-              <h2 className="mt-2 text-3xl font-black text-slate-950">Student Quiz Library</h2>
-              <p className="mt-2 max-w-2xl text-xs font-semibold leading-relaxed text-slate-600">
-                Start a course quiz or open a topic quiz published by your teacher.
-              </p>
-            </div>
-            <Link
-              href="/quizzes"
-              className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-sky-700 hover:text-sky-800"
-            >
-              All quizzes
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-sm font-black text-slate-950">No quizzes available yet.</p>
-            <p className="mt-2 text-xs font-medium text-slate-600">
-              Teacher-published quizzes will appear here automatically.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">From the Academy</p>
-              <h2 className="mt-2 text-3xl font-black text-slate-950">News & Articles</h2>
-              <p className="mt-2 max-w-2xl text-xs font-semibold leading-relaxed text-slate-600">
-                Read Academy announcements and practical guidance published by REES52 teachers.
-              </p>
-            </div>
-            <Link
-              href="/news"
-              className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-sky-700 hover:text-sky-800"
-            >
-              All news & articles
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-            <p className="text-sm font-black text-slate-950">The Academy newsroom is ready.</p>
-            <p className="mt-2 text-xs font-medium text-slate-600">
-              Teacher-published news and articles will appear here automatically.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-slate-200 bg-slate-950 text-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-300">
-                {getMonthlyLeaderboardLabel()} rankings
-              </p>
-              <h2 className="mt-2 text-3xl font-black">Monthly Learner Leaderboard</h2>
-              <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-300">
-                Students earn verified points from lessons, quizzes, projects and completed courses. Rankings begin fresh every month.
-              </p>
-            </div>
-            <Link href="/leaderboard" className="inline-flex shrink-0 items-center gap-2 text-xs font-black uppercase tracking-widest text-amber-300">
-              Full leaderboard
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          {leaderboard.length ? (
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {leaderboard.map((entry, index) => (
-                <article key={entry.userId} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-300/15 text-sm font-black text-amber-200">
-                      {entry.rank}
-                    </span>
-                    {index === 0 && <Trophy className="h-5 w-5 text-amber-300" />}
-                  </div>
-                  <h3 className="mt-4 text-lg font-black">{entry.displayName}</h3>
-                  <p className="mt-1 text-2xl font-black text-amber-300">{entry.points} points</p>
-                  <p className="mt-2 text-xs font-semibold text-slate-400">
-                    {entry.lessons} lessons · {entry.quizzes} quiz activities · {entry.projects} project activities
-                  </p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-white/20 bg-white/[0.04] p-7">
-              <p className="text-sm font-black">No points have been recorded for this month yet.</p>
-              <p className="mt-2 text-xs font-medium text-slate-400">The first signed-in student to complete a lesson or take a quiz will appear here.</p>
-            </div>
-          )}
-        </div>
       </section>
 
       <section className="border-y border-slate-200 bg-slate-50">
@@ -468,34 +406,32 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-sky-50/60">
+      <section className="border-y border-indigo-100 bg-gradient-to-b from-indigo-50/50 via-slate-50 to-white">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-16 lg:grid-cols-2 lg:px-8">
-          <div className="rounded-2xl border border-sky-100 bg-white p-7 shadow-sm">
-            <div className="flex items-center gap-2 text-sky-700">
-              <Star className="h-5 w-5 fill-current" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Learner feedback</p>
+          <div className="rounded-3xl border border-indigo-100 bg-white p-7 shadow-md shadow-indigo-100/50">
+            <div className="flex items-center gap-2 text-amber-500">
+              <Star className="h-5 w-5 fill-current text-amber-400" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-700">Learner Feedback</p>
             </div>
             {learnerReview ? (
               <>
                 <blockquote className="mt-5 text-2xl font-black leading-snug text-slate-950">
                   “{learnerReview.review}”
                 </blockquote>
-                <p className="mt-4 text-sm font-bold text-slate-700">{learnerReview.name}</p>
+                <p className="mt-4 text-sm font-bold text-indigo-900">{learnerReview.name}</p>
                 <p className="mt-1 text-xs font-medium text-slate-500">
-                  {learnerReview.rating}/5 · Shared on REES52 Academy
+                  {learnerReview.rating}/5 · Shared on REES52 Tech
                 </p>
               </>
             ) : (
               <p className="mt-5 text-sm font-medium leading-relaxed text-slate-600">
-                Learner feedback will be shown here only after it has been submitted through the Academy.
+                Learner feedback will be shown here only after it has been submitted through the platform.
               </p>
             )}
           </div>
           <CertificatePreview />
         </div>
       </section>
-
-      <HomeBottomCTA />
     </div>
   );
 }

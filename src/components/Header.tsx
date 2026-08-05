@@ -209,23 +209,37 @@ export default function Header() {
     router.push("/login");
   };
 
+  const handleMyLearningsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user) {
+      router.push("/dashboard");
+    } else {
+      setAuthOpen(true);
+    }
+  };
+
   const overlayLinkClass =
     "flex items-center justify-between rounded-lg border border-slate-200/80 bg-white/80 p-5 backdrop-blur-xl transition-all duration-200 hover:border-cyan-500/40 hover:bg-white hover:shadow-md";
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-sky-100/80 bg-[#F8FBFF]/86 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
+      <header className="sticky top-0 z-40 w-full border-b border-indigo-100/80 bg-white/95 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3.5 lg:px-8">
           <Link href="/" className="group flex min-w-0 items-center gap-3 premium-logo-group">
-            <div className="rounded-lg border border-slate-200 bg-cyan-50 p-2 shadow-sm premium-logo-icon">
-              <GraduationCap className="h-5 w-5 text-cyan-600" />
+            <div className="rounded-2xl border border-indigo-200 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-500 p-2.5 text-white shadow-md shadow-indigo-500/20 premium-logo-icon">
+              <GraduationCap className="h-5 w-5 text-white" />
             </div>
             <div className="flex min-w-0 flex-col leading-tight">
-              <span className="text-sm font-black tracking-wider text-slate-900 premium-logo-text">
-                REES<span className="text-cyan-600">52</span> Academy
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-base font-black tracking-tight text-slate-950 premium-logo-text">
+                  REES<span className="text-indigo-600">52</span> <span className="bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent">Tech</span>
+                </span>
+                <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-amber-700">
+                  LEARN
+                </span>
+              </div>
               <span className="hidden text-[9px] font-bold uppercase tracking-wider text-slate-500 md:inline">
-                Robotics and electronics courses
+                Robotics, AI &amp; STEM Academy
               </span>
             </div>
           </Link>
@@ -323,19 +337,18 @@ export default function Header() {
                 </Link>
               );
             })}
-            {user && (
-              <Link
-                href="/dashboard"
-                aria-current={pathname.startsWith("/dashboard") ? "page" : undefined}
-                className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                  pathname.startsWith("/dashboard")
-                    ? "bg-sky-600 text-white shadow-sm shadow-sky-500/20"
-                    : "text-slate-700 hover:bg-white/90 hover:text-sky-800"
-                }`}
-              >
-                My Learning
-              </Link>
-            )}
+            <button
+              type="button"
+              onClick={handleMyLearningsClick}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 ${
+                pathname.startsWith("/dashboard") || pathname.startsWith("/my-learning")
+                  ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-500/25"
+                  : "border-indigo-200/80 bg-indigo-50/80 text-indigo-900 shadow-sm hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-md"
+              }`}
+            >
+              <LayoutDashboard className="h-3.5 w-3.5 text-indigo-600" />
+              My Learning
+            </button>
             <a
               href={STORE_URL}
               target="_blank"

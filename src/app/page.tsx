@@ -20,14 +20,11 @@ import {
 } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
-import ArticleCard from "@/components/news/ArticleCard";
 import HomeBottomCTA from "@/components/HomeBottomCTA";
 import Interactive3DRobotAvatar from "@/components/Interactive3DRobotAvatar";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
-import { getPublicQuizLinks } from "@/lib/lms/quiz-links";
 import { getMonthlyLeaderboard, getMonthlyLeaderboardLabel } from "@/lib/lms/leaderboard";
-import { getPublishedArticles } from "@/lib/articles";
 import { schoolClassOptions } from "@/lib/lms/class-categories";
 import { absoluteUrl } from "@/lib/site";
 
@@ -38,8 +35,14 @@ export const metadata: Metadata = {
     absolute: "REES52 Academy - Complete Robotics & Electronics Platform",
   },
   description:
-    "Learn with complete REES52 Academy courses that include official videos, wiring diagrams, working code, downloadable workbooks, projects and quizzes.",
-  alternates: { canonical: absoluteUrl("/") },
+    "Explore REES52 Academy courses, circuit schematics, source code, printable PDF workbooks and interactive projects.",
+  openGraph: {
+    title: "REES52 Academy - Complete Robotics & Electronics Platform",
+    description:
+      "Explore REES52 Academy courses, circuit schematics, source code, printable PDF workbooks and interactive projects.",
+    url: absoluteUrl("/"),
+    type: "website",
+  },
 };
 
 const institutionLogos = [
@@ -52,14 +55,12 @@ const institutionLogos = [
 ];
 
 export default async function HomePage() {
-  const [courses, projects, ebooks, reviews, quizzes, leaderboard, articles] = await Promise.all([
+  const [courses, projects, ebooks, reviews, leaderboard] = await Promise.all([
     getCourses(),
     getProjects(),
     getEbooks(),
     getReviewsAction(),
-    getPublicQuizLinks(),
     getMonthlyLeaderboard(3),
-    getPublishedArticles(3),
   ]);
   const learnerReview = reviews.find(
     (review) =>
@@ -127,13 +128,6 @@ export default async function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-white/15"
               >
                 View build guides
-              </Link>
-              <Link
-                href="/quizzes"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300/40 bg-amber-300/15 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-amber-100 transition-colors hover:bg-amber-300/25"
-              >
-                <FileQuestion className="h-4 w-4" />
-                Take a quiz
               </Link>
             </div>
 
@@ -232,89 +226,6 @@ export default async function HomePage() {
             </p>
           </div>
         )}
-      </section>
-
-      <section className="border-y border-slate-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
-          <SectionHeading
-            eyebrow="Test your knowledge"
-            title="Student Quiz Library"
-            copy="Start a course quiz or open a topic quiz published by your teacher. New teacher quizzes appear here automatically."
-            action={{ label: "All quizzes", href: "/quizzes" }}
-          />
-          {quizzes.length ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {quizzes.slice(0, 3).map((quiz) => (
-                <article
-                  key={quiz.id}
-                  className="flex min-h-64 flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-xl bg-sky-100 p-2.5 text-sky-800">
-                      <FileQuestion className="h-5 w-5" />
-                    </span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-600">
-                      {quiz.source === "teacher" ? "Teacher quiz" : "Academy quiz"}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-xl font-black leading-tight text-slate-950">{quiz.topic}</h3>
-                  <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-slate-600">{quiz.description}</p>
-                  {quiz.source === "teacher" ? (
-                    <a
-                      href={quiz.quizUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
-                    >
-                      Start quiz
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  ) : (
-                    <Link
-                      href={quiz.quizUrl}
-                      className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
-                    >
-                      Start quiz
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  )}
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <p className="text-sm font-black text-slate-950">No quizzes available yet.</p>
-              <p className="mt-2 text-xs font-medium text-slate-600">
-                Teacher-published quizzes will appear here automatically.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
-          <SectionHeading
-            eyebrow="From the Academy"
-            title="News & Articles"
-            copy="Read Academy announcements, classroom stories and practical guidance published by REES52 teachers."
-            action={{ label: "All news & articles", href: "/news" }}
-          />
-          {articles.length ? (
-            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {articles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8">
-              <p className="text-sm font-black text-slate-900">The Academy newsroom is ready.</p>
-              <p className="mt-2 text-xs font-medium text-slate-600">
-                Teacher-published news and articles will appear here automatically.
-              </p>
-            </div>
-          )}
-        </div>
       </section>
 
       <section className="border-b border-slate-200 bg-slate-950 text-white">

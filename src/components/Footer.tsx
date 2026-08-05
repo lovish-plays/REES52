@@ -39,8 +39,6 @@ export default function Footer() {
           <nav className="mt-4 flex flex-col gap-2 text-xs font-semibold">
             <Link href="/courses" className="hover:text-sky-300">Courses</Link>
             <Link href="/projects" className="hover:text-sky-300">Projects</Link>
-            <Link href="/quizzes" className="hover:text-sky-300">Quizzes</Link>
-            <Link href="/news" className="hover:text-sky-300">News &amp; Articles</Link>
             <Link href="/leaderboard" className="hover:text-sky-300">Leaderboard</Link>
             <Link href="/ebooks" className="hover:text-sky-300">Ebooks</Link>
             <a

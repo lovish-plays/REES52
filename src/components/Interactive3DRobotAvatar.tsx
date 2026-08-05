@@ -4,18 +4,9 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Bot,
   Zap,
-  Sparkles,
-  RotateCcw,
-  Volume2,
-  VolumeX,
-  Play,
-  CheckCircle2,
-  Cpu,
-  Radio,
   Eye,
   Activity,
   ArrowRight,
-  Sparkle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -46,7 +37,6 @@ export default function Interactive3DRobotAvatar() {
   const [isWaving, setIsWaving] = useState<boolean>(false);
   const [isPulsing, setIsPulsing] = useState<boolean>(false);
   const [powerLevel, setPowerLevel] = useState<number>(95);
-  const [robotMood, setRobotMood] = useState<"happy" | "excited" | "scanning">("happy");
   const [antennaPulse, setAntennaPulse] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,11 +96,9 @@ export default function Interactive3DRobotAvatar() {
   const triggerPowerCore = () => {
     setIsPulsing(true);
     setPowerLevel(100);
-    setRobotMood("excited");
     setMessageIndex(1);
     setTimeout(() => {
       setIsPulsing(false);
-      setRobotMood("happy");
     }, 1500);
   };
 

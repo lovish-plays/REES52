@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { use3DRobotOrbit } from "@/hooks/use3DRobotOrbit";
+
 const ROBOT_MESSAGES = [
   "Hi there! I'm REES-Bot 🤖 your AI Robotics Guide!",
   "Tap my Chest Reactor to boost my power core! ⚡",
@@ -27,10 +29,17 @@ const EYE_COLORS = [
 ];
 
 export default function Interactive3DRobotAvatar() {
-  const [rotation, setRotation] = useState<{ x: number; y: number }>({ x: -4, y: 8 });
-  const [eyePos, setEyePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const {
+    containerRef,
+    rotation,
+    eyePos,
+    isDragging,
+    handleMouseMove,
+    handleMouseLeave,
+    handleStart,
+    handleMove,
+    handleEnd,
+  } = use3DRobotOrbit({ x: -4, y: 8 });
 
   const [messageIndex, setMessageIndex] = useState<number>(0);
   const [eyeColorIdx, setEyeColorIdx] = useState<number>(0);
@@ -38,54 +47,6 @@ export default function Interactive3DRobotAvatar() {
   const [isPulsing, setIsPulsing] = useState<boolean>(false);
   const [powerLevel, setPowerLevel] = useState<number>(95);
   const [antennaPulse, setAntennaPulse] = useState<boolean>(false);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Mouse tracking for 3D body tilt & eye pupil movement
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
-
-    // Body tilt
-    const rotY = (mouseX / (rect.width / 2)) * 16;
-    const rotX = -(mouseY / (rect.height / 2)) * 16;
-    setRotation({ x: rotX, y: rotY });
-
-    // Eye offset (max 8px)
-    const eyeX = (mouseX / (rect.width / 2)) * 8;
-    const eyeY = (mouseY / (rect.height / 2)) * 6;
-    setEyePos({ x: eyeX, y: eyeY });
-  };
-
-  const handleMouseLeave = () => {
-    if (!isDragging) {
-      setRotation({ x: -4, y: 8 });
-      setEyePos({ x: 0, y: 0 });
-    }
-  };
-
-  // Drag 3D Orbit
-  const handleStart = (clientX: number, clientY: number) => {
-    setIsDragging(true);
-    setDragStart({ x: clientX - rotation.y * 3, y: clientY - rotation.x * 3 });
-  };
-
-  const handleMove = (clientX: number, clientY: number) => {
-    if (!isDragging) return;
-    const newY = (clientX - dragStart.x) / 3;
-    const newX = (clientY - dragStart.y) / 3;
-    const clampedX = Math.max(-25, Math.min(25, newX));
-    const clampedY = Math.max(-40, Math.min(40, newY));
-    setRotation({ x: clampedX, y: clampedY });
-  };
-
-  const handleEnd = () => {
-    setIsDragging(false);
-  };
 
   const talkToRobot = () => {
     setMessageIndex((prev) => (prev + 1) % ROBOT_MESSAGES.length);

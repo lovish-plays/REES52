@@ -129,6 +129,13 @@ export default async function HomePage() {
               >
                 View build guides
               </Link>
+              <Link
+                href="/quizzes"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300/40 bg-amber-300/15 px-6 py-3.5 text-xs font-black uppercase tracking-widest text-amber-100 transition-colors hover:bg-amber-300/25"
+              >
+                <FileQuestion className="h-4 w-4" />
+                Take a quiz
+              </Link>
             </div>
 
             <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
@@ -226,6 +233,60 @@ export default async function HomePage() {
             </p>
           </div>
         )}
+      </section>
+
+      <section className="border-y border-slate-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Test your knowledge</p>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">Student Quiz Library</h2>
+              <p className="mt-2 max-w-2xl text-xs font-semibold leading-relaxed text-slate-600">
+                Start a course quiz or open a topic quiz published by your teacher.
+              </p>
+            </div>
+            <Link
+              href="/quizzes"
+              className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-sky-700 hover:text-sky-800"
+            >
+              All quizzes
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <p className="text-sm font-black text-slate-950">No quizzes available yet.</p>
+            <p className="mt-2 text-xs font-medium text-slate-600">
+              Teacher-published quizzes will appear here automatically.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">From the Academy</p>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">News & Articles</h2>
+              <p className="mt-2 max-w-2xl text-xs font-semibold leading-relaxed text-slate-600">
+                Read Academy announcements and practical guidance published by REES52 teachers.
+              </p>
+            </div>
+            <Link
+              href="/news"
+              className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-sky-700 hover:text-sky-800"
+            >
+              All news & articles
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <p className="text-sm font-black text-slate-950">The Academy newsroom is ready.</p>
+            <p className="mt-2 text-xs font-medium text-slate-600">
+              Teacher-published news and articles will appear here automatically.
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="border-b border-slate-200 bg-slate-950 text-white">

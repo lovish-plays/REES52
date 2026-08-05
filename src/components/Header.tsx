@@ -46,10 +46,12 @@ const STORE_URL = "https://rees52.com/collections/stem-kits";
 const LEARNING_LINKS = [
   { href: "/courses", label: "Courses", icon: BookOpen },
   { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/quizzes", label: "Quizzes", icon: FileQuestion },
   { href: "/ebooks", label: "Ebooks", icon: PackageCheck },
 ];
 
 const TOP_NAV_LINKS = [
+  { href: "/news", label: "News", icon: Newspaper },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
@@ -69,6 +71,22 @@ const DIRECTORY_LINKS = [
     icon: FolderKanban,
     iconWrap: "border-blue-300/40 bg-blue-500/10",
     iconClass: "text-blue-600",
+  },
+  {
+    href: "/quizzes",
+    label: "Quiz Library",
+    description: "Topic-based knowledge checks and course quizzes",
+    icon: FileQuestion,
+    iconWrap: "border-amber-300/40 bg-amber-500/10",
+    iconClass: "text-amber-700",
+  },
+  {
+    href: "/news",
+    label: "News & Articles",
+    description: "Academy updates, classroom stories and practical guidance",
+    icon: Newspaper,
+    iconWrap: "border-rose-300/40 bg-rose-500/10",
+    iconClass: "text-rose-700",
   },
   {
     href: "/leaderboard",

@@ -218,11 +218,20 @@ export default async function HomePage() {
           copy="Only courses that pass the public completeness checks are listed here."
           action={{ label: "All courses", href: "/courses" }}
         />
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {courses.slice(0, 3).map((course) => (
-            <CourseCard key={course.slug} course={course} />
-          ))}
-        </div>
+        {courses.length ? (
+          <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            {courses.slice(0, 3).map((course) => (
+              <CourseCard key={course.slug} course={course} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+            <p className="text-sm font-black text-slate-950">No courses listed yet.</p>
+            <p className="mt-2 text-xs font-medium text-slate-600">
+              Teacher-published courses will appear here automatically.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="border-y border-slate-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
@@ -233,44 +242,53 @@ export default async function HomePage() {
             copy="Start a course quiz or open a topic quiz published by your teacher. New teacher quizzes appear here automatically."
             action={{ label: "All quizzes", href: "/quizzes" }}
           />
-          <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {quizzes.slice(0, 3).map((quiz) => (
-              <article
-                key={quiz.id}
-                className="flex min-h-64 flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-xl bg-sky-100 p-2.5 text-sky-800">
-                    <FileQuestion className="h-5 w-5" />
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-600">
-                    {quiz.source === "teacher" ? "Teacher quiz" : "Academy quiz"}
-                  </span>
-                </div>
-                <h3 className="mt-5 text-xl font-black leading-tight text-slate-950">{quiz.topic}</h3>
-                <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-slate-600">{quiz.description}</p>
-                {quiz.source === "teacher" ? (
-                  <a
-                    href={quiz.quizUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
-                  >
-                    Start quiz
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                ) : (
-                  <Link
-                    href={quiz.quizUrl}
-                    className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
-                  >
-                    Start quiz
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
-              </article>
-            ))}
-          </div>
+          {quizzes.length ? (
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {quizzes.slice(0, 3).map((quiz) => (
+                <article
+                  key={quiz.id}
+                  className="flex min-h-64 flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-xl bg-sky-100 p-2.5 text-sky-800">
+                      <FileQuestion className="h-5 w-5" />
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-600">
+                      {quiz.source === "teacher" ? "Teacher quiz" : "Academy quiz"}
+                    </span>
+                  </div>
+                  <h3 className="mt-5 text-xl font-black leading-tight text-slate-950">{quiz.topic}</h3>
+                  <p className="mt-3 flex-1 text-sm font-medium leading-relaxed text-slate-600">{quiz.description}</p>
+                  {quiz.source === "teacher" ? (
+                    <a
+                      href={quiz.quizUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
+                    >
+                      Start quiz
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <Link
+                      href={quiz.quizUrl}
+                      className="mt-6 inline-flex items-center justify-between rounded-xl bg-sky-700 px-4 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-sky-800"
+                    >
+                      Start quiz
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+              <p className="text-sm font-black text-slate-950">No quizzes available yet.</p>
+              <p className="mt-2 text-xs font-medium text-slate-600">
+                Teacher-published quizzes will appear here automatically.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

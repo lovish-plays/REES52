@@ -32,16 +32,24 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "REES52 Academy - Complete Robotics & Electronics Platform",
+    absolute: "REES52 Tech | Robotics, AI, IoT & Electronics Learning Platform",
   },
   description:
-    "Explore REES52 Academy courses, circuit schematics, source code, printable PDF workbooks and interactive projects.",
+    "Learn Robotics, Arduino, ESP32, Raspberry Pi, AI, IoT and Electronics through interactive courses, coding playground, projects, quizzes, downloadable resources and certificates.",
   openGraph: {
-    title: "REES52 Academy - Complete Robotics & Electronics Platform",
+    title: "REES52 Tech | Robotics, AI, IoT & Electronics Learning Platform",
     description:
-      "Explore REES52 Academy courses, circuit schematics, source code, printable PDF workbooks and interactive projects.",
+      "Learn Robotics, Arduino, ESP32, Raspberry Pi, AI, IoT and Electronics through interactive courses, coding playground, projects, quizzes, downloadable resources and certificates.",
     url: absoluteUrl("/"),
+    siteName: "REES52 Tech",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "REES52 Tech | Robotics, AI, IoT & Electronics Learning Platform",
+    description:
+      "Learn Robotics, Arduino, ESP32, Raspberry Pi, AI, IoT and Electronics through interactive courses, coding playground, projects, quizzes, downloadable resources and certificates.",
+    creator: "@rees52",
   },
 };
 

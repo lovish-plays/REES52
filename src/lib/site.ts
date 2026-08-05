@@ -1,8 +1,9 @@
 export const siteConfig = {
-  name: "REES52 Academy",
+  name: "REES52 Tech",
+  alternateName: "REES52 Academy",
   shortName: "REES52",
   description:
-    "Learn robotics, Arduino, ESP32, IoT, AI, electronics, and STEM through practical courses, projects, quizzes, and downloadable guides.",
+    "Learn Robotics, Arduino, ESP32, Raspberry Pi, AI, IoT and Electronics through interactive courses, coding playground, projects, quizzes, downloadable resources and certificates.",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://rees52.tech").replace(/\/$/, ""),
   locale: "en_IN",
   contactEmail: "info@rees52.tech",

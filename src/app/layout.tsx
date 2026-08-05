@@ -13,15 +13,16 @@ import { absoluteUrl, siteConfig } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  applicationName: siteConfig.name,
+  applicationName: "REES52 Tech",
   title: {
-    default: siteConfig.name,
-    template: "%s | REES52 Academy",
+    default: "REES52 Tech",
+    template: "%s | REES52 Tech",
   },
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL("https://rees52.tech"),
   description: siteConfig.description,
   keywords: [
     "REES52",
+    "REES52 Tech",
     "REES52 Academy",
     "robotics education",
     "embedded systems",
@@ -39,26 +40,27 @@ export const metadata: Metadata = {
     "ebooks",
     "robotics kits",
   ],
-  authors: [{ name: "REES52 Academy Team" }],
-  creator: "REES52",
-  publisher: "REES52",
+  authors: [{ name: "REES52 Tech Team" }],
+  creator: "REES52 Tech",
+  publisher: "REES52 Tech",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "REES52 Academy",
+    title: "REES52 Tech",
   },
   icons: {
+    icon: "/favicon.ico",
     apple: "/icon-192.png",
   },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,
     url: siteConfig.url,
-    siteName: siteConfig.name,
+    siteName: "REES52 Tech",
     locale: siteConfig.locale,
     type: "website",
-    images: [{ url: absoluteUrl("/og.png"), width: 1200, height: 630, alt: "REES52 Academy robotics and electronics courses" }],
+    images: [{ url: absoluteUrl("/og.png"), width: 1200, height: 630, alt: "REES52 Tech robotics, AI, IoT and electronics platform" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -111,7 +113,7 @@ export default function RootLayout({
     <html lang="en" className="h-full scroll-smooth bg-background">
       <head>
         <meta name="google-site-verification" content="0rubCVEdWq9fmTulAGPA7e5rl7t0yJbW98tsWGFiR-w" />
-        <meta name="site_name" content="REES52 Academy" />
+        <meta name="site_name" content="REES52 Tech" />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.__REES52_SUPABASE__=${runtimeSupabaseConfig};`,

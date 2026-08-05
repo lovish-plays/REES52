@@ -21,7 +21,7 @@ import {
 import CourseCard from "@/components/lms/CourseCard";
 import EbookCard from "@/components/lms/EbookCard";
 import HomeBottomCTA from "@/components/HomeBottomCTA";
-import Interactive3DRobotAvatar from "@/components/Interactive3DRobotAvatar";
+import InteractiveCyberLabConsole from "@/components/InteractiveCyberLabConsole";
 import { getReviewsAction } from "@/app/actions/reviews";
 import { getCourses, getEbooks, getProjects } from "@/lib/lms/data";
 import { getMonthlyLeaderboard, getMonthlyLeaderboardLabel } from "@/lib/lms/leaderboard";
@@ -160,7 +160,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <Interactive3DRobotAvatar />
+          <InteractiveCyberLabConsole />
         </div>
       </section>
 

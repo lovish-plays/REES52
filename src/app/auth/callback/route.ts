@@ -20,8 +20,6 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
-  console.log(`[OAuth Callback] GET request received with code: ${code ? 'present' : 'missing'}, next: ${next}`);
-
   // Create a placeholder redirect response first
   const redirectResponse = NextResponse.redirect(`${redirectOrigin}${next}`);
 
@@ -51,14 +49,12 @@ export async function GET(request: Request) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            console.log(`[OAuth Callback] Setting Supabase cookie: ${name}`);
             redirectResponse.cookies.set(name, value, options);
           });
         },
       },
     });
 
-    console.log("[OAuth Callback] Exchanging code for session...");
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (error) {
@@ -72,12 +68,7 @@ export async function GET(request: Request) {
     }
 
     const user = data.user;
-    const session = data.session;
     const cleanEmail = user.email?.trim().toLowerCase();
-    
-    console.log(`[OAuth Callback] Google email detected: ${cleanEmail}`);
-    console.log(`[OAuth Callback] Exchange successful. User ID: ${user.id}`);
-    console.log(`[OAuth Callback] Session details - Access Token: ${session?.access_token ? 'Present' : 'Missing'}, Refresh Token: ${session?.refresh_token ? 'Present' : 'Missing'}`);
 
     if (!cleanEmail) {
       console.error("[OAuth Callback] User does not have an email address associated with their account");
@@ -85,7 +76,6 @@ export async function GET(request: Request) {
     }
 
     // Query profiles table by email instead of auth.uid() to find existing account for linking
-    console.log(`[OAuth Callback] Querying profiles table by email: ${cleanEmail}`);
     let { data: profile, error: profileErr } = await supabase
       .from('profiles')
       .select('*')
@@ -93,7 +83,6 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (profileErr) {
-      console.log("[OAuth Callback] Profiles query failed. Retrying with LMS core fields.");
       const { data: retryProfile } = await supabase
         .from('profiles')
         .select('id, full_name, email, role, avatar_url')
@@ -102,15 +91,9 @@ export async function GET(request: Request) {
       profile = retryProfile as any;
     }
 
-    console.log(`[OAuth Callback] Existing profile found: ${profile ? 'Yes' : 'No'}`);
-
     if (profile) {
-      console.log(`[OAuth Callback] Existing profile details - ID: ${profile.id}, Provider: ${profile.provider}`);
-      
       // If the existing profile has a different ID, link them!
       if (profile.id !== user.id) {
-        console.log(`[OAuth Callback] Linking Google account ${user.id} to existing profile ${profile.id} with email ${cleanEmail}`);
-        
         // 1. Insert/upsert new profile row with the new user.id, copying all data
         let { error: linkError } = await supabase
           .from('profiles')
@@ -122,7 +105,6 @@ export async function GET(request: Request) {
           });
 
         if (linkError) {
-          console.error("[OAuth Callback] Upsert failed with new columns. Retrying link with core fields.");
           const { error: coreLinkError } = await supabase
             .from('profiles')
             .upsert({
@@ -140,8 +122,6 @@ export async function GET(request: Request) {
         if (linkError) {
           console.error("[OAuth Callback] Failed to insert/upsert linked profile:", linkError.message);
         } else {
-          console.log("[OAuth Callback] Linked profile created successfully. Deleting old profile: " + profile.id);
-          
           // 2. Delete the old profile row to prevent duplicate profile rows
           const { error: deleteError } = await supabase
             .from('profiles')
@@ -150,13 +130,10 @@ export async function GET(request: Request) {
           
           if (deleteError) {
             console.error("[OAuth Callback] Failed to delete old profile:", deleteError.message);
-          } else {
-            console.log("[OAuth Callback] Account linked successfully and old profile deleted.");
           }
         }
       } else {
         // If IDs match, just make sure the provider is set to google/linked (or update details)
-        console.log(`[OAuth Callback] Profiles IDs match. Updating provider to google.`);
         await supabase
           .from('profiles')
           .update({ provider: 'google' })
@@ -164,11 +141,9 @@ export async function GET(request: Request) {
       }
 
       // Supabase session cookies are the only production identity token.
-      console.log(`[OAuth Callback] Redirecting to: ${redirectOrigin}${next}`);
       return redirectResponse;
     } else {
       // User profile does not exist yet. Redirect to onboarding!
-      console.log("[OAuth Callback] Profile does not exist. Redirecting to onboarding");
       const onboardingResponse = NextResponse.redirect(`${redirectOrigin}/onboarding`);
       
       // Copy the Supabase session cookies that were set on redirectResponse to onboardingResponse

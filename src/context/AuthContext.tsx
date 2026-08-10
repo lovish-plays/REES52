@@ -90,23 +90,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadProfile = async (authUserId: string, email: string, fallbackName?: string) => {
     if (isLoadingProfileRef.current) {
-      console.log("[AuthContext] loadProfile already in progress. Skipping duplicate call.");
       return;
     }
     isLoadingProfileRef.current = true;
-    console.log("[AuthContext] loadProfile started for authUserId:", authUserId);
-    
-    const startTime = performance.now();
-    console.time(`profile-query-${authUserId}`);
     
     try {
       let data: ProfileRow | null = null;
       let error = null;
 
       try {
-        console.log("[AuthContext] Querying Supabase profiles for id:", authUserId);
-        console.time(`supabase-db-query-${authUserId}`);
-        
         const queryPromise = supabase
           .from("profiles")
           .select("id,name,role,enrolled_videos,purchased_ebooks,provider")
@@ -120,11 +112,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await Promise.race([queryPromise, timeoutPromise]);
         data = response.data;
         error = response.error;
-        console.timeEnd(`supabase-db-query-${authUserId}`);
 
         if (error) {
           if (error.message.includes("column") || error.message.includes("provider")) {
-            console.log("[AuthContext] Profiles table lacks provider. Retrying query without it.");
             const retryRes = await supabase
               .from("profiles")
               .select("id,name,role,enrolled_videos,purchased_ebooks")
@@ -141,39 +131,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         }
-
-        console.log("[AuthContext] Supabase profile query finished.");
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        console.timeEnd(`supabase-db-query-${authUserId}`);
         console.warn("[AuthContext] Supabase profile query failed or timed out:", errorMsg);
         error = err instanceof Error ? err : new Error(errorMsg);
       }
 
       // If client query failed/timed out or returned no profile, fallback to the server action
       if (error || !data) {
-        console.log("[AuthContext] Client profile query failed/empty. Trying server action fallback...");
-        const fallbackStart = performance.now();
-        console.time(`fallback-action-${authUserId}`);
         try {
           const serverUser = await getCurrentUser();
-          console.timeEnd(`fallback-action-${authUserId}`);
-          const fallbackDur = performance.now() - fallbackStart;
-          console.log(`[AuthContext] Fallback query completed in ${fallbackDur.toFixed(2)}ms`);
           
           if (serverUser && serverUser.id === authUserId) {
-            console.log("[AuthContext] Profile retrieved via server action fallback.");
             const normalizedRole = normalizeRole(serverUser.role);
             setUser({
               ...serverUser,
               role: normalizedRole
             });
-            const totalDur = performance.now() - startTime;
-            console.log(`[AuthContext] Total login/profile flow completed in ${totalDur.toFixed(2)}ms (via fallback)`);
             return;
           }
         } catch (serverErr) {
-          console.timeEnd(`fallback-action-${authUserId}`);
           console.error("[AuthContext] Server action fallback failed:", serverErr);
         }
       }
@@ -183,7 +160,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const authProvider = sessionData?.session?.user?.app_metadata?.provider || "email";
 
       if (!data && !error && authProvider === "email") {
-        console.log("[AuthContext] No profile found. Creating self-healing profile...");
         const role = "Student";
         const name = fallbackName?.trim() || email.split("@")[0]?.replace(/[._-]+/g, " ").trim() || "Learner";
         
@@ -201,7 +177,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single<Omit<ProfileRow, 'provider'>>();
 
         if (!insertRes.error && insertRes.data) {
-          console.log("[AuthContext] Self-healing profile created successfully.");
           data = {
             ...insertRes.data,
             provider: 'email'
@@ -221,7 +196,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const hasProfile = data ? true : (error ? undefined : false);
 
-      console.log("[AuthContext] Setting authenticated user state.");
       setUser({
         id: authUserId,
         email,
@@ -237,7 +211,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         streak: data?.streak ?? null,
         recently_viewed: data?.recently_viewed ?? []
       });
-      console.log("[AuthContext] User state set successfully in loadProfile. Triggering streak update...");
       
       // Auto-update learning streak
       updateStreakAction().then(res => {
@@ -246,13 +219,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }).catch(err => console.warn("Streak auto-update error:", err));
 
-      const totalDur = performance.now() - startTime;
-      console.log(`[AuthContext] Total login/profile flow completed in ${totalDur.toFixed(2)}ms (success)`);
-
     } catch (e) {
       console.error("[AuthContext] loadProfile encountered unexpected error:", e);
     } finally {
-      console.timeEnd(`profile-query-${authUserId}`);
       isLoadingProfileRef.current = false;
     }
   };
@@ -382,8 +351,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isSubscribed) return;
       authEventHandled = true;
 
-      console.log("[AuthContext] Authentication state changed:", event);
-
       if (newSession?.user) {
         const u = newSession.user;
         const authProvider = u.app_metadata?.provider || "email";
@@ -430,19 +397,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string, portal: "Student" | "Teacher" = "Student") => {
-    console.log("[AuthContext] Sign-in started.");
-    const loginStart = performance.now();
     let authenticatedRole: AppRole = "Student";
     setIsLoading(true);
     // Prevent the onAuthStateChange listener from triggering concurrent loadProfile calls
     profileLoadingRef.current = true;
     try {
-      console.log("[AuthContext] Calling supabase.auth.signInWithPassword...");
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.warn("[AuthContext] Supabase signIn failed:", error.message);
-        console.log("[AuthContext] Trying local fallback loginUser...");
         const localRes = await loginUser({ email, password });
         if (localRes.success && localRes.user) {
           const finalRole = normalizeRole(localRes.user.role);
@@ -462,11 +425,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             provider: localRes.user.provider || 'email',
             hasProfile: true
           });
-          console.log("[AuthContext] Local fallback sign in successful. User state set.");
           profileLoadingRef.current = false;
           setIsLoading(false);
-          const loginDuration = performance.now() - loginStart;
-          console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms (local fallback)`);
           return { success: true, role: finalRole };
         } else {
           console.warn("[AuthContext] Local fallback sign in failed:", localRes.error);
@@ -476,16 +436,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      console.log("[AuthContext] Supabase sign-in succeeded.");
-      console.log("[AuthContext] Setting session...");
       setSession(data.session ?? null);
 
       if (data.user) {
         const name = data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
         
-        console.log("[AuthContext] Calling createLocalSessionForSupabaseUser...");
         const localSessionRes = await createLocalSessionForSupabaseUser();
-        console.log("[AuthContext] Authenticated profile synchronization completed.");
 
         if (!localSessionRes.success || !localSessionRes.user) {
           await Promise.all([supabase.auth.signOut(), logoutUser()]);
@@ -521,27 +477,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         setIsLoading(false);
 
-        console.log("[AuthContext] Starting loadProfile in background...");
         loadProfile(
           data.user.id,
           data.user.email ?? "",
           (data.user.user_metadata?.name as string | undefined) ?? undefined
-        ).then(() => {
-          console.log("[AuthContext] Background loadProfile resolved successfully");
-        }).catch((err) => {
+        ).catch((err) => {
           console.error("[AuthContext] Background loadProfile failed:", err);
         }).finally(() => {
           profileLoadingRef.current = false;
-          console.log("[AuthContext] Background loadProfile completed.");
         });
       } else {
-        console.log("[AuthContext] No data.user returned from Supabase sign in");
         profileLoadingRef.current = false;
         setIsLoading(false);
       }
 
-      const loginDuration = performance.now() - loginStart;
-      console.log(`[AuthContext] signIn authentication completed in ${loginDuration.toFixed(2)}ms`);
       return { success: true, role: authenticatedRole };
     } catch (err) {
       console.error("[AuthContext] signIn encountered unexpected error:", err);
@@ -801,7 +750,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       const redirectTo = `${getURL()}auth/callback`;
-      console.log("[AuthContext] signInWithGoogle starting. Redirecting to:", redirectTo);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -829,7 +777,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user && user.hasProfile === false && typeof window !== "undefined") {
       const path = window.location.pathname;
       if (path !== "/onboarding" && path !== "/auth/callback") {
-        console.log("[AuthContext] Redirecting to /onboarding because profile does not exist.");
         window.location.href = "/onboarding";
       }
     }

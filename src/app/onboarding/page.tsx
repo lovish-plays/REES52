@@ -46,7 +46,6 @@ export default function OnboardingPage() {
           .maybeSingle();
 
         if (profile) {
-          console.log("[Onboarding] Profile already exists. Redirecting to home.");
           router.push("/");
           return;
         }
@@ -96,7 +95,6 @@ export default function OnboardingPage() {
       let profileError = profileInsert.error;
 
       if (profileError && (profileError.message.includes("column") || profileError.message.includes("provider"))) {
-        console.log("[Onboarding] Profiles table lacks provider column. Retrying insert without it.");
         const retryInsert = (await supabase
           .from("profiles")
           .insert({

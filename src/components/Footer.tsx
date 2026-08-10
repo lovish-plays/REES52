@@ -9,8 +9,8 @@ export default function Footer() {
   const { user } = useAuth();
 
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-slate-950 py-12 text-slate-300">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 md:grid-cols-[1.2fr_0.8fr_0.8fr] lg:px-8">
+    <footer className="mt-16 border-t border-slate-200 bg-slate-950 py-[var(--section-padding)] text-slate-300">
+      <div className="mx-auto grid w-full max-w-7xl gap-10 px-[var(--container-padding)] md:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
           <Link href="/" className="inline-flex items-center gap-2 text-white">
             <span className="rounded-lg bg-sky-500 p-2">
@@ -83,7 +83,7 @@ export default function Footer() {
           </nav>
         </div>
       </div>
-      <div className="mx-auto mt-10 flex w-full max-w-7xl flex-col gap-2 border-t border-white/10 px-4 pt-6 text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+      <div className="mx-auto mt-10 flex w-full max-w-7xl flex-col gap-2 border-t border-white/10 px-[var(--container-padding)] pt-6 text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <span>© 2026 Robotics Embedded Education Services Private Limited.</span>
         <span>REES52 Academy</span>
       </div>

@@ -17,6 +17,27 @@
 
   --shadow-byjus-card: 0 12px 36px rgba(79, 70, 229, 0.12);
   --shadow-byjus-hover: 0 20px 48px rgba(79, 70, 229, 0.22);
+
+  /* Fluid Typography Theme Tokens */
+  --font-size-xs: clamp(0.7rem, 0.2vw + 0.65rem, 0.75rem);
+  --font-size-sm: clamp(0.8rem, 0.3vw + 0.72rem, 0.875rem);
+  --font-size-base: clamp(0.925rem, 0.4vw + 0.825rem, 1rem);
+  --font-size-lg: clamp(1.05rem, 0.5vw + 0.925rem, 1.125rem);
+  --font-size-xl: clamp(1.15rem, 0.7vw + 0.98rem, 1.25rem);
+  --font-size-2xl: clamp(1.35rem, 1vw + 1.1rem, 1.5rem);
+  --font-size-3xl: clamp(1.65rem, 1.5vw + 1.25rem, 1.875rem);
+  --font-size-4xl: clamp(2rem, 2.2vw + 1.45rem, 2.25rem);
+  --font-size-5xl: clamp(2.5rem, 3.2vw + 1.7rem, 3rem);
+  --font-size-6xl: clamp(3rem, 4.5vw + 1.875rem, 3.75rem);
+  --font-size-7xl: clamp(3.5rem, 6vw + 2rem, 4.5rem);
+
+  /* Fluid Radius Theme Tokens */
+  --radius-fluid-sm: clamp(0.25rem, 0.5vw, 0.375rem);
+  --radius-fluid-md: clamp(0.375rem, 1vw, 0.5rem);
+  --radius-fluid-lg: clamp(0.5rem, 1.25vw, 0.75rem);
+  --radius-fluid-xl: clamp(0.75rem, 1.5vw, 1rem);
+  --radius-fluid-2xl: clamp(1rem, 2vw, 1.25rem);
+  --radius-fluid-3xl: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 
 :root {
@@ -25,6 +46,90 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --focus-ring: 0 0 0 4px rgba(99, 102, 241, 0.25);
+
+  /* Centralized Fluid Typography Tokens */
+  --text-xs: clamp(0.7rem, 0.2vw + 0.65rem, 0.75rem);
+  --text-sm: clamp(0.8rem, 0.3vw + 0.72rem, 0.875rem);
+  --text-base: clamp(0.925rem, 0.4vw + 0.825rem, 1rem);
+  --text-lg: clamp(1.05rem, 0.5vw + 0.925rem, 1.125rem);
+  --text-xl: clamp(1.15rem, 0.7vw + 0.98rem, 1.25rem);
+  --text-2xl: clamp(1.35rem, 1vw + 1.1rem, 1.5rem);
+  --text-3xl: clamp(1.65rem, 1.5vw + 1.25rem, 1.875rem);
+  --text-4xl: clamp(2rem, 2.2vw + 1.45rem, 2.25rem);
+  --text-5xl: clamp(2.5rem, 3.2vw + 1.7rem, 3rem);
+  --text-6xl: clamp(3rem, 4.5vw + 1.875rem, 3.75rem);
+  --text-7xl: clamp(3.5rem, 6vw + 2rem, 4.5rem);
+  --text-display: clamp(2.25rem, 5vw + 1rem, 4.5rem);
+
+  /* Centralized Fluid Spacing Tokens */
+  --space-3xs: clamp(0.125rem, 0.25vw, 0.25rem);
+  --space-2xs: clamp(0.25rem, 0.5vw, 0.375rem);
+  --space-xs: clamp(0.375rem, 0.75vw, 0.5rem);
+  --space-sm: clamp(0.5rem, 1vw, 0.75rem);
+  --space-md: clamp(0.875rem, 1.5vw, 1.25rem);
+  --space-lg: clamp(1.25rem, 2.5vw, 2rem);
+  --space-xl: clamp(1.75rem, 4vw, 3rem);
+  --space-2xl: clamp(2.5rem, 5vw, 4rem);
+  --space-3xl: clamp(3.5rem, 7vw, 6rem);
+
+  /* Centralized Fluid Layout & Container Tokens */
+  --container-padding: clamp(1rem, 3vw, 2.5rem);
+  --section-padding: clamp(2.5rem, 5vw + 1rem, 5rem);
+  --container-max-width: min(100% - (var(--container-padding) * 2), 1280px);
+  --container-max-width-narrow: min(100% - (var(--container-padding) * 2), 1024px);
+
+  /* Centralized Fluid Component Radius Tokens */
+  --radius-fluid-sm: clamp(0.25rem, 0.5vw, 0.375rem);
+  --radius-fluid-md: clamp(0.375rem, 1vw, 0.5rem);
+  --radius-fluid-lg: clamp(0.5rem, 1.25vw, 0.75rem);
+  --radius-fluid-xl: clamp(0.75rem, 1.5vw, 1rem);
+  --radius-fluid-2xl: clamp(1rem, 2vw, 1.25rem);
+  --radius-fluid-3xl: clamp(1.25rem, 2.5vw, 1.75rem);
+
+  /* Fluid Component Spacing Tokens */
+  --card-padding: clamp(1rem, 2vw, 1.75rem);
+  --hero-padding: clamp(2rem, 5vw, 4rem);
+}
+
+/* Fluid Utility Helper Classes */
+.container-fluid {
+  width: min(100% - (var(--container-padding) * 2), 1280px);
+  margin-inline: auto;
+}
+
+.container-fluid-narrow {
+  width: min(100% - (var(--container-padding) * 2), 1024px);
+  margin-inline: auto;
+}
+
+.section-fluid-padding {
+  padding-block: var(--section-padding);
+}
+
+.card-fluid-padding {
+  padding: var(--card-padding);
+}
+
+.hero-fluid-padding {
+  padding: var(--hero-padding);
+}
+
+.grid-auto-fit-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-md);
+}
+
+.grid-auto-fit-sm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: var(--space-sm);
+}
+
+.grid-auto-fit-lg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: var(--space-lg);
 }
 
 * {

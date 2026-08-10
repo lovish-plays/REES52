@@ -788,7 +788,7 @@ export default function ContentExplorer({ initialType = "all" }: { initialType?:
   const mappedProduct = selectedItem ? products.find((p) => p.id === selectedItem.productId) : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 lg:px-8 text-slate-800 relative z-10">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-[var(--container-padding)] py-[var(--space-xl)] text-slate-800 relative z-10">
       
       {/* ── 1. Immersive Hero Section Overhaul ── */}
       <HeroSection 

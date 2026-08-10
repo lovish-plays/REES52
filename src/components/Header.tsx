@@ -224,7 +224,7 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-indigo-100/80 bg-white/95 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3.5 lg:px-8">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-[var(--container-padding)] py-3.5">
           <Link href="/" className="group flex min-w-0 items-center gap-3 premium-logo-group">
             <div className="rounded-2xl border border-indigo-200 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-amber-500 p-2.5 text-white shadow-md shadow-indigo-500/20 premium-logo-icon">
               <GraduationCap className="h-5 w-5 text-white" />

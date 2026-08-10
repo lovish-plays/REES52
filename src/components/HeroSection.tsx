@@ -9,13 +9,13 @@ interface HeroSectionProps {
 
 export default function HeroSection({ onStartLearning, onExploreProjects }: HeroSectionProps) {
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white/95 to-slate-50/70 p-8 md:p-12 lg:p-16 backdrop-blur-2xl shadow-xl animate-fade-in-up glow-ambient-cyan">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white/95 to-slate-50/70 hero-fluid-padding backdrop-blur-2xl shadow-xl animate-fade-in-up glow-ambient-cyan">
       {/* Decorative vector background grid lines */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] bg-[size:24px_24px] rounded-3xl" />
       <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-cyan-400/10 blur-[120px] pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-indigo-400/10 blur-[120px] pointer-events-none" />
 
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-[var(--space-lg)] lg:gap-[var(--space-xl)] items-center">
         
         {/* Left Column: Educational Content */}
         <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 md:space-y-8">
@@ -26,12 +26,12 @@ export default function HeroSection({ onStartLearning, onExploreProjects }: Hero
           </span>
 
           {/* Premium Headlines */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-tight">
-            Learn <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-650 bg-clip-text text-transparent">Robotics, AI, Electronics</span> & IoT Through Real Projects
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+            Learn <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-650 bg-clip-text text-transparent">Robotics, AI, Electronics</span> &amp; IoT Through Real Projects
           </h1>
 
           {/* Subheadline */}
-          <p className="text-slate-600 text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed font-semibold">
+          <p className="text-slate-600 text-base lg:text-lg max-w-2xl leading-relaxed font-semibold">
             Master Arduino, Raspberry Pi, Embedded Systems, AI, STEM, and IoT with tutorials, ebooks, and hands-on project learning.
           </p>
 

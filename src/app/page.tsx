@@ -126,15 +126,15 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(99,102,241,0.25),transparent_60%),radial-gradient(circle_at_bottom_center,rgba(245,158,11,0.2),transparent_55%)]" />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 py-20 text-center lg:px-8 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-[var(--container-padding)] py-[var(--section-padding)] text-center drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
           
           {/* Centered Hero Header */}
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-slate-950/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300 shadow-xl backdrop-blur-md">
             <Sparkles className="h-4 w-4 text-amber-400" />
-            India's Premier Robotics &amp; STEM Platform
+            India&apos;s Premier Robotics &amp; STEM Platform
           </div>
 
-          <h1 className="mt-6 max-w-4xl text-balance text-4xl font-black leading-[1.08] text-white sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-lg">
+          <h1 className="mt-6 max-w-4xl text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] text-white drop-shadow-lg">
             Build your future with <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent">Robotics, AI &amp; Electronics</span>.
           </h1>
 
@@ -202,8 +202,8 @@ export default async function HomePage() {
       </section>
 
       {/* BYJUs Inspired Class Grid Section */}
-      <section id="classes" className="relative z-10 border-b border-indigo-100 bg-gradient-to-b from-indigo-50/60 via-slate-50 to-white py-12">
-        <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
+      <section id="classes" className="relative z-10 border-b border-indigo-100 bg-gradient-to-b from-indigo-50/60 via-slate-50 to-white py-[var(--section-padding)]">
+        <div className="mx-auto w-full max-w-7xl px-[var(--container-padding)]">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-700">
@@ -256,7 +256,7 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Courses Showcase */}
-      <section className="mx-auto w-full max-w-7xl px-4 py-14 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-[var(--container-padding)] py-[var(--section-padding)]">
         <SectionHeading
           eyebrow="Launch library"
           title="Start with a complete course"
@@ -280,7 +280,7 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl px-[var(--container-padding)] py-[var(--section-padding)]">
           <SectionHeading
             eyebrow="Build outcomes"
             title="Use the same assets outside the course"
@@ -324,7 +324,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-[var(--container-padding)] py-[var(--section-padding)]">
         <SectionHeading
           eyebrow="Download and print"
           title="Classroom-ready workbooks"
@@ -339,7 +339,7 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-slate-200 bg-slate-950 text-white">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-[var(--container-padding)] py-[var(--section-padding)] lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-300">Learning in context</p>
             <h2 className="mt-3 text-3xl font-black md:text-4xl">Published classroom and lab evidence</h2>
@@ -376,7 +376,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-[var(--container-padding)] py-[var(--section-padding)]">
         <div className="flex flex-col gap-3">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">Lab-installation evidence</p>
           <h2 className="text-2xl font-black text-slate-950">Institutions listed by REES52</h2>
@@ -407,7 +407,7 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-indigo-100 bg-gradient-to-b from-indigo-50/50 via-slate-50 to-white">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-16 lg:grid-cols-2 lg:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-[var(--container-padding)] py-[var(--section-padding)] lg:grid-cols-2">
           <div className="rounded-3xl border border-indigo-100 bg-white p-7 shadow-md shadow-indigo-100/50">
             <div className="flex items-center gap-2 text-amber-500">
               <Star className="h-5 w-5 fill-current text-amber-400" />

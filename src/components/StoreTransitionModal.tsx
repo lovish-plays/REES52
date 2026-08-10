@@ -1,12 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ExternalLink, ShoppingBag, ArrowRight, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ShoppingBag, ArrowRight, X } from "lucide-react";
 
 export default function StoreTransitionModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [targetUrl, setTargetUrl] = useState("");
   const [countdown, setCountdown] = useState(3);
+
+  const handleProceed = useCallback(() => {
+    setIsOpen(false);
+    if (targetUrl) {
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
+    }
+  }, [targetUrl]);
+
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
@@ -65,16 +76,7 @@ export default function StoreTransitionModal() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [isOpen, countdown]);
-
-  const handleProceed = () => {
-    setIsOpen(false);
-    window.open(targetUrl, "_blank", "noopener,noreferrer");
-  };
-
-  const handleCancel = () => {
-    setIsOpen(false);
-  };
+  }, [isOpen, countdown, handleProceed]);
 
   if (!isOpen) return null;
 
@@ -94,6 +96,7 @@ export default function StoreTransitionModal() {
         {/* Close Button */}
         <button 
           onClick={handleCancel}
+          aria-label="Close dialog"
           className="absolute top-4 right-4 rounded-lg p-1 text-slate-400 hover:bg-slate-200/50 hover:text-slate-700 transition-colors"
         >
           <X className="h-4 w-4" />

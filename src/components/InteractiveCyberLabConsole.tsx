@@ -3,20 +3,13 @@
 import React, { useState, useCallback } from "react";
 import {
   Cpu,
-  Wifi,
   Activity,
   Code2,
-  Zap,
-  Radio,
   Play,
   RotateCcw,
-  Sparkles,
-  Layers,
   ArrowRight,
   Gauge,
-  Sliders,
   CheckCircle2,
-  Terminal,
 } from "lucide-react";
 import Link from "next/link";
 import { use3DRobotOrbit } from "@/hooks/use3DRobotOrbit";

@@ -369,6 +369,7 @@ export default function TwitterNewsFeed({ articles }: { articles: Article[] }) {
                             href={`/news/${article.slug}`}
                             className="flex items-center gap-1.5 hover:text-sky-600 transition"
                             title="Comments"
+                            aria-label="View comments"
                           >
                             <MessageCircle className="h-4 w-4" />
                             <span className="text-[11px] font-bold">12</span>
@@ -381,6 +382,7 @@ export default function TwitterNewsFeed({ articles }: { articles: Article[] }) {
                               isReposted ? "text-emerald-600 font-bold" : ""
                             }`}
                             title="Repost"
+                            aria-label="Repost article"
                           >
                             <Repeat2 className={`h-4 w-4 ${isReposted ? "text-emerald-600" : ""}`} />
                             <span className="text-[11px] font-bold">{isReposted ? 29 : 28}</span>
@@ -393,6 +395,7 @@ export default function TwitterNewsFeed({ articles }: { articles: Article[] }) {
                               isLiked ? "text-rose-600 font-bold" : ""
                             }`}
                             title="Like"
+                            aria-label="Like article"
                           >
                             <Heart className={`h-4 w-4 ${isLiked ? "fill-rose-600 text-rose-600" : ""}`} />
                             <span className="text-[11px] font-bold">{isLiked ? 143 : 142}</span>
@@ -412,6 +415,7 @@ export default function TwitterNewsFeed({ articles }: { articles: Article[] }) {
                                 isBookmarked ? "text-sky-600" : ""
                               }`}
                               title="Bookmark"
+                              aria-label="Bookmark article"
                             >
                               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-sky-600 text-sky-600" : ""}`} />
                             </button>
@@ -420,6 +424,7 @@ export default function TwitterNewsFeed({ articles }: { articles: Article[] }) {
                               onClick={() => copyShareLink(article.slug)}
                               className="transition hover:text-sky-600"
                               title="Share Link"
+                              aria-label="Share article link"
                             >
                               <Share2 className="h-4 w-4" />
                             </button>

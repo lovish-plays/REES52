@@ -134,11 +134,25 @@ export async function registerUser(formData: any) {
     return { error: 'Please fill in all fields.' };
   }
 
+  if (typeof password !== 'string' || password.length < 8) {
+    return { error: 'Password must contain at least 8 characters.' };
+  }
+
   const emailResult = validateAndNormalizeEmail(email);
   if (emailResult.error) {
     return { error: emailResult.error };
   }
   const cleanEmail = emailResult.email!;
+
+  const rateCheck = await (await import('@/lib/rateLimit')).checkRateLimit({
+    limit: 5,
+    windowSeconds: 600, // 5 registrations per 10 minutes
+    action: 'register',
+    key: cleanEmail,
+  });
+  if (!rateCheck.success) {
+    return { error: rateCheck.error };
+  }
 
   const existingUser = await UserRepository.getUserByEmail(cleanEmail);
   if (existingUser) {
@@ -208,6 +222,16 @@ export async function loginUser(formData: any) {
     return { error: emailResult.error };
   }
   const cleanEmail = emailResult.email!;
+
+  const rateCheck = await (await import('@/lib/rateLimit')).checkRateLimit({
+    limit: 5,
+    windowSeconds: 60, // 5 login attempts per minute per email
+    action: 'login',
+    key: cleanEmail,
+  });
+  if (!rateCheck.success) {
+    return { error: rateCheck.error };
+  }
 
   const user = await UserRepository.getUserByEmail(cleanEmail);
   if (!user) {
@@ -477,6 +501,16 @@ export async function sendPasswordResetOtpAction(email: string) {
   const emailResult = validateAndNormalizeEmail(email);
   if (emailResult.error) return { error: emailResult.error };
   const cleanEmail = emailResult.email!;
+
+  const rateCheck = await (await import('@/lib/rateLimit')).checkRateLimit({
+    limit: 3,
+    windowSeconds: 300, // max 3 OTP requests per 5 minutes per email
+    action: 'send-otp',
+    key: cleanEmail,
+  });
+  if (!rateCheck.success) {
+    return { success: true, message: resetRequestMessage() }; // Account enumeration protection
+  }
 
   const user = await UserRepository.getUserByEmail(cleanEmail, true);
   if (!user) {

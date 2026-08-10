@@ -1,7 +1,6 @@
 "use client";
 
 import { X, Play, Bookmark, BookmarkCheck, Clock, Layers, Sparkles, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface QuickPreviewModalProps {
   isOpen: boolean;

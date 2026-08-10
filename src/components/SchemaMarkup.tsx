@@ -1,4 +1,4 @@
-import { absoluteUrl, siteConfig } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
 
 export default function SchemaMarkup() {
   const organizationSchema = {

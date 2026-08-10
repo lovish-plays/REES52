@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, X, ChevronDown, Sparkles, Filter } from "lucide-react";
+import { Search, SlidersHorizontal, X, ChevronDown, Filter } from "lucide-react";
 import CourseCard from "@/components/lms/CourseCard";
 import { LmsCourse } from "@/lib/lms/types";
 import { schoolClassOptions, type SchoolClass } from "@/lib/lms/class-categories";

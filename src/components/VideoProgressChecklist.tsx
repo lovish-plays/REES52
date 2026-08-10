@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListChecks, CheckCircle, Award } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -8,7 +8,7 @@ import Link from "next/link";
 
 interface VideoProgressChecklistProps {
   courseId: string;
-  courseName: string;
+  courseName?: string;
 }
 
 const STEPS_TEXT = [
@@ -18,24 +18,24 @@ const STEPS_TEXT = [
   "Full Circuit Debugging & Validation"
 ];
 
-export default function VideoProgressChecklist({ courseId, courseName }: VideoProgressChecklistProps) {
+function getStepsFromProgress(userProgress: number): boolean[] {
+  return [
+    userProgress >= 25,
+    userProgress >= 50,
+    userProgress >= 75,
+    userProgress === 100
+  ];
+}
+
+export default function VideoProgressChecklist({ courseId }: VideoProgressChecklistProps) {
   const { user, saveProgress } = useAuth();
   const router = useRouter();
-  
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false, false]);
 
   const userProgress = user?.progress?.[courseId]?.percentage || 0;
+  const initialSteps = getStepsFromProgress(userProgress);
+  const [overrideSteps, setOverrideSteps] = useState<boolean[] | null>(null);
 
-  // Sync state with user profile context updates
-  useEffect(() => {
-    const stepsState = [
-      userProgress >= 25,
-      userProgress >= 50,
-      userProgress >= 75,
-      userProgress === 100
-    ];
-    setCompletedSteps(stepsState);
-  }, [userProgress]);
+  const completedSteps = overrideSteps || initialSteps;
 
   const handleStepToggle = async (index: number) => {
     if (!user) {
@@ -52,7 +52,7 @@ export default function VideoProgressChecklist({ courseId, courseName }: VideoPr
       for (let i = index; i < nextSteps.length; i++) nextSteps[i] = false;
     }
 
-    setCompletedSteps(nextSteps);
+    setOverrideSteps(nextSteps);
 
     const completedCount = nextSteps.filter(Boolean).length;
     const percentage = completedCount * 25;

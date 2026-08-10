@@ -22,37 +22,45 @@ import {
   Zap
 } from "lucide-react";
 import { getNotifications } from "@/app/actions/content";
+import type { 
+  DashboardUser, 
+  CatalogCategory, 
+  CatalogItem, 
+  PlatformNotification 
+} from "@/types";
 
 interface LearnerDashboardProps {
-  user: any;
-  categories: any[];
-  products: any[];
-  items: any[];
-  bookmarks: string[];
-  onRemoveBookmark: (id: string) => void;
-  onNavigateToItem: (url: string) => void;
-  onExploreClick: () => void;
+  user: DashboardUser | null;
+  categories: CatalogCategory[];
+  products?: CatalogItem[];
+  items?: CatalogItem[];
+  bookmarks?: string[];
+  onRemoveBookmark?: (id: string) => void;
+  onNavigateToItem?: (url: string) => void;
+  onExploreClick?: () => void;
 }
+
+export type { DashboardUser, CatalogCategory, CatalogItem, PlatformNotification };
 
 export default function LearnerDashboard({
   user,
-  categories,
-  products,
-  items,
-  bookmarks,
-  onRemoveBookmark,
-  onNavigateToItem,
-  onExploreClick,
+  categories = [],
+  products = [],
+  items = [],
+  bookmarks = [],
+  onRemoveBookmark = () => {},
+  onNavigateToItem = () => {},
+  onExploreClick = () => {},
 }: LearnerDashboardProps) {
-  const [realNotifications, setRealNotifications] = useState<any[]>([]);
+  const [realNotifications, setRealNotifications] = useState<PlatformNotification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
 
-  // Fetch real notifications from database
+  // Fetch real notifications from database on mount
   useEffect(() => {
     (async () => {
       try {
         const data = await getNotifications();
-        setRealNotifications(data);
+        setRealNotifications(data as PlatformNotification[]);
       } catch (e) {
         console.error("Failed to load notifications:", e);
       } finally {
@@ -61,32 +69,35 @@ export default function LearnerDashboard({
     })();
   }, []);
 
-  // Filter actual user enrolled videos and unlocked ebooks dynamically from real Supabase states
+  // Filter actual user enrolled videos and unlocked ebooks dynamically
   const enrolledItems = useMemo(() => {
-    return items.filter(it => 
-      (it.type === "video" && user?.enrolled_videos?.includes(it.id)) ||
-      (it.type === "ebook" && user?.purchased_ebooks?.includes(it.id))
-    ).map(it => {
-      const progress = user?.progress?.[it.id] || { percentage: 0 };
-      return {
-        ...it,
-        progressPct: progress.percentage || 0,
-        lastLesson: progress.lastViewedLesson || "Introduction"
-      };
-    });
+    return items
+      .filter((it) => 
+        (it.type === "video" && user?.enrolled_videos?.includes(it.id)) ||
+        (it.type === "ebook" && user?.purchased_ebooks?.includes(it.id))
+      )
+      .map((it) => {
+        const progress = user?.progress?.[it.id] || { percentage: 0 };
+        return {
+          ...it,
+          progressPct: progress.percentage || 0,
+          lastLesson: progress.lastViewedLesson || "Introduction"
+        };
+      });
   }, [items, user]);
 
   const bookmarkedItems = useMemo(() => {
-    return items.filter(it => bookmarks.includes(it.id));
+    return items.filter((it) => bookmarks.includes(it.id));
   }, [items, bookmarks]);
 
   // Recently Viewed Items
   const recentlyViewedItems = useMemo(() => {
     if (!user?.recently_viewed) return [];
-    return items.filter(it => user.recently_viewed.includes(it.id))
+    return items
+      .filter((it) => user.recently_viewed?.includes(it.id))
       .sort((a, b) => {
-        const idxA = user.recently_viewed.indexOf(a.id);
-        const idxB = user.recently_viewed.indexOf(b.id);
+        const idxA = user.recently_viewed?.indexOf(a.id) ?? 0;
+        const idxB = user.recently_viewed?.indexOf(b.id) ?? 0;
         return idxA - idxB;
       });
   }, [items, user]);
@@ -94,30 +105,42 @@ export default function LearnerDashboard({
   // Recommended Projects
   const recommendedItems = useMemo(() => {
     if (items.length === 0) return [];
-    // Filter out already completed items
-    const completedIds = Object.keys(user?.progress || {}).filter(
-      id => user.progress[id]?.percentage === 100
+    
+    // Filter out already completed items safely
+    const userProgressMap = user?.progress || {};
+    const completedIds = Object.keys(userProgressMap).filter(
+      (id) => userProgressMap[id]?.percentage === 100
     );
+
     const activePrefIds = (bookmarkedIds: string[]) => {
       const ids: string[] = [];
-      bookmarkedIds.forEach(id => {
-        const item = items.find(it => it.id === id);
-        if (item && !ids.includes(item.categoryId)) ids.push(item.categoryId);
+      bookmarkedIds.forEach((id) => {
+        const item = items.find((it) => it.id === id);
+        const catId = item?.categoryId || item?.category;
+        if (catId && !ids.includes(catId)) ids.push(catId);
       });
       return ids;
     };
+
     const preferredCategoryIds = [
       ...activePrefIds(bookmarks),
       ...activePrefIds(user?.enrolled_videos || [])
     ];
-    let list = items.filter(it => !bookmarks.includes(it.id) && !completedIds.includes(it.id));
+
+    let list = items.filter(
+      (it) => !bookmarks.includes(it.id) && !completedIds.includes(it.id)
+    );
+
     if (preferredCategoryIds.length > 0) {
       list = [...list].sort((a, b) => {
-        const aMatch = preferredCategoryIds.includes(a.categoryId) ? 1 : 0;
-        const bMatch = preferredCategoryIds.includes(b.categoryId) ? 1 : 0;
+        const catA = a.categoryId || a.category || "";
+        const catB = b.categoryId || b.category || "";
+        const aMatch = preferredCategoryIds.includes(catA) ? 1 : 0;
+        const bMatch = preferredCategoryIds.includes(catB) ? 1 : 0;
         return bMatch - aMatch;
       });
     }
+
     return list.slice(0, 3);
   }, [items, bookmarks, user]);
 
@@ -128,7 +151,7 @@ export default function LearnerDashboard({
       .sort((a, b) => {
         const dateA = a.date || a.created_at || "";
         const dateB = b.date || b.created_at || "";
-        return new Date(dateB).getTime() - new Date(dateA).getTime();
+        return new Date(dateB || 0).getTime() - new Date(dateA || 0).getTime();
       })
       .slice(0, 3);
   }, [items]);
@@ -138,19 +161,19 @@ export default function LearnerDashboard({
     if (enrolledItems.length === 0) return null;
     
     // 1. Try to find the most recently viewed item that is enrolled and not completed
-    const activeRecent = recentlyViewedItems.find(r => 
-      enrolledItems.some(e => e.id === r.id && e.progressPct < 100)
+    const activeRecent = recentlyViewedItems.find((r) => 
+      enrolledItems.some((e) => e.id === r.id && e.progressPct < 100)
     );
     if (activeRecent) {
-      return enrolledItems.find(e => e.id === activeRecent.id);
+      return enrolledItems.find((e) => e.id === activeRecent.id);
     }
     
     // 2. Try to find any enrolled item with progress > 0 and < 100
-    const inProgress = enrolledItems.find(e => e.progressPct > 0 && e.progressPct < 100);
+    const inProgress = enrolledItems.find((e) => e.progressPct > 0 && e.progressPct < 100);
     if (inProgress) return inProgress;
     
     // 3. Try to find any enrolled item < 100
-    const notCompleted = enrolledItems.find(e => e.progressPct < 100);
+    const notCompleted = enrolledItems.find((e) => e.progressPct < 100);
     if (notCompleted) return notCompleted;
     
     // 4. Default to first enrolled item
@@ -159,49 +182,65 @@ export default function LearnerDashboard({
 
   const otherContinueItems = useMemo(() => {
     if (!primaryContinueItem) return [];
-    return enrolledItems.filter(e => e.id !== primaryContinueItem.id);
+    return enrolledItems.filter((e) => e.id !== primaryContinueItem.id);
   }, [enrolledItems, primaryContinueItem]);
 
   // Gamification Badges List Setup
-  const badgesData = [
-    {
-      id: "first-project",
-      name: "First Project",
-      description: "Completed your first learning module on REES52!",
-      icon: Trophy,
-      color: "from-amber-400 to-orange-500",
-      bg: "bg-amber-500/10 border-amber-500/20 text-amber-700"
-    },
-    {
-      id: "arduino-beginner",
-      name: "Arduino Beginner",
-      description: "Completed an Arduino microcontroller project!",
-      icon: Cpu,
-      color: "from-cyan-400 to-blue-500",
-      bg: "bg-cyan-500/10 border-cyan-500/20 text-cyan-700"
-    },
-    {
-      id: "iot-explorer",
-      name: "IoT Explorer",
-      description: "Completed an IoT and sensor telemetry project!",
-      icon: Zap,
-      color: "from-purple-400 to-indigo-500",
-      bg: "bg-purple-500/10 border-purple-500/20 text-purple-700"
-    },
-    {
-      id: "robotics-builder",
-      name: "Robotics Builder",
-      description: "Completed a Robotics mechanical assembly project!",
-      icon: Award,
-      color: "from-emerald-400 to-teal-500",
-      bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-700"
-    }
-  ];
+  const badgesData = useMemo(() => {
+    const defaultBadges = [
+      {
+        id: "first-project",
+        badgeId: "first-project",
+        title: "First Spark",
+        name: "First Spark",
+        description: "Enrolled in your first REES52 hardware module",
+        icon: Zap,
+        color: "from-blue-500 to-cyan-500",
+      },
+      {
+        id: "arduino-beginner",
+        badgeId: "arduino-beginner",
+        title: "Microcontroller Pioneer",
+        name: "Microcontroller Pioneer",
+        description: "Completed an Arduino R3 or ESP32 circuit lab",
+        icon: Cpu,
+        color: "from-emerald-500 to-teal-500",
+      },
+      {
+        id: "iot-explorer",
+        badgeId: "iot-explorer",
+        title: "IoT Systems Architect",
+        name: "IoT Systems Architect",
+        description: "Studied 3 or more hardware/sensor documentation guides",
+        icon: BookOpen,
+        color: "from-amber-500 to-orange-500",
+      },
+      {
+        id: "robotics-builder",
+        badgeId: "robotics-builder",
+        title: "Master Robotist",
+        name: "Master Robotist",
+        description: "Completed the 4WD Smart Robot Car assembly course",
+        icon: Trophy,
+        color: "from-purple-500 to-indigo-500",
+      },
+    ];
 
-  const unlockedBadges = user?.badges || [];
+    const userBadges = user?.badges || [];
+    return defaultBadges.map((b) => {
+      const isUnlocked = userBadges.some((ub) => ub.badgeId === b.badgeId || ub.id === b.id);
+      return {
+        ...b,
+        unlocked: isUnlocked,
+      };
+    });
+  }, [user]);
+
+  const currentStreak = user?.streak?.current ?? 0;
+  const longestStreak = user?.streak?.longest ?? 0;
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* ── 1. Welcoming Banner Panel ── */}
       <div className="relative p-6 bg-gradient-to-br from-slate-900 via-slate-850 to-cyan-950 text-white rounded-3xl overflow-hidden shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-cyan-500/15">
@@ -212,10 +251,10 @@ export default function LearnerDashboard({
             <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-md border border-cyan-500/25 shadow-sm">
               Maker Workspace
             </span>
-            {user?.streak?.current > 0 && (
+            {currentStreak > 0 && (
               <span className="text-[9px] font-black uppercase tracking-widest text-orange-400 bg-orange-950/80 px-2.5 py-1 rounded-md border border-orange-500/25 shadow-sm flex items-center gap-1">
                 <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
-                {user.streak.current} Day Streak!
+                {currentStreak} Day Streak!
               </span>
             )}
           </div>
@@ -247,7 +286,7 @@ export default function LearnerDashboard({
             <span className="text-[9px] font-black text-slate-450 uppercase tracking-widest">Streaks</span>
             <span className="text-2xl font-black text-orange-400 mt-1 flex items-center gap-1">
               <Flame className="w-5 h-5 fill-orange-500 text-orange-500" />
-              {user?.streak?.current || 0}
+              {currentStreak}
             </span>
           </div>
         </div>
@@ -262,159 +301,180 @@ export default function LearnerDashboard({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Badge Grid (3 cols on desktop) */}
           <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {badgesData.map(badge => {
-              const isUnlocked = unlockedBadges.some((b: any) => b.badgeId === badge.id);
-              const BadgeIcon = badge.icon;
+            {badgesData.map((badge) => {
+              const IconComp = badge.icon;
               return (
                 <div 
                   key={badge.id}
-                  className={`relative p-4 rounded-2xl border flex flex-col items-center text-center justify-between transition-all duration-300 ${
-                    isUnlocked 
-                      ? "bg-white border-slate-200/80 shadow-md hover:scale-[1.03]" 
-                      : "bg-slate-100/50 border-slate-200/40 opacity-60"
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden ${
+                    badge.unlocked
+                      ? "bg-white border-slate-200 shadow-sm hover:shadow-md"
+                      : "bg-slate-50/70 border-slate-200/60 opacity-60"
                   }`}
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center relative ${
-                      isUnlocked 
-                        ? `bg-gradient-to-br ${badge.color} text-white shadow-md` 
-                        : "bg-slate-200 text-slate-400"
+                  <div className="space-y-2">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white bg-gradient-to-br ${
+                      badge.unlocked ? badge.color : "from-slate-400 to-slate-500 grayscale"
                     }`}>
-                      <BadgeIcon className="w-6 h-6" />
-                      {isUnlocked && (
-                        <div className="absolute -bottom-1 -right-1 bg-emerald-500 border border-white rounded-full p-0.5">
-                          <Check className="w-2.5 h-2.5 text-white" strokeWidth={4} />
-                        </div>
-                      )}
+                      <IconComp className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-black text-slate-900 leading-tight block mt-1 uppercase tracking-wide">
-                      {badge.name}
-                    </span>
-                    <span className="text-[9px] font-semibold text-slate-500 leading-relaxed max-w-[120px] block mt-0.5">
-                      {badge.description}
-                    </span>
+                    <div>
+                      <h4 className="text-[11px] font-black text-slate-900 leading-tight">
+                        {badge.title}
+                      </h4>
+                      <p className="text-[8.5px] text-slate-500 font-semibold line-clamp-2 mt-1 leading-snug">
+                        {badge.description}
+                      </p>
+                    </div>
                   </div>
 
-                  {!isUnlocked && (
-                    <div className="absolute top-2 right-2 bg-slate-200/80 p-1 rounded-md text-slate-400 border border-slate-300/30">
-                      <Lock className="w-3 h-3" />
-                    </div>
-                  )}
+                  <div className="mt-3 pt-2 border-t border-slate-150/60 flex items-center justify-between">
+                    <span className={`text-[8px] font-black uppercase tracking-wider ${
+                      badge.unlocked ? "text-cyan-600" : "text-slate-400"
+                    }`}>
+                      {badge.unlocked ? "Unlocked" : "Locked"}
+                    </span>
+                    {badge.unlocked ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Streaks Summary Card (1 col on desktop) */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/20 flex flex-col justify-between items-center text-center shadow-sm">
-            <div className="flex flex-col items-center gap-2 mt-1">
-              <Flame className="w-10 h-10 fill-orange-500 text-orange-500 animate-bounce" />
-              <h4 className="text-xs font-black uppercase tracking-wider text-orange-950">Learning Streak</h4>
-              <p className="text-[10px] text-orange-800 font-semibold leading-relaxed max-w-[180px] uppercase">
-                Active days in a row: <span className="font-black text-orange-950 text-xs">{user?.streak?.current || 0}</span>.
-              </p>
+          {/* Streak Card (1 col on desktop) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 text-white flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Activity Streak</span>
+                <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-3xl font-black text-orange-400 tracking-tight">{currentStreak} Days</span>
+                <p className="text-[8.5px] text-slate-400 font-medium mt-0.5">
+                  Best Record: <strong className="text-slate-200">{longestStreak} Days</strong>
+                </p>
+              </div>
             </div>
-            
-            <div className="w-full border-t border-orange-500/15 pt-2 mt-4 flex justify-between text-[9px] font-black uppercase tracking-widest text-orange-800">
-              <span>Longest Streak:</span>
-              <span className="text-orange-950">{user?.streak?.longest || 0} Days</span>
+
+            <div className="mt-4 pt-3 border-t border-slate-800/80">
+              <p className="text-[8.5px] text-slate-300 font-semibold leading-relaxed">
+                Log in daily and complete hardware lessons to maintain your streak!
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 3. Continue Learning: Prominent Card & Active workbench ── */}
+      {/* ── 3. Active Learning workbench ── */}
       <div className="space-y-4">
-        <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-1.5">
-          <Play className="w-4 h-4 text-cyan-600 fill-cyan-600 animate-pulse" /> Continue Learning
-        </h3>
-        
-        {!primaryContinueItem ? (
-          <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col items-center justify-center space-y-3">
-            <Play className="w-8 h-8 text-slate-350" />
-            <div>
-              <p className="text-xs font-black text-slate-800 uppercase">No active workbench courses yet</p>
-              <p className="text-[10px] text-slate-550 font-bold uppercase mt-1">Enroll in video lectures or unlock ebooks in the explorer feed to start tracking your progress.</p>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-cyan-600" /> Current Learning Workbench
+          </h3>
+          {enrolledItems.length > 0 && (
+            <span className="text-[9px] font-black text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full border border-cyan-200/60">
+              {enrolledItems.length} Enrolled Module{enrolledItems.length > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+
+        {enrolledItems.length === 0 ? (
+          <div className="p-8 bg-white border border-slate-200 rounded-3xl shadow-sm text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-100 flex items-center justify-center text-cyan-600">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <div className="space-y-1 max-w-sm">
+              <h4 className="text-sm font-black uppercase text-slate-900">Workbench is empty</h4>
+              <p className="text-xs text-slate-500 font-medium">
+                Enroll in video courses or unlock eBook building guides to start tracking active progress here.
+              </p>
             </div>
             <button
               onClick={onExploreClick}
-              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[8.5px] tracking-widest rounded-xl cursor-pointer transition-colors shadow-sm"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[9px] tracking-widest rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
             >
-              Browse Explorer Feed
+              Explore Catalog
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             
-            {/* Primary Continue Card (2 cols) */}
-            <div className="lg:col-span-2 relative p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 border border-cyan-500/30 rounded-3xl overflow-hidden shadow-xl flex flex-col justify-between min-h-[260px] group transition-all hover:border-cyan-400/50 animate-fade-in">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/10 transition-all duration-500" />
-              
-              <div className="space-y-4 z-10">
-                <div className="flex items-center justify-between">
-                  <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest ${
-                    primaryContinueItem.type === "video" 
-                      ? "border-blue-500/30 bg-blue-500/10 text-blue-400" 
-                      : "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
-                  }`}>
-                    {primaryContinueItem.type === "video" ? "Active Video Lecture" : "Active Ebook Blueprint"}
-                  </span>
-                  
-                  <span className="text-[9px] font-black uppercase tracking-widest text-cyan-500 animate-pulse">
-                    {primaryContinueItem.progressPct === 100 ? "Completed" : "In Progress"}
-                  </span>
+            {/* Main Active Module Highlight (2 cols) */}
+            {primaryContinueItem && (
+              <div className="lg:col-span-2 p-6 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white border border-cyan-500/20 rounded-3xl shadow-md relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+                <div className="absolute top-0 right-0 p-8 pointer-events-none opacity-5">
+                  <Cpu className="w-48 h-48 text-cyan-400" />
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="text-lg md:text-xl font-black text-white leading-snug group-hover:text-cyan-400 transition-colors">
-                    {primaryContinueItem.title}
-                  </h4>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-500" /> Currently On: <span className="text-slate-200">{primaryContinueItem.lastLesson}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t border-white/5 z-10">
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  <span>Workbench Progress</span>
-                  <span className="text-cyan-400">{primaryContinueItem.progressPct}%</span>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="flex-1 w-full h-3 bg-slate-950 border border-white/10 rounded-full p-0.5 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        primaryContinueItem.progressPct === 100 
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" 
-                          : "bg-gradient-to-r from-cyan-500 to-blue-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
-                      }`}
-                      style={{ width: `${primaryContinueItem.progressPct}%` }}
-                    />
+                <div className="space-y-3 z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 text-[8.5px] font-black uppercase tracking-widest rounded-md">
+                      Active Target
+                    </span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      {primaryContinueItem.type}
+                    </span>
                   </div>
 
-                  <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
-                    <button
-                      onClick={() => onNavigateToItem(primaryContinueItem.url)}
-                      className="flex-1 sm:flex-none px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95"
-                    >
-                      <span>{primaryContinueItem.progressPct === 100 ? "Review Module" : "Resume"}</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                    
-                    {primaryContinueItem.progressPct === 100 && (
-                      <Link
-                        href={`/certificate/${primaryContinueItem.id}`}
-                        className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                  <div>
+                    <h4 className="text-lg md:text-xl font-black text-white leading-snug">
+                      {primaryContinueItem.title}
+                    </h4>
+                    <p className="text-xs text-slate-300 line-clamp-2 mt-1 font-medium">
+                      {primaryContinueItem.description || "Hardware step-by-step module"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-slate-800/80 z-10">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-400 text-[9px] uppercase tracking-wider">
+                      Current Lesson: <strong className="text-cyan-300">{primaryContinueItem.lastLesson}</strong>
+                    </span>
+                    <span className="text-cyan-400 text-[10px] font-black">
+                      {primaryContinueItem.progressPct}%
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 w-full h-3 bg-slate-950 border border-white/10 rounded-full p-0.5 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          primaryContinueItem.progressPct === 100 
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" 
+                            : "bg-gradient-to-r from-cyan-500 to-blue-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
+                        }`}
+                        style={{ width: `${primaryContinueItem.progressPct}%` }}
+                      />
+                    </div>
+
+                    <div className="flex gap-2 w-full sm:w-auto flex-shrink-0">
+                      <button
+                        onClick={() => onNavigateToItem(primaryContinueItem.url || primaryContinueItem.external_purchase_url || "")}
+                        className="flex-1 sm:flex-none px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md active:scale-95"
                       >
-                        <Award className="w-4 h-4 text-amber-500" />
-                        <span>Certificate</span>
-                      </Link>
-                    )}
+                        <span>{primaryContinueItem.progressPct === 100 ? "Review Module" : "Resume"}</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      
+                      {primaryContinueItem.progressPct === 100 && (
+                        <Link
+                          href={`/certificate/${primaryContinueItem.id}`}
+                          className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase text-[9px] tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          <Award className="w-4 h-4 text-amber-500" />
+                          <span>Certificate</span>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Other Enrolled Modules List (1 col) */}
             <div className="p-5 bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col justify-between min-h-[260px]">
@@ -433,10 +493,10 @@ export default function LearnerDashboard({
                   </div>
                 ) : (
                   <div className="space-y-2.5 max-h-[160px] overflow-y-auto pr-1.5 no-scrollbar">
-                    {otherContinueItems.map(item => (
+                    {otherContinueItems.map((item) => (
                       <div 
                         key={item.id}
-                        onClick={() => onNavigateToItem(item.url)}
+                        onClick={() => onNavigateToItem(item.url || item.external_purchase_url || "")}
                         className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors"
                       >
                         <div className="min-w-0 flex-1">
@@ -484,14 +544,15 @@ export default function LearnerDashboard({
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-3 pt-1 scroll-smooth snap-x no-scrollbar">
             {recentlyViewedItems.map((item) => {
-              const cat = categories.find((c) => c.id === item.categoryId);
+              const catId = item.categoryId || item.category;
+              const cat = categories.find((c) => c.id === catId);
               const progress = user?.progress?.[item.id] || { percentage: 0 };
               const progressPct = progress.percentage || 0;
               
               return (
                 <div 
                   key={`recent:${item.id}`}
-                  onClick={() => onNavigateToItem(item.url)}
+                  onClick={() => onNavigateToItem(item.url || item.external_purchase_url || "")}
                   className="snap-start w-72 flex-shrink-0 bg-white hover:bg-slate-50 border border-slate-200 hover:border-cyan-500/20 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[120px]"
                 >
                   <div className="space-y-1.5 min-w-0">
@@ -514,9 +575,7 @@ export default function LearnerDashboard({
                     <span className="text-[8px] font-extrabold uppercase text-slate-500">
                       {progressPct === 100 ? "Completed" : progressPct > 0 ? `${progressPct}% complete` : "Not Started"}
                     </span>
-                    <span className="text-[8.5px] font-black text-cyan-600 hover:text-cyan-700 flex items-center gap-0.5 uppercase">
-                      Resume <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                   </div>
                 </div>
               );
@@ -525,128 +584,128 @@ export default function LearnerDashboard({
         )}
       </div>
 
-      {/* ── 5. Recommended For You & Latest Content (Parallel Lists) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── 5. Recommendations & Content Discovery Row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Recommended For You */}
-        <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
+        {/* Recommended for You (2 cols) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-cyan-600" /> Recommended For You
             </h3>
+            <button
+              onClick={onExploreClick}
+              className="text-[9px] font-black text-cyan-700 hover:text-cyan-800 uppercase tracking-widest"
+            >
+              View All
+            </button>
+          </div>
 
-            {recommendedItems.length === 0 ? (
-              <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-150 flex flex-col items-center justify-center py-8">
-                <Sparkles className="w-6 h-6 text-slate-350 mb-2" />
-                <p className="text-[10px] text-slate-550 font-bold uppercase">No recommendations found</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {recommendedItems.map((item) => (
-                  <div 
-                    key={`rec:${item.id}`}
-                    onClick={() => onNavigateToItem(item.url)}
-                    className="p-2.5 bg-cyan-50/20 hover:bg-cyan-50/50 border border-cyan-200/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors animate-fade-in"
-                  >
-                    <div className="min-w-0">
-                      <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider mb-0.5 ${
-                        item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
-                      }`}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {recommendedItems.map((item) => {
+              const catId = item.categoryId || item.category;
+              const cat = categories.find((c) => c.id === catId);
+              return (
+                <div
+                  key={`rec:${item.id}`}
+                  onClick={() => onNavigateToItem(item.url || item.external_purchase_url || "")}
+                  className="bg-white border border-slate-200 hover:border-cyan-500/30 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between min-h-[160px]"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[7.5px] font-black uppercase tracking-wider text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200/50">
                         {item.type}
                       </span>
-                      <h4 className="text-[11px] font-black text-cyan-900 truncate leading-snug">
-                        {item.title}
-                      </h4>
+                      <span className="text-[8px] font-extrabold text-slate-400 truncate">
+                        {cat?.name ?? "Academy"}
+                      </span>
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-cyan-600" />
+
+                    <h4 className="text-[11px] font-black text-slate-900 line-clamp-2 leading-snug">
+                      {item.title}
+                    </h4>
+
+                    <p className="text-[9px] text-slate-500 line-clamp-2 leading-relaxed font-medium">
+                      {item.description || "Hands-on project and hardware building tutorial."}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[8px] font-black uppercase text-cyan-600 flex items-center gap-1">
+                      Explore Module <ChevronRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Latest Content */}
-        <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
-              <Zap className="w-4 h-4 text-cyan-600" /> New Arrivals
-            </h3>
+        {/* Newest Arrivals Column (1 col) */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4 text-cyan-600" /> Newest Arrivals
+          </h3>
 
-            {latestContent.length === 0 ? (
-              <div className="p-6 text-center bg-slate-50 rounded-2xl border border-slate-150 flex flex-col items-center justify-center py-8">
-                <Zap className="w-6 h-6 text-slate-350 mb-2" />
-                <p className="text-[10px] text-slate-555 font-bold uppercase">No new arrivals found</p>
+          <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
+            {latestContent.map((item) => (
+              <div
+                key={`latest:${item.id}`}
+                onClick={() => onNavigateToItem(item.url || item.external_purchase_url || "")}
+                className="p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all cursor-pointer flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="text-[7.5px] font-black uppercase text-cyan-700">
+                    {item.type}
+                  </span>
+                  <h5 className="text-[10px] font-black text-slate-900 truncate">
+                    {item.title}
+                  </h5>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               </div>
-            ) : (
-              <div className="flex flex-col gap-2.5">
-                {latestContent.map((item) => (
-                  <div 
-                    key={`latest:${item.id}`}
-                    onClick={() => onNavigateToItem(item.url)}
-                    className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-colors animate-fade-in"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider ${
-                          item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
-                        }`}>
-                          {item.type}
-                        </span>
-                        <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-850 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest animate-pulse">
-                          New
-                        </span>
-                      </div>
-                      <h4 className="text-[11px] font-black text-slate-900 truncate leading-snug">
-                        {item.title}
-                      </h4>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         </div>
 
       </div>
 
-      {/* ── 6. Saved Blueprints (Bookmarks) & Notifications ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ── 6. Saved Library & Real Database Notifications ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Bookmarked Library */}
-        <div className="md:col-span-2 p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5 border-b border-slate-100 pb-2">
-            <Bookmark className="w-4 h-4 text-cyan-600" /> My Saved blueprints ({bookmarks.length})
-          </h3>
+        {/* Saved Library (2 cols) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-850 flex items-center gap-1.5">
+              <Bookmark className="w-4 h-4 text-cyan-600" /> Saved Library ({bookmarkedItems.length})
+            </h3>
+          </div>
 
           {bookmarkedItems.length === 0 ? (
-            <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-150 flex flex-col items-center justify-center">
-              <BookOpen className="w-8 h-8 text-slate-350 mb-2" />
-              <p className="text-xs font-black text-slate-800 uppercase">Your library is empty</p>
-              <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Click the bookmark icon on any explorer card to save it here.</p>
+            <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col items-center justify-center space-y-2">
+              <Bookmark className="w-8 h-8 text-slate-300 mb-1" />
+              <p className="text-[10px] text-slate-500 font-bold uppercase">Library is empty</p>
+              <p className="text-[9px] text-slate-400 font-medium">Bookmark projects and courses across the catalog to store them for offline review.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1 no-scrollbar animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {bookmarkedItems.map((item) => (
                 <div 
                   key={item.id}
-                  className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 hover:border-slate-300 transition-colors"
+                  className="p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-3"
                 >
-                  <div className="flex-1 min-w-0">
-                    <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider mb-1 ${
-                      item.type === "video" ? "border-blue-200 bg-blue-50 text-blue-800" : "border-cyan-200 bg-cyan-50 text-cyan-800"
-                    }`}>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[7.5px] font-black uppercase tracking-wider text-cyan-700">
                       {item.type}
                     </span>
-                    <h4 className="text-[11px] font-black text-slate-900 truncate leading-snug">
+                    <h5 className="text-[10.5px] font-black text-slate-900 truncate mt-0.5">
                       {item.title}
-                    </h4>
+                    </h5>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
-                      onClick={() => onNavigateToItem(item.url)}
+                      onClick={() => onNavigateToItem(item.url || item.external_purchase_url || "")}
                       className="p-1.5 bg-slate-950 hover:bg-slate-855 text-white rounded-lg cursor-pointer"
                       title="View resource"
                     >
@@ -691,7 +750,7 @@ export default function LearnerDashboard({
                   <div>
                     <p className="text-[10px] text-slate-700 font-semibold leading-relaxed">{notif.message}</p>
                     <span className="text-[7.5px] text-slate-400 font-extrabold uppercase mt-1 block">
-                      {new Date(notif.created_at).toLocaleDateString(undefined, {
+                      {new Date(notif.created_at || Date.now()).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
                       })}

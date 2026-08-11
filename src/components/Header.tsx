@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   BookOpen,
+  Bot,
   ChevronDown,
   ExternalLink,
   FileQuestion,
@@ -262,7 +263,7 @@ export default function Header() {
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 xl:flex">
+          <nav className="hidden items-center gap-1 md:flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -345,12 +346,12 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 ${
+                  className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 shadow-sm ${
                     isActive
-                      ? "bg-sky-600 text-white shadow-sm shadow-sky-500/20"
+                      ? "border-sky-600 bg-sky-600 text-white shadow-sky-500/25"
                       : isNewsPage
-                      ? "text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                      : "text-slate-700 hover:bg-white/90 hover:text-sky-800"
+                      ? "border-zinc-800 bg-zinc-900/90 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+                      : "border-slate-200/80 bg-white/80 text-slate-800 hover:border-slate-300 hover:bg-white hover:shadow-md"
                   }`}
                 >
                   {link.label}
@@ -360,25 +361,25 @@ export default function Header() {
             <button
               type="button"
               onClick={handleMyLearningsClick}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 ${
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 shadow-sm ${
                 pathname.startsWith("/dashboard") || pathname.startsWith("/my-learning")
-                  ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-500/25"
+                  ? "border-sky-600 bg-sky-600 text-white shadow-sky-500/25"
                   : isNewsPage
-                  ? "border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800"
-                  : "border-indigo-200/80 bg-indigo-50/80 text-indigo-900 shadow-sm hover:border-indigo-300 hover:bg-indigo-100 hover:shadow-md"
+                  ? "border-zinc-800 bg-zinc-900/90 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+                  : "border-slate-200/80 bg-white/80 text-slate-800 hover:border-slate-300 hover:bg-white hover:shadow-md"
               }`}
             >
-              <LayoutDashboard className="h-3.5 w-3.5 text-indigo-500" />
+              <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
               My Learning
             </button>
             <a
               href={STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-all duration-200 hover:-translate-y-0.5 ${
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 shadow-sm ${
                 isNewsPage
-                  ? "text-zinc-300 hover:bg-zinc-900 hover:text-white"
-                  : "text-slate-700 hover:bg-white/90 hover:text-sky-800"
+                  ? "border-zinc-800 bg-zinc-900/90 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+                  : "border-slate-200/80 bg-white/80 text-slate-800 hover:border-slate-300 hover:bg-white hover:shadow-md"
               }`}
             >
               Kits

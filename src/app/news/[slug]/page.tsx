@@ -55,32 +55,38 @@ export default async function ArticlePage({
   };
 
   return (
-    <main className="flex-1 bg-white">
+    <main className="flex-1 bg-zinc-950 text-white min-h-screen">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, "\\u003c") }}
       />
       <article>
-        <header className="border-b border-slate-200 bg-slate-950 text-white">
+        <header className="border-b border-zinc-800 bg-zinc-900/60 text-white">
           <div className="mx-auto w-full max-w-4xl px-4 py-12 lg:px-8 lg:py-16">
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-sky-300"
+              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-cyan-400 hover:text-cyan-300 transition"
             >
               <ArrowLeft className="h-4 w-4" />
               All news &amp; articles
             </Link>
             <div className="mt-8 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest">
-              <span className="rounded-full bg-sky-400/15 px-3 py-1 text-sky-200">{article.category}</span>
-              <span className="inline-flex items-center gap-1 text-slate-400">
+              <span className="rounded-full bg-cyan-500/20 border border-cyan-500/30 px-3 py-1 text-cyan-300">
+                {article.category}
+              </span>
+              <span className="inline-flex items-center gap-1 text-zinc-400">
                 <Clock3 className="h-3.5 w-3.5" />
                 {article.readTimeMinutes} min read
               </span>
             </div>
-            <h1 className="mt-5 text-balance text-4xl font-black leading-tight md:text-6xl">{article.title}</h1>
-            <p className="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-slate-300">{article.excerpt}</p>
-            <div className="mt-7 flex items-center gap-3 text-sm font-semibold text-slate-400">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-400/15 text-sky-200">
+            <h1 className="mt-5 text-balance text-4xl font-black leading-tight text-white md:text-6xl">
+              {article.title}
+            </h1>
+            <p className="mt-5 max-w-3xl text-lg font-medium leading-relaxed text-zinc-300">
+              {article.excerpt}
+            </p>
+            <div className="mt-7 flex items-center gap-3 text-sm font-semibold text-zinc-400">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                 <Newspaper className="h-4 w-4" />
               </span>
               <p>
@@ -95,7 +101,7 @@ export default async function ArticlePage({
 
         {article.coverImageUrl && (
           <div className="mx-auto w-full max-w-5xl px-4 pt-10 lg:px-8">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-black/60">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={article.coverImageUrl} alt={article.title} className="max-h-[620px] w-full object-cover" />
             </div>
@@ -110,21 +116,21 @@ export default async function ArticlePage({
               .filter(Boolean)
               .map((block, index) =>
                 block.startsWith("## ") ? (
-                  <h2 key={index} className="pt-4 text-2xl font-black leading-tight text-slate-950 md:text-3xl">
+                  <h2 key={index} className="pt-4 text-2xl font-black leading-tight text-white md:text-3xl">
                     {block.slice(3).trim()}
                   </h2>
                 ) : (
-                  <p key={index} className="whitespace-pre-line text-base font-medium leading-8 text-slate-700 md:text-lg">
+                  <p key={index} className="whitespace-pre-line text-base font-medium leading-8 text-zinc-300 md:text-lg">
                     {block}
                   </p>
                 ),
               )}
           </div>
 
-          <div className="mt-12 border-t border-slate-200 pt-7">
+          <div className="mt-12 border-t border-zinc-800 pt-7">
             <Link
               href="/news"
-              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-sky-800"
+              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-cyan-400 hover:text-cyan-300 transition"
             >
               <ArrowLeft className="h-4 w-4" />
               More Academy articles

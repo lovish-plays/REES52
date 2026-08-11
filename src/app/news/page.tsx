@@ -16,7 +16,7 @@ export default async function NewsPage() {
   const articles = await getPublishedArticles();
 
   return (
-    <main className="flex-1 bg-slate-100/60 min-h-screen">
+    <main className="flex-1 bg-zinc-950 text-white min-h-screen">
       <TwitterNewsFeed articles={articles} />
     </main>
   );

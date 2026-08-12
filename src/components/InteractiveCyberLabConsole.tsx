@@ -169,7 +169,7 @@ export default function InteractiveCyberLabConsole() {
     handleStart,
     handleMove,
     handleEnd,
-  } = use3DRobotOrbit({ x: -4, y: 6 });
+  } = use3DRobotOrbit({ x: -4, y: 6 }, 16, { x: 8, y: 6 });
 
   const [activeTab, setActiveTab] = useState<HardwareTab>("arduino");
   const [isRunningSim, setIsRunningSim] = useState<boolean>(false);

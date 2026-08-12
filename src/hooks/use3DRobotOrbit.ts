@@ -38,11 +38,13 @@ export function use3DRobotOrbit(
       const rotX = -(mouseY / (rect.height / 2)) * maxTiltAngle;
       setRotation({ x: rotX, y: rotY });
 
-      const eyeX = (mouseX / (rect.width / 2)) * maxEyeOffset.x;
-      const eyeY = (mouseY / (rect.height / 2)) * maxEyeOffset.y;
+      const offsetX = maxEyeOffset?.x ?? 8;
+      const offsetY = maxEyeOffset?.y ?? 6;
+      const eyeX = (mouseX / (rect.width / 2)) * offsetX;
+      const eyeY = (mouseY / (rect.height / 2)) * offsetY;
       setEyePos({ x: eyeX, y: eyeY });
     },
-    [isDragging, maxTiltAngle, maxEyeOffset.x, maxEyeOffset.y]
+    [isDragging, maxTiltAngle, maxEyeOffset?.x, maxEyeOffset?.y]
   );
 
   const handleMouseLeave = useCallback(() => {

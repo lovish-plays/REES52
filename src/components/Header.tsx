@@ -10,8 +10,10 @@ import {
   ChevronDown,
   ExternalLink,
   FileQuestion,
+  FlaskConical,
   FolderKanban,
   GraduationCap,
+  Landmark,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -52,8 +54,8 @@ const LEARNING_LINKS = [
 ];
 
 const TOP_NAV_LINKS = [
-  { href: "/news", label: "News", icon: Newspaper },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/news", label: "News" },
+  { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 const DIRECTORY_LINKS = [
@@ -211,6 +213,9 @@ export default function Header() {
     router.push("/login");
   };
 
+  const overlayLinkClass =
+    "flex items-center justify-between rounded-lg border border-slate-200/80 bg-white/80 p-5 backdrop-blur-xl transition-all duration-200 hover:border-cyan-500/40 hover:bg-white hover:shadow-md";
+
   const handleMyLearningsClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (user) {
@@ -219,9 +224,6 @@ export default function Header() {
       setAuthOpen(true);
     }
   };
-
-  const overlayLinkClass =
-    "flex items-center justify-between rounded-lg border border-slate-200/80 bg-white/80 p-5 backdrop-blur-xl transition-all duration-200 hover:border-cyan-500/40 hover:bg-white hover:shadow-md";
 
   return (
     <>
@@ -271,6 +273,8 @@ export default function Header() {
                   className={`group inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-sky-300 ${
                     LEARNING_LINKS.some((link) => pathname === link.href || pathname.startsWith(`${link.href}/`))
                       ? "border-sky-600 bg-sky-600 text-white shadow-sm shadow-sky-500/25"
+                      : isNewsPage
+                      ? "border-zinc-800 bg-zinc-900/90 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
                       : "border-sky-200/80 bg-white/80 text-sky-900 shadow-sm hover:border-sky-300 hover:bg-white hover:shadow-md"
                   }`}
                   aria-label="Open classes and learning menu"
